@@ -144,6 +144,50 @@ def _round2(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
+# ---------------------------------------------------------------------------
+# Line-item catalogs — realistic Turkish B2B / retail descriptions.
+# Replaces Faker's `bs()` / `catch_phrase()` / lorem `word()`, which produced
+# nonsense like "empower clicks-and-mortar communities". Item names stay Turkish
+# on all documents (a Turkish vendor's English-labelled invoice still lists
+# Turkish item lines in practice).
+# ---------------------------------------------------------------------------
+REAL_ITEMS: list[str] = [
+    "A4 Fotokopi Kağıdı (500 yaprak)", "Toner Kartuş (HP 26A)", "Dolmakalem Seti",
+    "Dosya Klasörü (Geniş, A4)", "Post-it Not Bloğu 76x76",
+    "Zımba Teli No:10 (1000'li)", "Beyaz Tahta Kalemi (4'lü)",
+    "Laminasyon Filmi A4 (100'lü)", "Kraft Zarf (C4)",
+    "Termal Etiket Rulosu 40x30", "Dizüstü Bilgisayar 14\" i5",
+    "LED Monitör 24\" IPS", "Kablosuz Klavye-Mouse Set", "USB Bellek 64 GB",
+    "Harici SSD 1 TB", "Ağ Anahtarı (Switch) 8 Port", "Wi-Fi Erişim Noktası",
+    "UPS Kesintisiz Güç Kaynağı 850VA", "HDMI Kablo 2 m", "Web Kamerası 1080p",
+    "Ofis Sandalyesi (Ergonomik)", "Çalışma Masası 120x60",
+    "Kilitli Dolap (Metal, 4 Raflı)", "Toplantı Masası 6 Kişilik",
+    "Aydınlatma Armatürü LED Panel", "Yazılım Lisansı (Yıllık, 1 Kullanıcı)",
+    "Bulut Yedekleme Hizmeti (Aylık)", "Web Sitesi Bakım Hizmeti (Aylık)",
+    "Muhasebe Danışmanlık Hizmeti (Saat)", "Grafik Tasarım Hizmeti (Proje)",
+    "SEO Danışmanlığı (Aylık)", "Sunucu Kiralama (Aylık)",
+    "Alan Adı Tescili (Yıllık)", "Kurumsal E-posta Paketi (Yıllık)",
+    "Kargo ve Nakliye Bedeli", "Montaj ve Kurulum Hizmeti",
+    "Temizlik Hizmeti (Aylık)", "Su Sebili Damacana (19 L)",
+    "Filtre Kahve (1 kg)", "Çay (Poşet, 500'lü)", "Islak Mendil (Kova, 100'lü)",
+    "Çöp Poşeti (Jumbo, 10 Rulo)", "El Dezenfektanı 1 L",
+    "Kağıt Havlu (Z Katlı, 12'li)", "Maskeleme Bandı 48 mm",
+]
+
+RECEIPT_ITEMS: list[str] = [
+    "Ekmek (Somun)", "Süt (1 L, Tam Yağlı)", "Yumurta (15'li)",
+    "Beyaz Peynir (500 g)", "Siyah Zeytin (400 g)", "Domates (kg)",
+    "Salatalık (kg)", "Elma (kg)", "Muz (kg)", "Tavuk Göğsü (kg)",
+    "Dana Kıyma (kg)", "Baldo Pirinç (1 kg)", "Spagetti Makarna (500 g)",
+    "Ayçiçek Yağı (1 L)", "Toz Şeker (1 kg)", "Siyah Çay (1 kg)",
+    "Türk Kahvesi (250 g)", "Sıvı Çamaşır Deterjanı (2.5 L)",
+    "Bulaşık Deterjanı (750 ml)", "Tuvalet Kağıdı (16'lı)",
+    "Diş Macunu (75 ml)", "Şampuan (500 ml)", "Su (5 L)", "Kola (2.5 L)",
+    "Cips (Büyük Boy)", "Çikolata (Bar)", "Bisküvi (Paket)", "Dondurma (Kutu)",
+    "Ağrı Kesici (20 Tablet)", "C Vitamini (Efervesan)",
+]
+
+
 class DocumentGenerator:
     """
     Generates synthetic PDF documents with ground-truth JSON annotations.
@@ -308,7 +352,7 @@ class DocumentGenerator:
 
     def _render_invoice_pdf(self, gt: dict, lbl: dict) -> bytes:
         buf = io.BytesIO()
-        doc = SimpleDocTemplate(buf, pagesize=A4,
+        doc = SimpleDocTemplate(buf, pagesize=A4, invariant=1,
                                 leftMargin=20*mm, rightMargin=20*mm,
                                 topMargin=20*mm, bottomMargin=20*mm)
         styles = getSampleStyleSheet()
@@ -369,7 +413,7 @@ class DocumentGenerator:
 
     def _render_po_pdf(self, gt: dict, lbl: dict) -> bytes:
         buf = io.BytesIO()
-        doc = SimpleDocTemplate(buf, pagesize=A4,
+        doc = SimpleDocTemplate(buf, pagesize=A4, invariant=1,
                                 leftMargin=20*mm, rightMargin=20*mm,
                                 topMargin=20*mm, bottomMargin=20*mm)
         styles = getSampleStyleSheet()
@@ -421,7 +465,7 @@ class DocumentGenerator:
 
     def _render_receipt_pdf(self, gt: dict, lbl: dict) -> bytes:
         buf = io.BytesIO()
-        doc = SimpleDocTemplate(buf, pagesize=(80*mm, 200*mm),
+        doc = SimpleDocTemplate(buf, pagesize=(80*mm, 200*mm), invariant=1,
                                 leftMargin=5*mm, rightMargin=5*mm,
                                 topMargin=5*mm, bottomMargin=5*mm)
         styles = getSampleStyleSheet()
@@ -502,42 +546,40 @@ class DocumentGenerator:
         days_back = random.randint(0, 365)
         return datetime.now() - timedelta(days=days_back)
 
-    def _line_items(self, fake: Faker, lang: Lang, count: int) -> list[dict]:
+    def _line_items(self, _fake: Faker, _lang: Lang, count: int) -> list[dict]:
         items = []
         for _ in range(count):
             qty   = random.randint(1, 50)
             price = _round2(random.uniform(10, 5000))
             items.append({
-                "description": fake.catch_phrase() if lang == "en" else fake.bs(),
+                "description": random.choice(REAL_ITEMS),
                 "quantity":    qty,
                 "unit_price":  price,
                 "total":       _round2(qty * price),
             })
         return items
 
-    def _po_items(self, fake: Faker, lang: Lang, count: int) -> list[dict]:
+    def _po_items(self, _fake: Faker, _lang: Lang, count: int) -> list[dict]:
         items = []
         for _ in range(count):
             qty   = random.randint(1, 100)
             price = _round2(random.uniform(10, 5000))
-            sku   = f"SKU-{random.randint(1000, 9999)}"
             items.append({
-                "sku":         sku,
-                "description": fake.catch_phrase() if lang == "en" else fake.bs(),
+                "sku":         f"SKU-{random.randint(1000, 9999)}",
+                "description": random.choice(REAL_ITEMS),
                 "quantity":    qty,
                 "unit_price":  price,
                 "total":       _round2(qty * price),
             })
         return items
 
-    def _receipt_items(self, fake: Faker, lang: Lang, count: int) -> list[dict]:
+    def _receipt_items(self, _fake: Faker, _lang: Lang, count: int) -> list[dict]:
         items = []
         for _ in range(count):
             qty   = random.randint(1, 5)
             price = _round2(random.uniform(5, 500))
-            desc  = fake.word().capitalize() if lang == "en" else fake.word().capitalize()
             items.append({
-                "description": desc,
+                "description": random.choice(RECEIPT_ITEMS),
                 "quantity":    qty,
                 "unit_price":  price,
                 "total":       _round2(qty * price),

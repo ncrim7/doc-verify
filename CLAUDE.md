@@ -77,9 +77,14 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
       default gpt-5-nano); dead config removed (priority, per_type,
       LANGFUSE_CONFIG, TELEGRAM_CONFIG); ADR-0001 records the model choice
       (status: proposed -> accepted after 1.5); 7 config guard tests
-- [ ] 1.4 regenerate ~60-doc subset (tax_id generator fix is in code, corpus not
-      re-rendered yet)
+- [x] 1.4 document_generator: real Turkish B2B/retail item catalogs (was Faker
+      bs()/lorem); invariant=1 for byte-deterministic PDFs. 60-doc corpus
+      regenerated (seed=42, tax_id fix now in the PDFs), split 36/12/12,
+      scripts/build_measure_manifest.py -> data/processed/measure_manifest.json.
+      data/ is gitignored — reproducible from seed + generator code.
 - [ ] 1.5 single authoritative accuracy measurement -> the number used publicly
+      (needs .env with a valid OPENAI_API_KEY; runs run_full_pipeline.py
+       --split measure --model gpt-5-nano --strategy direct)
 - [ ] 1.6 README + test net
 
 Toolchain (this machine): python `C:\Users\cirim\AppData\Local\Programs\Python\Python312\python.exe`,
