@@ -73,7 +73,10 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 - [x] 1.2 src/reporting/humanizer.py (10 tests, 95% cov); ocr.space "helloworld"
       leak removed from llm_extractor; llm_verifier render DPI 200->300;
       archive/3way-match-architecture.md
-- [ ] 1.3 config trim + ADR-0001 (model: gpt-5-nano vs gpt-4.1-nano)
+- [x] 1.3 config.py collapsed to one env-driven openai provider (LLM_MODEL,
+      default gpt-5-nano); dead config removed (priority, per_type,
+      LANGFUSE_CONFIG, TELEGRAM_CONFIG); ADR-0001 records the model choice
+      (status: proposed -> accepted after 1.5); 7 config guard tests
 - [ ] 1.4 regenerate ~60-doc subset (tax_id generator fix is in code, corpus not
       re-rendered yet)
 - [ ] 1.5 single authoritative accuracy measurement -> the number used publicly
