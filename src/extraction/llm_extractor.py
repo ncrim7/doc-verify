@@ -368,33 +368,18 @@ class LLMExtractor:
             except Exception as exc:
                 logger.warning("  fitz text extraction failed: %s", exc)
 
-        # Method 2: Fall back to pytesseract OCR
+        # Method 2: Fall back to local pytesseract OCR.
+        # No third-party OCR services — customer documents never leave for a
+        # shared-key cloud OCR endpoint.
         if not ocr_text.strip():
             try:
                 from PIL import Image
                 import pytesseract
                 img = Image.open(io.BytesIO(image_bytes))
                 ocr_text = pytesseract.image_to_string(img, lang="tur+eng")
-            except (ImportError, Exception) as exc:
-                logger.warning("  pytesseract failed: %s. Trying OCR.space...", exc)
-                try:
-                    import requests
-                    import base64
-                    b64_img = base64.b64encode(image_bytes).decode('utf-8')
-                    payload = {
-                        "base64Image": f"data:image/png;base64,{b64_img}",
-                        "apikey": "helloworld",
-                        "language": "tur",
-                        "OCREngine": "2"
-                    }
-                    resp = requests.post("https://api.ocr.space/parse/image", data=payload, timeout=20)
-                    data = resp.json()
-                    if not data.get("IsErroredOnProcessing") and data.get("ParsedResults"):
-                        ocr_text = data["ParsedResults"][0].get("ParsedText", "")
-                    else:
-                        ocr_text = f"[Text extraction failed: {data.get('ErrorMessage', 'Unknown OCR error')}]"
-                except Exception as e2:
-                    ocr_text = f"[Text extraction failed: Local OCR ({exc}), Cloud OCR ({e2})]"
+            except Exception as exc:
+                logger.warning("  local OCR unavailable: %s", exc)
+                ocr_text = f"[text extraction unavailable: {exc}]"
 
         combined_prompt = (
             f"{user_prompt}\n\n"
