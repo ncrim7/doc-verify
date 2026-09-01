@@ -212,7 +212,7 @@ class LLMVerifier:
         import fitz
         doc = fitz.open(str(pdf_path))
         page = doc[0]
-        mat = fitz.Matrix(200 / 72, 200 / 72)
+        mat = fitz.Matrix(300 / 72, 300 / 72)  # match llm_extractor render DPI
         pix = page.get_pixmap(matrix=mat)
         img_bytes = pix.tobytes("png")
         doc.close()

@@ -70,7 +70,9 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 
 - [x] 1.0 repo skeleton, SAP stack removed
 - [x] 1.1 git init  (git 2.55 MinGit + Python 3.12.10 installed via winget)
-- [ ] 1.2 humanizer refactor, ocr.space leak removed, verifier DPI 200->300
+- [x] 1.2 src/reporting/humanizer.py (10 tests, 95% cov); ocr.space "helloworld"
+      leak removed from llm_extractor; llm_verifier render DPI 200->300;
+      archive/3way-match-architecture.md
 - [ ] 1.3 config trim + ADR-0001 (model: gpt-5-nano vs gpt-4.1-nano)
 - [ ] 1.4 regenerate ~60-doc subset (tax_id generator fix is in code, corpus not
       re-rendered yet)
