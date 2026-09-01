@@ -4,22 +4,97 @@ OCR-free, self-verifying document extraction for accounting offices.
 Repo: https://github.com/ncrim7/doc-verify
 
 A vision LLM reads an invoice / purchase order / receipt PDF into structured
-JSON; a deterministic rule layer plus a second LLM pass catch extraction
-errors; a targeted correction pass fixes flagged fields; and a pure-Python
-matcher compares a purchase order against an invoice and reports business
-anomalies (price / quantity / vendor / currency / missing or extra line) in
-plain language.
+JSON. A deterministic rule layer plus an optional second LLM pass catch
+extraction errors; a targeted correction pass re-reads only the flagged
+fields. A pure-Python matcher then compares a purchase order against an
+invoice and reports business anomalies — price, quantity, vendor, currency,
+missing or extra line — as plain-language "pay / hold / review" advice.
 
-> Status: Phase 1 (cleanup). Full README — install, usage, accuracy numbers,
-> architecture diagram — lands in step 1.6. See `CLAUDE.md` for current state.
+Origin: a graduation project, now being productised. Target users are
+bookkeeping / accounting offices, so there is **no SAP / CAP / Fiori / OData**
+anywhere in this repo.
 
-## Quick start (once Python is installed)
+## Pipeline
+
+```
+PDF ──▶ extract ──▶ rule verify ──▶ correction agent ──▶ structured JSON
+        (vision     (+ arithmetic    (re-reads only
+         LLM)        repair,          flagged fields)
+                     deterministic)
+                                                          │
+                              PO ─────────┐               ▼
+                              GR ─────────┼──▶ matcher ──▶ humanizer
+                                          │    (PO vs      ("ÖDEMEYİ
+                          invoice JSON ───┘     invoice)    ONAYLAYABİLİRSİNİZ"
+                                                            / "İNCELEME GEREKLİ"
+                                                            / "ÖDEME DURDURULDU")
+```
+
+- `arithmetic_repair` and `rule_based_verifier` are deterministic, dependency-free,
+  and model-agnostic — the free safety net. They never call an LLM.
+- `po_invoice_matcher` is pure stdlib. The Goods-Receipt (3-way) leg is not built
+  yet — see `archive/3way-match-architecture.md`.
+
+## Accuracy
+
+Measured 2026-09-02 on a 60-document synthetic corpus (`seed=42`), single pass,
+no post-hoc tuning, model `gpt-5-nano`:
+
+| | |
+|---|---|
+| Field-level exact match | **96.10%** (58/60 docs; 92.9% counting 2 JSON-parse failures) |
+| Semantic similarity | 99.11% |
+| Token F1 | 97.92% |
+
+Full setup and error anatomy: [`docs/measurements/2026-09-02-baseline.md`](docs/measurements/2026-09-02-baseline.md).
+Model choice: [`docs/adr/0001-extraction-model.md`](docs/adr/0001-extraction-model.md).
+
+## Quick start
 
 ```powershell
-python -m venv venv; .\venv\Scripts\Activate.ps1
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-Copy-Item .env.example .env    # set OPENAI_API_KEY
+
+Copy-Item .env.example .env          # set OPENAI_API_KEY
 python scripts/generate_dataset.py --count 60 --seed 42
 python scripts/split_dataset.py --seed 42
-python scripts/run_full_pipeline.py --split test --strategy direct
+python scripts/build_measure_manifest.py
+
+python scripts/run_full_pipeline.py --split measure --strategy direct
 ```
+
+`.env` keys: `OPENAI_API_KEY` (required), `LLM_MODEL` (default `gpt-5-nano`),
+optional `LANGFUSE_*` for cost/latency tracing.
+
+## Layout
+
+| Path | |
+|---|---|
+| `src/extraction/` | prompts, `llm_extractor`, `arithmetic_repair`, `correction_agent`, `self_consistency` |
+| `src/verification/` | `rule_based_verifier` (pure), `llm_verifier`, `hybrid_verifier` |
+| `src/matching/` | `po_invoice_matcher` — PO vs invoice discrepancy detection |
+| `src/reporting/` | `humanizer` — matcher output → plain-language advice |
+| `src/evaluation/` | `metrics` — field EM / semantic sim / token F1, Hungarian item match |
+| `src/data_generation/` | `document_generator` + `validator` — synthetic PDFs + ground truth |
+| `scripts/` | dataset generation, split, `run_full_pipeline` (measurement harness) |
+| `docs/adr/` · `docs/measurements/` | decisions and accuracy records |
+| `archive/` | SAP reference (not code), 3-way-match design note |
+
+## Testing
+
+```powershell
+python -m pytest -q                       # 79 tests
+python -m pytest -q --cov=src --cov-report=term-missing
+```
+
+Pure modules (`arithmetic_repair`, `rule_based_verifier`, `po_invoice_matcher`,
+`metrics`, `humanizer`, `document_generator`, `config`) are covered 92–100%.
+The LLM-calling modules need mocked-API tests — Phase 2.
+
+## Status
+
+Phase 1 (cleanup + baseline) complete. Phase 2 backlog is in `CLAUDE.md`:
+the 2 silent extraction failures, systematic Turkish-suffix truncation in
+descriptions, currency guessing, realistic address templates, `fitz` →
+`pymupdf`, and mocked tests for the LLM modules.

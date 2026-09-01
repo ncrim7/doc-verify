@@ -66,7 +66,7 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
   the ECC agent/command/rules stack that isn't set up). The loop above is run by
   hand instead.
 
-## Current state (Phase 1: cleanup, then build)
+## Current state — Phase 1 complete
 
 - [x] 1.0 repo skeleton, SAP stack removed
 - [x] 1.1 git init  (git 2.55 MinGit + Python 3.12.10 installed via winget)
@@ -86,7 +86,10 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
       96.10% field-level EM (58 docs) / 92.9% counting 2 JSON-parse failures /
       99.11% semantic sim. ADR-0001 -> accepted. Full anatomy + Phase-2 defect
       backlog: docs/measurements/2026-09-02-baseline.md
-- [ ] 1.6 README + test net
+- [x] 1.6 full README; test net for the pure "safety-net" modules —
+      arithmetic_repair 98%, rule_based_verifier 96%, po_invoice_matcher 92%,
+      metrics 93%, humanizer 95%, document_generator 96%, config 100%
+      (79 tests total). LLM-calling modules still need mocked-API tests (Phase 2).
 
 ## Phase 2 backlog (from the 1.5 measurement)
 
@@ -98,6 +101,9 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 - Realistic Turkish address templates (Faker tr_TR gives US-format).
 - Category-keyed line-item price ranges (masking tape != 4000 TL).
 - `import fitz` -> `import pymupdf` (deprecation warning on 1.28.2).
+- mocked-API tests for llm_extractor / llm_verifier / correction_agent /
+  self_consistency / hybrid_verifier (0% covered; need OpenAI client stubs).
+- validator.py batch/report methods (58% — only exercised via generator tests).
 
 Toolchain (this machine): python `C:\Users\cirim\AppData\Local\Programs\Python\Python312\python.exe`,
 git is MinGit (no credential helper — first `git push` needs a PAT or SSH).
