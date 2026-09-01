@@ -6,4 +6,4 @@ data model, process). Format: `docs/adr/NNNN-short-title.md`, based on
 
 | ADR | Title | Status | Date |
 |-----|-------|--------|------|
-| [0001](0001-extraction-model.md) | Default extraction model is gpt-5-nano | proposed | 2026-09-01 |
+| [0001](0001-extraction-model.md) | Default extraction model is gpt-5-nano | accepted | 2026-09-01 |

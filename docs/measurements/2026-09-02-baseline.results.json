@@ -1,0 +1,400 @@
+{
+  "timestamp": "20260902_003116",
+  "config": {
+    "provider": "openai",
+    "model": "gpt-5-nano",
+    "strategy": "direct",
+    "split": "measure",
+    "num_documents": 60,
+    "correction_enabled": true
+  },
+  "stages": {
+    "baseline": {
+      "exact_match_avg": 0.961,
+      "semantic_similarity_avg": 0.9911,
+      "token_f1_avg": 0.9792
+    },
+    "verified": {
+      "exact_match_avg": 0.961,
+      "semantic_similarity_avg": 0.9911,
+      "token_f1_avg": 0.9792
+    },
+    "corrected": {
+      "exact_match_avg": 0.961,
+      "semantic_similarity_avg": 0.9911,
+      "token_f1_avg": 0.9792
+    }
+  },
+  "improvement": {
+    "em_delta": 0.0,
+    "sim_delta": 0.0,
+    "f1_delta": 0.0
+  },
+  "stats": {
+    "total_issues": 0,
+    "auto_corrections": 0,
+    "correction_calls": 0
+  },
+  "per_document": [
+    {
+      "doc_id": "invoice_0001",
+      "doc_type": "invoice",
+      "baseline_em": 0.9744,
+      "corrected_em": 0.9744
+    },
+    {
+      "doc_id": "invoice_0002",
+      "doc_type": "invoice",
+      "baseline_em": 0.9714,
+      "corrected_em": 0.9714
+    },
+    {
+      "doc_id": "invoice_0003",
+      "doc_type": "invoice",
+      "baseline_em": 0.9767,
+      "corrected_em": 0.9767
+    },
+    {
+      "doc_id": "invoice_0004",
+      "doc_type": "invoice",
+      "baseline_em": 0.9714,
+      "corrected_em": 0.9714
+    },
+    {
+      "doc_id": "invoice_0005",
+      "doc_type": "invoice",
+      "baseline_em": 0.9355,
+      "corrected_em": 0.9355
+    },
+    {
+      "doc_id": "invoice_0006",
+      "doc_type": "invoice",
+      "baseline_em": 0.9231,
+      "corrected_em": 0.9231
+    },
+    {
+      "doc_id": "invoice_0007",
+      "doc_type": "invoice",
+      "baseline_em": 0.9429,
+      "corrected_em": 0.9429
+    },
+    {
+      "doc_id": "invoice_0008",
+      "doc_type": "invoice",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "invoice_0009",
+      "doc_type": "invoice",
+      "baseline_em": 0.9362,
+      "corrected_em": 0.9362
+    },
+    {
+      "doc_id": "invoice_0010",
+      "doc_type": "invoice",
+      "baseline_em": 0.9143,
+      "corrected_em": 0.9143
+    },
+    {
+      "doc_id": "invoice_0011",
+      "doc_type": "invoice",
+      "baseline_em": 0.9535,
+      "corrected_em": 0.9535
+    },
+    {
+      "doc_id": "invoice_0012",
+      "doc_type": "invoice",
+      "baseline_em": 0.9574,
+      "corrected_em": 0.9574
+    },
+    {
+      "doc_id": "invoice_0013",
+      "doc_type": "invoice",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "invoice_0014",
+      "doc_type": "invoice",
+      "baseline_em": 0.9362,
+      "corrected_em": 0.9362
+    },
+    {
+      "doc_id": "invoice_0015",
+      "doc_type": "invoice",
+      "baseline_em": 0.9744,
+      "corrected_em": 0.9744
+    },
+    {
+      "doc_id": "invoice_0016",
+      "doc_type": "invoice",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "invoice_0017",
+      "doc_type": "invoice",
+      "baseline_em": null,
+      "corrected_em": null
+    },
+    {
+      "doc_id": "invoice_0018",
+      "doc_type": "invoice",
+      "baseline_em": 0.9714,
+      "corrected_em": 0.9714
+    },
+    {
+      "doc_id": "invoice_0019",
+      "doc_type": "invoice",
+      "baseline_em": 0.9231,
+      "corrected_em": 0.9231
+    },
+    {
+      "doc_id": "invoice_0020",
+      "doc_type": "invoice",
+      "baseline_em": 0.9744,
+      "corrected_em": 0.9744
+    },
+    {
+      "doc_id": "po_0001",
+      "doc_type": "po",
+      "baseline_em": null,
+      "corrected_em": null
+    },
+    {
+      "doc_id": "po_0002",
+      "doc_type": "po",
+      "baseline_em": 0.9118,
+      "corrected_em": 0.9118
+    },
+    {
+      "doc_id": "po_0003",
+      "doc_type": "po",
+      "baseline_em": 0.9655,
+      "corrected_em": 0.9655
+    },
+    {
+      "doc_id": "po_0004",
+      "doc_type": "po",
+      "baseline_em": 0.8966,
+      "corrected_em": 0.8966
+    },
+    {
+      "doc_id": "po_0005",
+      "doc_type": "po",
+      "baseline_em": 0.9744,
+      "corrected_em": 0.9744
+    },
+    {
+      "doc_id": "po_0006",
+      "doc_type": "po",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "po_0007",
+      "doc_type": "po",
+      "baseline_em": 0.9655,
+      "corrected_em": 0.9655
+    },
+    {
+      "doc_id": "po_0008",
+      "doc_type": "po",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "po_0009",
+      "doc_type": "po",
+      "baseline_em": 0.9744,
+      "corrected_em": 0.9744
+    },
+    {
+      "doc_id": "po_0010",
+      "doc_type": "po",
+      "baseline_em": 0.9474,
+      "corrected_em": 0.9474
+    },
+    {
+      "doc_id": "po_0011",
+      "doc_type": "po",
+      "baseline_em": 0.8421,
+      "corrected_em": 0.8421
+    },
+    {
+      "doc_id": "po_0012",
+      "doc_type": "po",
+      "baseline_em": 0.931,
+      "corrected_em": 0.931
+    },
+    {
+      "doc_id": "po_0013",
+      "doc_type": "po",
+      "baseline_em": 0.8947,
+      "corrected_em": 0.8947
+    },
+    {
+      "doc_id": "po_0014",
+      "doc_type": "po",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "po_0015",
+      "doc_type": "po",
+      "baseline_em": 0.9487,
+      "corrected_em": 0.9487
+    },
+    {
+      "doc_id": "po_0016",
+      "doc_type": "po",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "po_0017",
+      "doc_type": "po",
+      "baseline_em": 0.9474,
+      "corrected_em": 0.9474
+    },
+    {
+      "doc_id": "po_0018",
+      "doc_type": "po",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "po_0019",
+      "doc_type": "po",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "po_0020",
+      "doc_type": "po",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0001",
+      "doc_type": "receipt",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0002",
+      "doc_type": "receipt",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0003",
+      "doc_type": "receipt",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0004",
+      "doc_type": "receipt",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0005",
+      "doc_type": "receipt",
+      "baseline_em": 0.88,
+      "corrected_em": 0.88
+    },
+    {
+      "doc_id": "receipt_0006",
+      "doc_type": "receipt",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0007",
+      "doc_type": "receipt",
+      "baseline_em": 0.9655,
+      "corrected_em": 0.9655
+    },
+    {
+      "doc_id": "receipt_0008",
+      "doc_type": "receipt",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0009",
+      "doc_type": "receipt",
+      "baseline_em": 0.92,
+      "corrected_em": 0.92
+    },
+    {
+      "doc_id": "receipt_0010",
+      "doc_type": "receipt",
+      "baseline_em": 0.9459,
+      "corrected_em": 0.9459
+    },
+    {
+      "doc_id": "receipt_0011",
+      "doc_type": "receipt",
+      "baseline_em": 0.96,
+      "corrected_em": 0.96
+    },
+    {
+      "doc_id": "receipt_0012",
+      "doc_type": "receipt",
+      "baseline_em": 1.0,
+      "corrected_em": 1.0
+    },
+    {
+      "doc_id": "receipt_0013",
+      "doc_type": "receipt",
+      "baseline_em": 0.973,
+      "corrected_em": 0.973
+    },
+    {
+      "doc_id": "receipt_0014",
+      "doc_type": "receipt",
+      "baseline_em": 0.9697,
+      "corrected_em": 0.9697
+    },
+    {
+      "doc_id": "receipt_0015",
+      "doc_type": "receipt",
+      "baseline_em": 0.9189,
+      "corrected_em": 0.9189
+    },
+    {
+      "doc_id": "receipt_0016",
+      "doc_type": "receipt",
+      "baseline_em": 0.96,
+      "corrected_em": 0.96
+    },
+    {
+      "doc_id": "receipt_0017",
+      "doc_type": "receipt",
+      "baseline_em": 0.9697,
+      "corrected_em": 0.9697
+    },
+    {
+      "doc_id": "receipt_0018",
+      "doc_type": "receipt",
+      "baseline_em": 0.973,
+      "corrected_em": 0.973
+    },
+    {
+      "doc_id": "receipt_0019",
+      "doc_type": "receipt",
+      "baseline_em": 0.9459,
+      "corrected_em": 0.9459
+    },
+    {
+      "doc_id": "receipt_0020",
+      "doc_type": "receipt",
+      "baseline_em": 0.92,
+      "corrected_em": 0.92
+    }
+  ]
+}

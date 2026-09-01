@@ -1,7 +1,7 @@
 # ADR-0001: Default extraction model is gpt-5-nano
 
 **Date**: 2026-09-01
-**Status**: proposed  <!-- -> accepted once step 1.5 measures it on the clean corpus -->
+**Status**: accepted  <!-- measured 2026-09-02, see docs/measurements/2026-09-02-baseline.md -->
 **Deciders**: project owner
 
 ## Context
@@ -21,10 +21,16 @@ For a bookkeeping-office product, per-document cost is a first-order concern
 ## Decision
 
 Default `LLM_MODEL=gpt-5-nano`, read from `.env` by `src/config.py`. The model is
-a single env var, so switching is a one-line change with no code edit. Step 1.5
-runs one authoritative measurement on this model against the regenerated corpus;
-that result promotes this ADR to **accepted** (or triggers ADR-0002 if nano-5
-regresses materially versus nano-4.1).
+a single env var, so switching is a one-line change with no code edit.
+
+**Measured 2026-09-02** on the regenerated 60-doc corpus (single pass, no
+tuning): **96.10% field-level EM** on the 58 docs that returned parseable JSON,
+99.11% semantic similarity, 97.92% token F1. Counting the 2 JSON-parse failures
+as 0% gives 92.9%. gpt-5-nano is well above any "switch model" bar, so this ADR
+is **accepted**. The failures and the ~4% EM gap are model/prompt defects
+(see the measurement report), not reasons to change the model; a Phase-2 fix
+cycle targets them. Fallback to gpt-5-mini remains one `.env` line (ADR-0002)
+if that cycle stalls.
 
 ## Alternatives Considered
 

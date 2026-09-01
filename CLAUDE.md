@@ -82,10 +82,22 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
       regenerated (seed=42, tax_id fix now in the PDFs), split 36/12/12,
       scripts/build_measure_manifest.py -> data/processed/measure_manifest.json.
       data/ is gitignored — reproducible from seed + generator code.
-- [ ] 1.5 single authoritative accuracy measurement -> the number used publicly
-      (needs .env with a valid OPENAI_API_KEY; runs run_full_pipeline.py
-       --split measure --model gpt-5-nano --strategy direct)
+- [x] 1.5 measured 2026-09-02 (gpt-5-nano, direct, 60-doc corpus, single pass):
+      96.10% field-level EM (58 docs) / 92.9% counting 2 JSON-parse failures /
+      99.11% semantic sim. ADR-0001 -> accepted. Full anatomy + Phase-2 defect
+      backlog: docs/measurements/2026-09-02-baseline.md
 - [ ] 1.6 README + test net
+
+## Phase 2 backlog (from the 1.5 measurement)
+
+- D1: 2/60 silent extraction failures — gpt-5-nano reasoning-token budget blows
+  max_completion_tokens=4096. Fix: reasoning_effort="minimal" (also cuts the
+  15-35s latency) + retry on JSON-parse None.
+- D2: systematic field errors — description Turkish-suffix truncation (46),
+  buyer_address tail truncation (13), currency TRY->USD on English docs (6).
+- Realistic Turkish address templates (Faker tr_TR gives US-format).
+- Category-keyed line-item price ranges (masking tape != 4000 TL).
+- `import fitz` -> `import pymupdf` (deprecation warning on 1.28.2).
 
 Toolchain (this machine): python `C:\Users\cirim\AppData\Local\Programs\Python\Python312\python.exe`,
 git is MinGit (no credential helper — first `git push` needs a PAT or SSH).
