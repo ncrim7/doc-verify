@@ -71,3 +71,55 @@ def test_generation_is_deterministic_for_a_seed():
 def test_pdf_is_nonempty(gen):
     pdf, _gt = gen.generate_invoice()
     assert pdf[:4] == b"%PDF" and len(pdf) > 1000
+
+
+# --- render integrity: every scored field must actually be on the page -------
+# (the 2026-09-02 measurement was invalidated because currency / description /
+#  buyer_address were absent or mangled in the rendered PDF)
+
+def _pdf_text(pdf_bytes: bytes) -> str:
+    import pymupdf
+    with pymupdf.open(stream=pdf_bytes, filetype="pdf") as d:
+        return "".join(p.get_text() for p in d)
+
+
+def _squash(s: str) -> str:
+    return re.sub(r"\s+", "", s)
+
+
+@pytest.mark.parametrize("doc_type", ["invoice", "po", "receipt"])
+def test_rendered_pdf_contains_every_scored_field(gen, doc_type):
+    pdf, gt = gen.generate(doc_type)
+    page = _squash(_pdf_text(pdf))
+
+    assert _squash(gt["currency"]) in page, "currency code is not printed on the page"
+
+    for it in gt["items"]:
+        assert _squash(it["description"]) in page, (
+            f"item description not on page verbatim (glyph/wrap loss?): "
+            f"{it['description']!r}"
+        )
+
+    for f in ("vendor_address", "buyer_address", "supplier_address", "store_address"):
+        if f in gt:
+            assert _squash(gt[f]) in page, f"{f} is clipped / not fully on the page"
+
+    for f in ("vendor_tax_id", "buyer_tax_id", "invoice_number", "po_number",
+              "receipt_number", "date"):
+        if f in gt:
+            assert _squash(str(gt[f])) in page, f"{f} not on the page"
+
+
+def test_para_helper_keeps_xml_special_chars_literal():
+    # a company name like "Shell&Turcas Petrol" must not be eaten by ReportLab's
+    # Paragraph XML parser
+    from src.data_generation.document_generator import _para
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.platypus import SimpleDocTemplate, Table
+    import io
+    style = getSampleStyleSheet()["Normal"]
+    buf = io.BytesIO()
+    SimpleDocTemplate(buf, invariant=1).build(
+        [Table([[_para("Shell&Turcas Petrol <Ltd> A&B", style)]])]
+    )
+    assert _squash("Shell&Turcas Petrol <Ltd> A&B") in _squash(_pdf_text(buf.getvalue()))

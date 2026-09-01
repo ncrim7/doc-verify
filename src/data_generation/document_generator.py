@@ -144,6 +144,14 @@ def _round2(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
+def _para(text, style) -> Paragraph:
+    """Wrap text in a Paragraph, escaping XML specials (& < >) so a company
+    name like 'Shell&Turcas Petrol' renders literally instead of being parsed
+    as an entity."""
+    from xml.sax.saxutils import escape
+    return Paragraph(escape(str(text)), style)
+
+
 # ---------------------------------------------------------------------------
 # Line-item catalogs — realistic Turkish B2B / retail descriptions.
 # Replaces Faker's `bs()` / `catch_phrase()` / lorem `word()`, which produced
@@ -358,20 +366,23 @@ class DocumentGenerator:
         styles = getSampleStyleSheet()
         bold   = ParagraphStyle("bold", parent=styles["Normal"], fontName=FONT_NAME_BOLD)
         right  = ParagraphStyle("right", parent=styles["Normal"], fontName=FONT_NAME, alignment=TA_RIGHT)
+        cell   = ParagraphStyle("cell", parent=styles["Normal"], fontName=FONT_NAME, fontSize=9, leading=11)
 
         story = []
         story.append(Paragraph(lbl["invoice_title"], bold))
         story.append(Spacer(1, 6*mm))
 
-        # Header info table
+        # Header info table — addresses wrapped in Paragraph so a long value
+        # wraps inside its column instead of being clipped.
         header_data = [
             [f"{lbl['invoice_no']}:", gt["invoice_number"],
              f"{lbl['date']}:", gt["date"]],
             [f"{lbl['due_date']}:", gt["due_date"],
              f"{lbl['payment_terms']}:", gt["payment_terms"]],
-            [f"{lbl['vendor']}:", gt["vendor_name"],
-             f"{lbl['buyer']}:", gt["buyer_name"]],
-            ["", gt["vendor_address"], "", gt["buyer_address"]],
+            [f"{lbl['vendor']}:", _para(gt["vendor_name"], cell),
+             f"{lbl['buyer']}:", _para(gt["buyer_name"], cell)],
+            ["", _para(gt["vendor_address"], cell),
+             "", _para(gt["buyer_address"], cell)],
             [f"{lbl['tax_id']}:", gt["vendor_tax_id"],
              f"{lbl['tax_id']}:", gt["buyer_tax_id"]],
         ]
@@ -392,13 +403,15 @@ class DocumentGenerator:
                          f"{item['unit_price']:.2f}", f"{item['total']:.2f}"])
         rows.append(["", "", lbl["subtotal"],  f"{gt['subtotal']:.2f}"])
         rows.append(["", "", lbl["tax"],       f"{gt['tax_amount']:.2f}"])
-        rows.append(["", "", lbl["grand_total"], f"{gt['total_amount']:.2f}"])
+        rows.append(["", "", lbl["grand_total"],
+                     f"{gt['currency']} {gt['total_amount']:.2f}"])
 
         it = Table(rows, colWidths=[90*mm, 20*mm, 40*mm, 30*mm])
         it.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2C3E50")),
             ("TEXTCOLOR",  (0, 0), (-1, 0), colors.white),
             ("FONTNAME",   (0, 0), (-1, 0), FONT_NAME_BOLD),
+            ("FONTNAME",   (0, 1), (-1, -1), FONT_NAME),   # body rows: Unicode font (Turkish glyphs)
             ("FONTSIZE",   (0, 0), (-1,-1), 9),
             ("GRID",       (0, 0), (-1, len(gt["items"])), 0.5, colors.grey),
             ("FONTNAME",   (2, -3), (-1, -1), FONT_NAME_BOLD),
@@ -418,6 +431,7 @@ class DocumentGenerator:
                                 topMargin=20*mm, bottomMargin=20*mm)
         styles = getSampleStyleSheet()
         bold   = ParagraphStyle("bold", parent=styles["Normal"], fontName=FONT_NAME_BOLD)
+        cell   = ParagraphStyle("cell", parent=styles["Normal"], fontName=FONT_NAME, fontSize=9, leading=11)
 
         story = []
         story.append(Paragraph(lbl["po_title"], bold))
@@ -428,9 +442,10 @@ class DocumentGenerator:
              f"{lbl['date']}:", gt["date"]],
             [f"{lbl['delivery_date']}:", gt["delivery_date"],
              "", ""],
-            [f"{lbl['supplier']}:", gt["supplier_name"],
-             f"{lbl['buyer']}:", gt["buyer_name"]],
-            ["", gt["supplier_address"], "", gt["buyer_address"]],
+            [f"{lbl['supplier']}:", _para(gt["supplier_name"], cell),
+             f"{lbl['buyer']}:", _para(gt["buyer_name"], cell)],
+            ["", _para(gt["supplier_address"], cell),
+             "", _para(gt["buyer_address"], cell)],
         ]
         ht = Table(header_data, colWidths=[35*mm, 65*mm, 35*mm, 35*mm])
         ht.setStyle(TableStyle([("FONTNAME", (0,0), (-1,-1), FONT_NAME),
@@ -445,13 +460,15 @@ class DocumentGenerator:
         for item in gt["items"]:
             rows.append([item["sku"], item["description"], str(item["quantity"]),
                          f"{item['unit_price']:.2f}", f"{item['total']:.2f}"])
-        rows.append(["", "", "", lbl["grand_total"], f"{gt['total_amount']:.2f}"])
+        rows.append(["", "", "", lbl["grand_total"],
+                     f"{gt['currency']} {gt['total_amount']:.2f}"])
 
         it = Table(rows, colWidths=[25*mm, 80*mm, 15*mm, 35*mm, 25*mm])
         it.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1A5276")),
             ("TEXTCOLOR",  (0, 0), (-1, 0), colors.white),
             ("FONTNAME",   (0, 0), (-1, 0), FONT_NAME_BOLD),
+            ("FONTNAME",   (0, 1), (-1, -1), FONT_NAME),   # body rows: Unicode font
             ("FONTSIZE",   (0, 0), (-1,-1), 9),
             ("GRID",       (0, 0), (-1, len(gt["items"])), 0.5, colors.grey),
             ("FONTNAME",   (3, -1), (-1, -1), FONT_NAME_BOLD),
@@ -477,23 +494,28 @@ class DocumentGenerator:
 
         story = []
         story.append(Paragraph(lbl["receipt_title"], bold_c))
-        story.append(Paragraph(gt["store_name"], center))
-        story.append(Paragraph(gt["store_address"], center))
+        story.append(_para(gt["store_name"], center))
+        story.append(_para(gt["store_address"], center))
         story.append(Spacer(1, 4*mm))
         story.append(Paragraph(f"{lbl['receipt_no']}: {gt['receipt_number']}  |  {lbl['date']}: {gt['date']}", small))
         story.append(Paragraph(f"{lbl['cashier']}: {gt['cashier']}", small))
         story.append(Spacer(1, 4*mm))
 
+        # narrow 40 mm description column — wrap in Paragraph so long item names
+        # wrap instead of being clipped
         rows = [[lbl["description"], lbl["qty"], lbl["total"]]]
         for item in gt["items"]:
-            rows.append([item["description"], str(item["quantity"]), f"{item['total']:.2f}"])
+            rows.append([_para(item["description"], small),
+                         str(item["quantity"]), f"{item['total']:.2f}"])
         rows.append([lbl["subtotal"], "", f"{gt['subtotal']:.2f}"])
         rows.append([lbl["tax"],      "", f"{gt['tax_amount']:.2f}"])
-        rows.append([lbl["grand_total"], "", f"{gt['total_amount']:.2f}"])
+        rows.append([lbl["grand_total"], "",
+                     f"{gt['currency']} {gt['total_amount']:.2f}"])
 
         it = Table(rows, colWidths=[40*mm, 10*mm, 20*mm])
         it.setStyle(TableStyle([
             ("FONTNAME",  (0, 0), (-1, 0), FONT_NAME_BOLD),
+            ("FONTNAME",  (0, 1), (-1, -1), FONT_NAME),   # body rows: Unicode font
             ("FONTSIZE",  (0, 0), (-1,-1), 8),
             ("LINEBELOW", (0, 0), (-1, 0), 0.5, colors.black),
             ("LINEABOVE", (0, -3), (-1, -3), 0.5, colors.black),

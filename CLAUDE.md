@@ -115,18 +115,17 @@ support the core claim ("does not silently return a wrong answer").
   (b) immediate trigger: gpt-5-nano reasoning tokens overflow
       `max_completion_tokens=4096` -> `reasoning_effort="minimal"` (also cuts
       latency) + retry when `_parse_json_response` returns None.
-- **P0-2  fix the data-generation rendering bugs, then re-measure.** Verified in
-  `document_generator.py:353–507` + page-text extraction of all 60 PDFs:
-  (1) `currency` is never printed by any `_render_*` method (amounts are bare
-      `f"{x:.2f}"`) → GT `"TRY"` absent from 60/60 pages;
-  (2) item-table body rows get no `FONTNAME` — only the header row and totals
-      block do — so body text falls back to Helvetica, which lacks `ğ ı ş İ`
-      → 165/296 item descriptions mangled on the page (`Kağıdı`→`KaIIdI`);
-  (3) `buyer_address` sits in a 35 mm header-table column and ReportLab clips
-      the string → 39/40 invoices.
-  These invalidate the 96.10% (the model was scored on fields it could not
-  read). Fix all three renderers, regenerate, re-run `run_full_pipeline.py
-  --split measure`, write the result as a new `docs/measurements/*.md`.
+- **P0-2  fix the data-generation rendering bugs, then re-measure.**
+  - [x] generator fixed: currency printed on the grand-total row
+    (`TRY 600034.31`); item-table body rows given `FONTNAME` (Turkish glyphs);
+    name/address cells wrapped in `Paragraph` (no clip) with XML-escape
+    (`Shell&Turcas` no longer eaten by the parser). Render-integrity test
+    (`test_rendered_pdf_contains_every_scored_field`) added — RED before,
+    GREEN after; full-corpus check now **0/596** fields missing (was ~264).
+    Corpus regenerated (seed=42).
+  - [ ] re-run `run_full_pipeline.py --split measure` on the clean corpus,
+    write the result as a new `docs/measurements/*.md`, and update ADR-0001 /
+    README with the real number.
 - **P0-3  document the measurement scope.** DONE — the 2026-09-02 report carries
   the INVALIDATED banner, the D2 root cause, the synthetic-only scope, and the
   marketing embargo.
