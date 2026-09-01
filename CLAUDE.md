@@ -91,19 +91,58 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
       metrics 93%, humanizer 95%, document_generator 96%, config 100%
       (79 tests total). LLM-calling modules still need mocked-API tests (Phase 2).
 
-## Phase 2 backlog (from the 1.5 measurement)
+## Phase 2 backlog — priority-ordered
 
-- D1: 2/60 silent extraction failures — gpt-5-nano reasoning-token budget blows
-  max_completion_tokens=4096. Fix: reasoning_effort="minimal" (also cuts the
-  15-35s latency) + retry on JSON-parse None.
-- D2: systematic field errors — description Turkish-suffix truncation (46),
-  buyer_address tail truncation (13), currency TRY->USD on English docs (6).
-- Realistic Turkish address templates (Faker tr_TR gives US-format).
-- Category-keyed line-item price ranges (masking tape != 4000 TL).
-- `import fitz` -> `import pymupdf` (deprecation warning on 1.28.2).
-- mocked-API tests for llm_extractor / llm_verifier / correction_agent /
-  self_consistency / hybrid_verifier (0% covered; need OpenAI client stubs).
-- validator.py batch/report methods (58% — only exercised via generator tests).
+Rule: **no accuracy number (96.10% etc.) goes into marketing, demo, or sales
+material until P0-1 and P0-2 are closed.** Until then the number does not
+support the product's core claim ("does not silently return a wrong answer").
+
+### P0 — must close before the product ships
+
+- **P0-1  D1: silent extraction failure → generic "broken output = REVIEW".**
+  `run_full_pipeline.py:140` does `if not extracted: continue` — verification
+  never runs, nothing is flagged. Fix both layers:
+  (a) any empty / unparseable / structurally-invalid extraction routes to a
+      REVIEW verdict / human queue, generically — not tied to any one cause,
+      and never a silent skip. Whatever production orchestrator gets built must
+      not repeat `if not extracted: continue`.
+  (b) immediate trigger: gpt-5-nano reasoning tokens overflow
+      `max_completion_tokens=4096` -> `reasoning_effort="minimal"` (also cuts
+      latency) + retry when `_parse_json_response` returns None.
+- **P0-2  D2: currency mislabelled TRY -> USD (6/60 = 10%).** A wrong financial
+  value reported with confidence — same severity as P0-1, not a D3 truncation.
+  Root cause open: locale/label detection vs deeper classification gap. Needs
+  its own analysis, not a one-line prompt tweak.
+- **P0-3  document the measurement scope.** DONE in
+  docs/measurements/2026-09-02-baseline.md: 100% synthetic, no SROIE / real
+  docs, real-world not yet measured, marketing embargo noted.
+
+### P1 — in Phase 2, after P0
+
+- **P1-4  D3: truncation.** description Turkish-suffix drop (46), buyer_address
+  tail truncation (13) — check whether the dropped address tail contains
+  city / postal code (raises severity if so).
+- **P1-5  real-world validation run.** A few dozen genuine (non-synthetic)
+  documents, small extra measurement, update the scope note with the result.
+  Answers "is there a synthetic-vs-real gap".
+
+### P2 — data / infra polish, as time allows
+
+- **P2-6** realistic Turkish address templates; category-keyed line-item price
+  ranges (masking tape != 4000 TL).
+- **P2-7** `import fitz` -> `import pymupdf` (deprecation warning on 1.28.2).
+- **P2-8** mocked-API tests for llm_extractor / llm_verifier / correction_agent
+  / self_consistency / hybrid_verifier (0% covered); validator.py batch/report
+  coverage (58%).
+
+### P3 — after the poly-repo split
+
+- **P3-9** mobile app, web demo, marketing site (separate repos).
+- **P3-10** 3-way match GR leg (archive/3way-match-architecture.md).
+- **P3-11** accounting-API integration — **QuickBooks / Xero primary**
+  (export-focused ICP); Paraşüt / Logo secondary / optional. Do not let this
+  order drift toward Turkey-first without a decision.
+- **P3-12** KVKK / DPA.
 
 Toolchain (this machine): python `C:\Users\cirim\AppData\Local\Programs\Python\Python312\python.exe`,
 git is MinGit (no credential helper — first `git push` needs a PAT or SSH).

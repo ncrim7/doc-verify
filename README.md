@@ -37,14 +37,20 @@ PDF ──▶ extract ──▶ rule verify ──▶ correction agent ──▶
 
 ## Accuracy
 
-Measured 2026-09-02 on a 60-document synthetic corpus (`seed=42`), single pass,
-no post-hoc tuning, model `gpt-5-nano`:
+Measured 2026-09-02 on a **100% synthetic** 60-document corpus (`seed=42`,
+clean digitally-rendered PDFs), single pass, no post-hoc tuning, model
+`gpt-5-nano`:
 
 | | |
 |---|---|
 | Field-level exact match | **96.10%** (58/60 docs; 92.9% counting 2 JSON-parse failures) |
 | Semantic similarity | 99.11% |
 | Token F1 | 97.92% |
+
+> Synthetic input only — no real / scanned / photographed documents. Real-world
+> accuracy is **not yet measured**. This number is **not for marketing or sales
+> use** until the two P0 defects (silent extraction failure, currency
+> mislabelling) are closed — see below.
 
 Full setup and error anatomy: [`docs/measurements/2026-09-02-baseline.md`](docs/measurements/2026-09-02-baseline.md).
 Model choice: [`docs/adr/0001-extraction-model.md`](docs/adr/0001-extraction-model.md).
@@ -94,7 +100,9 @@ The LLM-calling modules need mocked-API tests — Phase 2.
 
 ## Status
 
-Phase 1 (cleanup + baseline) complete. Phase 2 backlog is in `CLAUDE.md`:
-the 2 silent extraction failures, systematic Turkish-suffix truncation in
-descriptions, currency guessing, realistic address templates, `fitz` →
-`pymupdf`, and mocked tests for the LLM modules.
+Phase 1 (cleanup + baseline) complete. Phase 2 backlog is in `CLAUDE.md`,
+priority-ordered. P0 (must close before the accuracy number is usable):
+the silent extraction-failure safety-net gap, and currency mislabelling as a
+financial error. Then P1: description/address truncation, a real-world
+validation run. Then P2/P3: data polish, `fitz` → `pymupdf`, mocked LLM tests,
+the poly-repo apps, the 3-way GR leg, accounting-API integration.
