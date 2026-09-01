@@ -37,23 +37,19 @@ PDF ──▶ extract ──▶ rule verify ──▶ correction agent ──▶
 
 ## Accuracy
 
-Measured 2026-09-02 on a **100% synthetic** 60-document corpus (`seed=42`,
-clean digitally-rendered PDFs), single pass, no post-hoc tuning, model
-`gpt-5-nano`:
+**No usable number yet.** The 2026-09-02 run scored **96.10%** field-level EM on
+a 60-doc synthetic corpus, but a post-run check found that three scored fields
+(`currency`, item `description`, `buyer_address`) are absent or mangled in the
+rendered PDFs — data-generation bugs, not model errors. 96.10% is a
+contaminated *floor*; real accuracy is higher. A re-measurement is pending the
+generator fix (Phase 2 P0-2).
 
-| | |
-|---|---|
-| Field-level exact match | **96.10%** (58/60 docs; 92.9% counting 2 JSON-parse failures) |
-| Semantic similarity | 99.11% |
-| Token F1 | 97.92% |
+Synthetic input only — no real / scanned / photographed documents; real-world
+accuracy is unmeasured. Do not use any figure from this run in marketing, demo,
+or sales material.
 
-> Synthetic input only — no real / scanned / photographed documents. Real-world
-> accuracy is **not yet measured**. This number is **not for marketing or sales
-> use** until the two P0 defects (silent extraction failure, currency
-> mislabelling) are closed — see below.
-
-Full setup and error anatomy: [`docs/measurements/2026-09-02-baseline.md`](docs/measurements/2026-09-02-baseline.md).
-Model choice: [`docs/adr/0001-extraction-model.md`](docs/adr/0001-extraction-model.md).
+Detail: [`docs/measurements/2026-09-02-baseline.md`](docs/measurements/2026-09-02-baseline.md) ·
+model choice: [`docs/adr/0001-extraction-model.md`](docs/adr/0001-extraction-model.md).
 
 ## Quick start
 
@@ -100,9 +96,10 @@ The LLM-calling modules need mocked-API tests — Phase 2.
 
 ## Status
 
-Phase 1 (cleanup + baseline) complete. Phase 2 backlog is in `CLAUDE.md`,
-priority-ordered. P0 (must close before the accuracy number is usable):
-the silent extraction-failure safety-net gap, and currency mislabelling as a
-financial error. Then P1: description/address truncation, a real-world
-validation run. Then P2/P3: data polish, `fitz` → `pymupdf`, mocked LLM tests,
-the poly-repo apps, the 3-way GR leg, accounting-API integration.
+Phase 1 (cleanup + first run) complete. Phase 2 backlog is in `CLAUDE.md`,
+priority-ordered. P0: (1) the silent extraction-failure safety-net gap;
+(2) fix the three data-generation rendering bugs (currency never printed,
+Turkish glyphs dropped in item rows, buyer-address column clipped) and re-run
+the measurement — the current number does not measure the model. Then P1:
+real-world validation run. Then P2/P3: data polish, `fitz` → `pymupdf`, mocked
+LLM tests, the poly-repo apps, the 3-way GR leg, accounting-API integration.

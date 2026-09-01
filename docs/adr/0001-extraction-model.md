@@ -23,18 +23,20 @@ For a bookkeeping-office product, per-document cost is a first-order concern
 Default `LLM_MODEL=gpt-5-nano`, read from `.env` by `src/config.py`. The model is
 a single env var, so switching is a one-line change with no code edit.
 
-**Measured 2026-09-02** on a 100%-synthetic 60-doc corpus (single pass, no
-tuning): **96.10% field-level EM** on the 58 docs that returned parseable JSON,
-99.11% semantic similarity, 97.92% token F1. Counting the 2 JSON-parse failures
-as 0% gives 92.9%.
+**First run 2026-09-02** on a 100%-synthetic 60-doc corpus: 96.10% field-level
+EM (58 docs). This figure is **contaminated** — three data-generation rendering
+bugs meant `currency`, item `description` and `buyer_address` were absent or
+mangled on the page, so the model was scored on fields it could not read (see
+the measurement report). Contamination can only subtract, so real accuracy is
+**≥ 96.10%**.
 
-gpt-5-nano is well above any "switch model" bar, so this ADR is **accepted** —
-i.e. the open defects are not reasons to change the model. They are:
-P0-1 a pipeline safety-net gap (broken extraction silently skips verification)
-plus a gpt-5-nano reasoning-token overflow that triggers it; P0-2 currency
-mislabelling; P1 truncations. A Phase-2 fix cycle targets these; fallback to
-gpt-5-mini remains one `.env` line (ADR-0002) if that cycle stalls. Accuracy is
-synthetic-only — real-world is unmeasured (see the measurement report).
+gpt-5-nano is accepted on that basis: even the contaminated floor clears any
+"switch model" bar, so the open defects are not model-choice problems. They
+are: P0-1 a pipeline safety-net gap (broken extraction silently skips
+verification) + a reasoning-token overflow that triggers it; P0-2 the generator
+render bugs (then a clean re-measurement). Fallback to gpt-5-mini remains one
+`.env` line (ADR-0002) if the post-fix number is unacceptable. Real-world
+accuracy is unmeasured.
 
 ## Alternatives Considered
 

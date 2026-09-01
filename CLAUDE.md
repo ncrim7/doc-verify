@@ -83,9 +83,12 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
       scripts/build_measure_manifest.py -> data/processed/measure_manifest.json.
       data/ is gitignored — reproducible from seed + generator code.
 - [x] 1.5 measured 2026-09-02 (gpt-5-nano, direct, 60-doc corpus, single pass):
-      96.10% field-level EM (58 docs) / 92.9% counting 2 JSON-parse failures /
-      99.11% semantic sim. ADR-0001 -> accepted. Full anatomy + Phase-2 defect
-      backlog: docs/measurements/2026-09-02-baseline.md
+      96.10% field-level EM — but INVALIDATED: a post-run page-text check found
+      3 data-generation rendering bugs (currency never printed, Turkish glyphs
+      dropped in item rows, buyer-address column clipped). The number is a
+      contaminated floor, not a model measurement; re-run pending P0-2.
+      ADR-0001 stays accepted (the floor already clears the switch-model bar).
+      docs/measurements/2026-09-02-baseline.md
 - [x] 1.6 full README; test net for the pure "safety-net" modules —
       arithmetic_repair 98%, rule_based_verifier 96%, po_invoice_matcher 92%,
       metrics 93%, humanizer 95%, document_generator 96%, config 100%
@@ -93,9 +96,10 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 
 ## Phase 2 backlog — priority-ordered
 
-Rule: **no accuracy number (96.10% etc.) goes into marketing, demo, or sales
-material until P0-1 and P0-2 are closed.** Until then the number does not
-support the product's core claim ("does not silently return a wrong answer").
+Rule: **no accuracy number goes into marketing, demo, or sales material until
+P0-1 and P0-2 are closed.** The 2026-09-02 96.10% is a contaminated floor, not
+a model measurement (P0-2). Until P0-1 is closed the number also does not
+support the core claim ("does not silently return a wrong answer").
 
 ### P0 — must close before the product ships
 
@@ -105,26 +109,36 @@ support the product's core claim ("does not silently return a wrong answer").
   (a) any empty / unparseable / structurally-invalid extraction routes to a
       REVIEW verdict / human queue, generically — not tied to any one cause,
       and never a silent skip. Whatever production orchestrator gets built must
-      not repeat `if not extracted: continue`.
+      not repeat `if not extracted: continue`. **This subsumes the old "currency
+      P0-2": when a field is genuinely not on the page, the system must emit
+      `null` + flag, never guess.**
   (b) immediate trigger: gpt-5-nano reasoning tokens overflow
       `max_completion_tokens=4096` -> `reasoning_effort="minimal"` (also cuts
       latency) + retry when `_parse_json_response` returns None.
-- **P0-2  D2: currency mislabelled TRY -> USD (6/60 = 10%).** A wrong financial
-  value reported with confidence — same severity as P0-1, not a D3 truncation.
-  Root cause open: locale/label detection vs deeper classification gap. Needs
-  its own analysis, not a one-line prompt tweak.
-- **P0-3  document the measurement scope.** DONE in
-  docs/measurements/2026-09-02-baseline.md: 100% synthetic, no SROIE / real
-  docs, real-world not yet measured, marketing embargo noted.
+- **P0-2  fix the data-generation rendering bugs, then re-measure.** Verified in
+  `document_generator.py:353–507` + page-text extraction of all 60 PDFs:
+  (1) `currency` is never printed by any `_render_*` method (amounts are bare
+      `f"{x:.2f}"`) → GT `"TRY"` absent from 60/60 pages;
+  (2) item-table body rows get no `FONTNAME` — only the header row and totals
+      block do — so body text falls back to Helvetica, which lacks `ğ ı ş İ`
+      → 165/296 item descriptions mangled on the page (`Kağıdı`→`KaIIdI`);
+  (3) `buyer_address` sits in a 35 mm header-table column and ReportLab clips
+      the string → 39/40 invoices.
+  These invalidate the 96.10% (the model was scored on fields it could not
+  read). Fix all three renderers, regenerate, re-run `run_full_pipeline.py
+  --split measure`, write the result as a new `docs/measurements/*.md`.
+- **P0-3  document the measurement scope.** DONE — the 2026-09-02 report carries
+  the INVALIDATED banner, the D2 root cause, the synthetic-only scope, and the
+  marketing embargo.
 
 ### P1 — in Phase 2, after P0
 
-- **P1-4  D3: truncation.** description Turkish-suffix drop (46), buyer_address
-  tail truncation (13) — check whether the dropped address tail contains
-  city / postal code (raises severity if so).
+- **P1-4  residual model errors after P0-2.** Once the corpus renders correctly,
+  measure what is actually the model: tax-id character slips (`Korutürk`→
+  `Korütürk`), any real description normalisation. Small so far.
 - **P1-5  real-world validation run.** A few dozen genuine (non-synthetic)
-  documents, small extra measurement, update the scope note with the result.
-  Answers "is there a synthetic-vs-real gap".
+  documents, small extra measurement, update the scope note. Answers "is there
+  a synthetic-vs-real gap".
 
 ### P2 — data / infra polish, as time allows
 
