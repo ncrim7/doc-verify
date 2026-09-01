@@ -1,0 +1,236 @@
+"""
+AIP Client — integrates with our own Autonomous Invoice Platform
+(Express + PostgreSQL + SAPUI5, localhost:3001 / localhost:8080).
+
+Unlike ERPClient (smart-3way-match), this platform runs its own Claude-based
+extraction + 3-way-match + anomaly pipeline entirely server-side — so we only
+need to upload the raw invoice file; no pre-extracted po_data/inv_data is sent.
+
+Flow:
+  1. _login()       → POST /api/auth/login, cache JWT until it 401s
+  2. push_invoice() → POST /api/invoices/upload (multipart) → SSE stream
+                       yields the new invoiceId as soon as the file is accepted
+  3. poll_status()  → GET /api/invoices/{id} until the AI pipeline finishes
+                       (status leaves UPLOADED/EXTRACTING/MATCHING)
+"""
+import io
+import json
+import logging
+import os
+import time
+from pathlib import Path
+
+import requests
+
+logger = logging.getLogger(__name__)
+
+AIP_BASE_URL = os.getenv("AIP_BASE_URL", "http://localhost:3001/api")
+AIP_UI_URL = os.getenv("AIP_UI_URL", "http://localhost:8080")
+AIP_EMAIL = os.getenv("AIP_EMAIL", "admin@company.com")
+AIP_PASSWORD = os.getenv("AIP_PASSWORD", "password123")
+
+_TRANSIENT_STATUSES = {"UPLOADED", "EXTRACTING", "MATCHING"}
+_ALLOWED_MIMES = {"application/pdf", "image/jpeg", "image/png", "image/tiff"}
+
+POLL_INTERVAL = 2
+POLL_TIMEOUT = 90
+
+
+class AipClient:
+    _token: str | None = None  # cached across instances for this process
+
+    def __init__(self, base_url: str = None):
+        self.base = (base_url or AIP_BASE_URL).rstrip("/")
+        self.session = requests.Session()
+
+    # ------------------------------------------------------------------
+    # Auth
+    # ------------------------------------------------------------------
+
+    def _login(self) -> str:
+        r = self.session.post(
+            f"{self.base}/auth/login",
+            json={"email": AIP_EMAIL, "password": AIP_PASSWORD},
+            timeout=10,
+        )
+        r.raise_for_status()
+        token = r.json()["token"]
+        AipClient._token = token
+        return token
+
+    def _auth_headers(self) -> dict:
+        if not AipClient._token:
+            self._login()
+        return {"Authorization": f"Bearer {AipClient._token}"}
+
+    # ------------------------------------------------------------------
+    # Health
+    # ------------------------------------------------------------------
+
+    def is_reachable(self) -> bool:
+        try:
+            r = self.session.get(
+                f"{self.base}/dashboard/kpis", headers=self._auth_headers(), timeout=3
+            )
+            return r.status_code < 500
+        except Exception:
+            return False
+
+    # ------------------------------------------------------------------
+    # Upload + poll
+    # ------------------------------------------------------------------
+
+    def _prepare_file(self, file_path: str | Path, mime_type: str | None) -> tuple[bytes, str, str]:
+        """Return (bytes, mime_type, filename) — converts unsupported image
+        formats (e.g. webp, which the bot accepts but AIP's multer filter
+        doesn't) to PNG so the upload never fails on format alone."""
+        file_path = Path(file_path)
+        mime = (mime_type or "").lower()
+        if not mime:
+            ext = file_path.suffix.lower()
+            mime = {
+                ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                ".png": "image/png", ".tif": "image/tiff", ".tiff": "image/tiff",
+            }.get(ext, "application/octet-stream")
+
+        if mime in _ALLOWED_MIMES:
+            return file_path.read_bytes(), mime, file_path.name
+
+        from PIL import Image
+
+        img = Image.open(str(file_path)).convert("RGB")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        logger.info("Converted %s (%s) to PNG for AIP upload", file_path.name, mime)
+        return buf.getvalue(), "image/png", file_path.stem + ".png"
+
+    def _upload(self, filename: str, content: bytes, mime: str, headers: dict):
+        return self.session.post(
+            f"{self.base}/invoices/upload",
+            files={"file": (filename, content, mime)},
+            headers=headers,
+            timeout=60,
+            stream=True,
+        )
+
+    def push_invoice(self, file_path: str | Path, mime_type: str = None) -> dict:
+        """
+        Upload the invoice file and wait for our own AI pipeline to finish.
+
+        Returns dict:
+          success, invoice_id, status, risk_level, risk_score,
+          anomaly_count, ui_url, error (if any)
+        """
+        result = {
+            "success": False,
+            "invoice_id": None,
+            "status": None,
+            "risk_level": None,
+            "risk_score": None,
+            "anomaly_count": 0,
+            "ui_url": None,
+            "error": None,
+        }
+        try:
+            content, mime, filename = self._prepare_file(file_path, mime_type)
+
+            headers = self._auth_headers()
+            r = self._upload(filename, content, mime, headers)
+            if r.status_code == 401:
+                headers = {"Authorization": f"Bearer {self._login()}"}
+                r = self._upload(filename, content, mime, headers)
+            r.raise_for_status()
+
+            invoice_id = None
+            for line in r.iter_lines(decode_unicode=True):
+                if not line or not line.startswith("data:"):
+                    continue
+                payload = json.loads(line[len("data:"):].strip())
+                if payload.get("invoiceId"):
+                    invoice_id = payload["invoiceId"]
+                if payload.get("step") == "FAILED":
+                    result["error"] = "AIP işleme başarısız oldu"
+                    return result
+
+            if not invoice_id:
+                result["error"] = "AIP'den invoice ID alınamadı"
+                return result
+
+            result["invoice_id"] = invoice_id
+            result["ui_url"] = f"{AIP_UI_URL}/index.html#/invoices/{invoice_id}"
+
+            final = self.poll_status(invoice_id, headers)
+            result["status"] = final.get("status")
+            result["risk_level"] = final.get("riskLevel")
+            result["risk_score"] = final.get("riskScore")
+            result["anomaly_count"] = len(final.get("anomalies") or [])
+            result["success"] = True
+
+        except Exception as exc:
+            logger.exception("AIP push failed")
+            result["error"] = str(exc)
+
+        return result
+
+    def poll_status(self, invoice_id: str, headers: dict, timeout: int = POLL_TIMEOUT) -> dict:
+        """Poll GET /invoices/{id} until status leaves the transient set or timeout."""
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            try:
+                r = self.session.get(f"{self.base}/invoices/{invoice_id}", headers=headers, timeout=5)
+                r.raise_for_status()
+                data = r.json()
+                if data.get("status") not in _TRANSIENT_STATUSES:
+                    return data
+                logger.debug("AIP status: %s — waiting...", data.get("status"))
+            except Exception as exc:
+                logger.warning("AIP poll error: %s", exc)
+            time.sleep(POLL_INTERVAL)
+
+        logger.warning("AIP poll timed out after %ss for invoice %s", timeout, invoice_id)
+        return {"status": "TIMEOUT"}
+
+
+# ── Humanized summary (kept local — AIP's status vocabulary differs from
+#    smart-3way-match's, so it doesn't share result_humanizer.py) ────────────
+
+_STATUS_ICON = {
+    "APPROVED": "✅", "POSTED": "✅",
+    "PENDING_REVIEW": "⚠️", "REJECTED": "🚫", "TIMEOUT": "⏱️",
+}
+_STATUS_LABEL = {
+    "APPROVED": "Otomatik Onaylandı",
+    "POSTED": "İşlendi",
+    "PENDING_REVIEW": "İnceleme Gerekli",
+    "REJECTED": "Reddedildi",
+    "TIMEOUT": "Analiz Zaman Aşımına Uğradı",
+}
+
+
+def _esc(text) -> str:
+    t = str(text)
+    for ch in ("_", "*", "`", "["):
+        t = t.replace(ch, f"\\{ch}")
+    return t
+
+
+def format_telegram_summary(result: dict) -> str:
+    """Short Telegram-Markdown summary of an AipClient.push_invoice() result."""
+    if not result.get("success"):
+        return f"❌ *AIP Hatası*\n`{_esc(result.get('error', 'Bilinmeyen hata'))}`"
+
+    status = result.get("status")
+    risk = result.get("risk_level")
+    n = result.get("anomaly_count", 0)
+
+    icon = _STATUS_ICON.get(status, "❓")
+    label = _STATUS_LABEL.get(status, status or "Bilinmiyor")
+
+    lines = [f"{icon} *AIP — {_esc(label)}*"]
+    if risk:
+        lines.append(f"Risk seviyesi: `{_esc(risk)}`")
+    if n:
+        lines.append(f"Tespit edilen anomali: `{n}`")
+    if result.get("ui_url"):
+        lines.append(f"🖥️ [AIP'de Görüntüle]({result['ui_url']})")
+    return "\n".join(lines)

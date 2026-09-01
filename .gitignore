@@ -1,0 +1,38 @@
+# --- secrets ---
+.env
+.env.*
+!.env.example
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+
+# --- data & run artifacts (regenerable) ---
+data/raw/
+data/processed/
+data/metadata/
+results/
+*.log
+*.sqlite
+*.sqlite-*
+
+# --- test / coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- generated documents (keep only curated test fixtures) ---
+*.pdf
+!tests/fixtures/**/*.pdf
+
+# --- os / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

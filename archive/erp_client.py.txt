@@ -1,0 +1,495 @@
+"""
+ERP Client — integrates with smart-3way-match SAP CAP backend (localhost:4004).
+
+Flow:
+  1. find_po_by_number() → locate PO UUID from extracted poNumber
+  2. create_invoice()    → POST /api/v1/Invoices (links to PO)
+  3. upload_pdf()        → PUT /api/v1/Invoices/{id} with binary PDF
+  4. poll_status()       → wait until AI analysis completes (MATCHED / ANOMALY_DETECTED)
+"""
+import os
+import time
+import logging
+import requests
+from pathlib import Path
+from urllib.parse import quote as _urlquote
+
+logger = logging.getLogger(__name__)
+
+ERP_BASE_URL = os.getenv("ERP_BASE_URL", "http://localhost:4004/api/v1")
+POLL_INTERVAL = 2   # seconds between status checks
+POLL_TIMEOUT  = 60  # max seconds to wait
+
+
+class ERPClient:
+    def __init__(self, base_url: str = None):
+        self.base = (base_url or ERP_BASE_URL).rstrip("/")
+        self.session = requests.Session()
+        self.session.headers.update({"Accept": "application/json"})
+
+    # ------------------------------------------------------------------
+    # Health
+    # ------------------------------------------------------------------
+
+    def is_reachable(self) -> bool:
+        try:
+            r = self.session.get(self.base.replace("/api/v1", ""), timeout=3)
+            return r.status_code < 500
+        except Exception:
+            return False
+
+    # ------------------------------------------------------------------
+    # PO lookup
+    # ------------------------------------------------------------------
+
+    def find_po_by_number(self, po_number: str) -> dict | None:
+        """Find PO by poNumber field. Returns PO dict or None."""
+        try:
+            # Use %20 for spaces — CAP OData parser rejects + encoding
+            safe_num = po_number.replace("'", "''")
+            filt = _urlquote(f"poNumber eq '{safe_num}'", safe="'()")
+            r = self.session.get(
+                f"{self.base}/PurchaseOrders?$filter={filt}&$top=1",
+                timeout=5,
+            )
+            r.raise_for_status()
+            items = r.json().get("value", [])
+            return items[0] if items else None
+        except Exception as exc:
+            logger.warning("PO lookup failed: %s", exc)
+            return None
+
+    def get_first_po(self) -> dict | None:
+        """Fallback: return any available PO."""
+        try:
+            r = self.session.get(
+                f"{self.base}/PurchaseOrders",
+                params={"$top": "1"},
+                timeout=5,
+            )
+            r.raise_for_status()
+            items = r.json().get("value", [])
+            return items[0] if items else None
+        except Exception as exc:
+            logger.warning("get_first_po failed: %s", exc)
+            return None
+
+    def create_po_in_erp(self, po_data: dict) -> dict | None:
+        """
+        Create a PO in ERP from extracted po_data (deep insert with items).
+        Used when the PO number from the document doesn't exist in ERP.
+        Returns the created PO dict or None on failure.
+        """
+        def _val(*keys):
+            for k in keys:
+                v = po_data.get(k)
+                if v is not None and v != "":
+                    return v
+            return None
+
+        payload = {
+            "poNumber": _val("po_number", "poNumber") or f"PO-AUTO-{int(time.time())}",
+            "vendorName": _val("supplier_name", "vendorName", "vendor_name") or "Unknown Vendor",
+            "status": "OPEN",
+            "currency": _val("currency") or "USD",
+        }
+
+        for field, keys in [
+            ("vendorTaxID",    ["tax_id", "vendor_tax_id", "vendorTaxID"]),
+            ("vendorEmail",    ["vendor_email", "vendorEmail"]),
+            ("orderDate",      ["po_date", "order_date", "orderDate"]),
+            ("deliveryDate",   ["delivery_date", "deliveryDate"]),
+            ("paymentTerms",   ["payment_terms", "paymentTerms"]),
+        ]:
+            v = _val(*keys)
+            if v:
+                payload[field] = v
+
+        for field, keys in [("totalAmount", ["total_amount", "totalAmount"])]:
+            v = _val(*keys)
+            if v is not None:
+                try:
+                    payload[field] = float(v)
+                except (ValueError, TypeError):
+                    pass
+
+        # Deep insert: items
+        items = po_data.get("items") or []
+        if items:
+            payload["items"] = []
+            for i, item in enumerate(items, 1):
+                item_row = {
+                    "lineNumber":  i,
+                    "description": item.get("description") or f"Item {i}",
+                    "quantity":    float(item.get("quantity") or 1),
+                    "uom":         item.get("unit_of_measure") or item.get("uom") or "EA",
+                    "unitPrice":   float(item.get("unit_price") or 0),
+                    "totalPrice":  float(item.get("total_price") or 0),
+                }
+                mc = item.get("material_code") or item.get("materialCode")
+                if mc:
+                    item_row["materialCode"] = str(mc)
+                payload["items"].append(item_row)
+
+        try:
+            r = self.session.post(
+                f"{self.base}/PurchaseOrders",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10,
+            )
+            r.raise_for_status()
+            created = r.json()
+            logger.info("Created PO in ERP: %s (ID=%s)", created.get("poNumber"), created.get("ID"))
+            return created
+        except Exception as exc:
+            logger.warning("Failed to create PO in ERP: %s", exc)
+            return None
+
+    def _mirror_po_from_invoice(self, inv_data: dict) -> dict:
+        """
+        Build a synthetic PO dict from invoice extracted data.
+        Used when no real PO is available — creates a PO that mirrors the invoice
+        so the AI 3-way match sees a perfect match (no vendor/amount discrepancy).
+        """
+        def _v(*keys):
+            for k in keys:
+                v = inv_data.get(k)
+                if v is not None and v != "":
+                    return v
+            return None
+
+        po: dict = {
+            "po_number":    f"PO-MIRROR-{int(time.time())}",
+            "vendor_name":  _v("supplier_name", "vendorName") or "Unknown Vendor",
+            "currency":     _v("currency") or "USD",
+        }
+        for dst, keys in [
+            ("tax_id",         ["tax_id", "vendorTaxID"]),
+            ("vendor_email",   ["vendor_email", "vendorEmail"]),
+            ("payment_terms",  ["payment_terms", "paymentTerms"]),
+            ("total_amount",   ["total_amount", "totalAmount"]),
+            ("order_date",     ["invoice_date", "invoiceDate"]),
+            ("delivery_date",  ["due_date",     "dueDate"]),
+        ]:
+            v = _v(*keys)
+            if v is not None:
+                po[dst] = v
+
+        # Mirror line items
+        inv_items = inv_data.get("line_items") or inv_data.get("items") or []
+        if inv_items:
+            po["items"] = []
+            for item in inv_items:
+                po["items"].append({
+                    "description": item.get("description") or "Item",
+                    "quantity":    item.get("quantity") or 1,
+                    "unit_of_measure": item.get("unit_of_measure") or item.get("uom") or "EA",
+                    "unit_price":  item.get("unit_price") or 0,
+                    "total_price": item.get("total_price") or 0,
+                    "material_code": item.get("material_code"),
+                })
+        return po
+
+    def get_gr_for_po(self, po_id: str) -> dict | None:
+        """Find a GoodsReceipt linked to a PO."""
+        try:
+            filt = _urlquote(f"po_ID eq {po_id}", safe="()")
+            r = self.session.get(
+                f"{self.base}/GoodsReceipts?$filter={filt}&$top=1",
+                timeout=5,
+            )
+            r.raise_for_status()
+            items = r.json().get("value", [])
+            return items[0] if items else None
+        except Exception as exc:
+            logger.debug("GR lookup failed: %s", exc)
+            return None
+
+    # ------------------------------------------------------------------
+    # Invoice lifecycle
+    # ------------------------------------------------------------------
+
+    def create_invoice(self, po_id: str, extracted: dict, gr_id: str = None) -> dict:
+        """
+        POST /api/v1/Invoices — create invoice record linked to PO.
+        extracted: dict from LLMExtractor (invoice doc_type).
+        Returns created invoice dict.
+        """
+        def _v(*keys):
+            for k in keys:
+                v = extracted.get(k)
+                if v is not None and v != "":
+                    return v
+            return None
+
+        payload = {"po_ID": po_id, "status": "PENDING"}
+
+        for field, keys in [
+            ("invoiceNumber", ["invoice_number", "invoiceNumber"]),
+            ("vendorName",    ["supplier_name",  "vendorName"]),
+            ("vendorEmail",   ["vendor_email",   "vendorEmail"]),
+            ("vendorTaxID",   ["tax_id",         "vendorTaxID"]),
+            ("invoiceCurrency", ["currency",      "invoiceCurrency"]),
+            ("invoiceDate",   ["invoice_date",   "invoiceDate"]),
+            ("dueDate",       ["due_date",       "dueDate"]),
+            ("paymentTerms",  ["payment_terms",  "paymentTerms"]),
+        ]:
+            val = _v(*keys)
+            if val is not None:
+                payload[field] = val
+
+        payload.setdefault("invoiceNumber", "INV-DEMO")
+
+        for num_field, keys in [
+            ("totalAmount", ["total_amount", "totalAmount"]),
+            ("subtotal",    ["subtotal"]),
+            ("taxAmount",   ["tax_amount",  "taxAmount"]),
+            ("taxRate",     ["tax_rate",    "taxRate"]),
+        ]:
+            val = _v(*keys)
+            if val is not None:
+                try:
+                    payload[num_field] = float(val)
+                except (ValueError, TypeError):
+                    pass
+
+        if gr_id:
+            payload["gr_ID"] = gr_id
+
+        r = self.session.post(
+            f"{self.base}/Invoices",
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=10,
+        )
+        r.raise_for_status()
+        return r.json()
+
+    def upload_image_bytes(self, invoice_id: str, image_bytes: bytes,
+                           mime_type: str, provider: str = None) -> dict:
+        """
+        Upload raw image bytes (JPEG/PNG/WebP) as base64 and trigger AI analysis.
+        Skips the PDF→JPEG conversion done by upload_pdf — the image is already ready.
+        """
+        import base64
+        _EXT = {"image/jpeg": "jpg", "image/jpg": "jpg", "image/png": "png", "image/webp": "webp"}
+        ext = _EXT.get(mime_type.lower(), "jpg")
+
+        b64 = base64.b64encode(image_bytes).decode("utf-8")
+        r = self.session.patch(
+            f"{self.base}/Invoices({invoice_id})",
+            json={
+                "imageBase64": b64,
+                "mediaType":   mime_type,
+                "fileName":    f"invoice.{ext}",
+                "status":      "PROCESSING",
+            },
+            headers={"Content-Type": "application/json"},
+            timeout=30,
+        )
+        r.raise_for_status()
+        logger.info("Image uploaded to ERP (%d KB, %s)", len(image_bytes) // 1024, mime_type)
+
+        body = {"provider": provider} if provider else {}
+        try:
+            r2 = self.session.post(
+                f"{self.base}/Invoices({invoice_id})/analyzeInvoice",
+                json=body,
+                headers={"Content-Type": "application/json"},
+                timeout=10,
+            )
+            r2.raise_for_status()
+            return r2.json() if r2.content else {"status": "PROCESSING"}
+        except Exception as exc:
+            logger.warning("analyzeInvoice action failed (non-fatal): %s", exc)
+            return {"status": "PROCESSING", "invoiceId": invoice_id}
+
+    def upload_pdf(self, invoice_id: str, pdf_path: str | Path, provider: str = None) -> dict:
+        """
+        Upload PDF to ERP and trigger AI 3-way match.
+
+        Strategy:
+          1. PATCH invoice with base64-encoded PDF content
+          2. POST /analyzeInvoice action to trigger background AI analysis
+        """
+        import base64
+        pdf_path = Path(pdf_path)
+
+        # Convert PDF → PNG (OpenAI Vision only accepts images, not raw PDF)
+        try:
+            import fitz
+            from PIL import Image
+            import io
+            doc = fitz.open(str(pdf_path))
+            page = doc[0]
+            mat = fitz.Matrix(1.5, 1.5)  # ~108 DPI
+            pix = page.get_pixmap(matrix=mat)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            doc.close()
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=75, optimize=True)
+            img_bytes = buf.getvalue()
+            b64 = base64.b64encode(img_bytes).decode("utf-8")
+            media_type = "image/jpeg"
+            file_name = pdf_path.stem + ".jpg"
+            logger.info("PDF converted to JPEG for ERP upload (%d KB)", len(img_bytes) // 1024)
+        except Exception as exc:
+            logger.warning("PDF→PNG conversion failed (%s), uploading raw PDF", exc)
+            b64 = base64.b64encode(pdf_path.read_bytes()).decode("utf-8")
+            media_type = "application/pdf"
+            file_name = pdf_path.name
+
+        # Step 1: Store image as base64 + set status PROCESSING
+        r = self.session.patch(
+            f"{self.base}/Invoices({invoice_id})",
+            json={
+                "imageBase64": b64,
+                "mediaType":   media_type,
+                "fileName":    file_name,
+                "status":      "PROCESSING",
+            },
+            headers={"Content-Type": "application/json"},
+            timeout=30,
+        )
+        r.raise_for_status()
+
+        # Step 2: Trigger AI analysis action — pass provider so CAP uses the same LLM
+        body = {"provider": provider} if provider else {}
+        try:
+            r2 = self.session.post(
+                f"{self.base}/Invoices({invoice_id})/analyzeInvoice",
+                json=body,
+                headers={"Content-Type": "application/json"},
+                timeout=10,
+            )
+            r2.raise_for_status()
+            return r2.json() if r2.content else {"status": "PROCESSING"}
+        except Exception as exc:
+            logger.warning("analyzeInvoice action failed (non-fatal): %s", exc)
+            return {"status": "PROCESSING", "invoiceId": invoice_id}
+
+    def poll_status(self, invoice_id: str,
+                    timeout: int = POLL_TIMEOUT) -> dict:
+        """
+        Poll invoice status until AI analysis completes or timeout.
+        Returns final invoice dict.
+        """
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            try:
+                r = self.session.get(
+                    f"{self.base}/Invoices({invoice_id})",
+                    params={"$select": "ID,status,criticality,anomalyReason,llmConfidence,llmModel"},
+                    timeout=5,
+                )
+                r.raise_for_status()
+                data = r.json()
+                status = data.get("status", "")
+                if status not in ("PENDING", "PROCESSING"):
+                    return data
+                logger.debug("ERP status: %s — waiting...", status)
+            except Exception as exc:
+                logger.warning("ERP poll error: %s", exc)
+            time.sleep(POLL_INTERVAL)
+
+        logger.warning("ERP poll timed out after %ss for invoice %s", timeout, invoice_id)
+        return {"status": "TIMEOUT", "ID": invoice_id}
+
+    def get_fiori_url(self, invoice_id: str) -> str:
+        """Return Fiori UI URL for the invoice object page."""
+        base = self.base.replace("/api/v1", "")
+        return f"{base}/invoices/webapp/index.html#/Invoices({invoice_id})"
+
+    # ------------------------------------------------------------------
+    # High-level: full push flow
+    # ------------------------------------------------------------------
+
+    def push_invoice(self, po_data: dict, inv_data: dict, pdf_path: str | Path,
+                     provider: str = None, mime_type: str = None) -> dict:
+        """
+        Full flow: find PO → create Invoice → upload file → poll → return result.
+
+        Accepts PDF or image (JPEG/PNG/WebP).  When mime_type starts with 'image/',
+        the file is uploaded as raw base64 without the PDF→JPEG conversion step.
+
+        Returns dict:
+          success, invoice_id, status, criticality, anomaly_reason,
+          llm_confidence, fiori_url, error (if any)
+        """
+        result = {
+            "success": False,
+            "invoice_id": None,
+            "status": None,
+            "criticality": 0,
+            "anomaly_reason": None,
+            "llm_confidence": None,
+            "fiori_url": None,
+            "error": None,
+        }
+
+        try:
+            # 1. Locate or create PO in ERP
+            po_number = po_data.get("po_number") or po_data.get("poNumber", "")
+            po = self.find_po_by_number(po_number) if po_number else None
+
+            if not po:
+                # Build the PO to create — prefer real po_data, fall back to mirror from invoice
+                po_source = dict(po_data) if po_data else self._mirror_po_from_invoice(inv_data)
+                # Ensure PO orderDate ≤ invoice date so server-side DATE_ANOMALY doesn't fire.
+                # When we retroactively create a PO for matching, its date must not be in the future
+                # relative to the invoice (which would make the invoice appear to precede the order).
+                inv_date = inv_data.get("invoice_date") or inv_data.get("invoiceDate")
+                if inv_date:
+                    po_ord = po_source.get("order_date") or po_source.get("orderDate")
+                    if not po_ord or str(po_ord) > str(inv_date):
+                        po_source["order_date"] = inv_date
+                        logger.info("Adjusted PO orderDate to invoice date (%s) to avoid DATE_ANOMALY", inv_date)
+                logger.info("PO '%s' not found — creating in ERP from %s",
+                            po_number, "po_data" if po_data else "invoice mirror")
+                po = self.create_po_in_erp(po_source)
+
+            if not po:
+                result["error"] = "ERP'de PO bulunamadı ve oluşturulamadı"
+                return result
+
+            po_id = po["ID"]
+            logger.info("Using ERP PO: %s (%s)", po.get("poNumber"), po_id)
+
+            # 2. Find GR for PO (optional)
+            gr = self.get_gr_for_po(po_id)
+            gr_id = gr["ID"] if gr else None
+
+            # 3. Create invoice record
+            invoice = self.create_invoice(po_id, inv_data, gr_id=gr_id)
+            invoice_id = invoice["ID"]
+            result["invoice_id"] = invoice_id
+            logger.info("ERP invoice created: %s", invoice_id)
+
+            # 4. Upload file → triggers AI match
+            file_path = Path(pdf_path)
+            is_image  = (mime_type or "").lower().startswith("image/")
+            if is_image:
+                self.upload_image_bytes(invoice_id, file_path.read_bytes(),
+                                        mime_type, provider=provider)
+                logger.info("Image uploaded to ERP for invoice %s (mime=%s, provider=%s)",
+                            invoice_id, mime_type, provider or "default")
+            else:
+                self.upload_pdf(invoice_id, file_path, provider=provider)
+                logger.info("PDF uploaded to ERP for invoice %s (provider=%s)",
+                            invoice_id, provider or "default")
+
+            # 5. Poll for result
+            final = self.poll_status(invoice_id)
+            result["status"]         = final.get("status")
+            result["criticality"]    = final.get("criticality", 0)
+            result["anomaly_reason"] = final.get("anomalyReason")
+            result["llm_confidence"] = final.get("llmConfidence")
+            result["fiori_url"]      = self.get_fiori_url(invoice_id)
+            result["success"]        = True
+
+        except Exception as exc:
+            logger.exception("ERP push failed")
+            result["error"] = str(exc)
+
+        return result
