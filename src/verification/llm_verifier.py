@@ -209,11 +209,26 @@ class LLMVerifier:
     # ------------------------------------------------------------------
 
     def _pdf_to_image(self, pdf_path: Path) -> bytes:
+        """Mirrors LLMExtractor._pdf_to_image — see the rationale there."""
+        MAX_RASTER_PX = 4000
+        try:
+            from PIL import Image
+            with Image.open(pdf_path) as im:
+                im = im.convert("RGB")
+                if max(im.size) > MAX_RASTER_PX:
+                    s = MAX_RASTER_PX / max(im.size)
+                    im = im.resize((round(im.width * s), round(im.height * s)),
+                                   Image.LANCZOS)
+                buf = io.BytesIO()
+                im.save(buf, format="PNG")
+                return buf.getvalue()
+        except Exception:
+            pass          # not a raster image — fall through to the PDF path
+
         import fitz
         doc = fitz.open(str(pdf_path))
         page = doc[0]
-        mat = fitz.Matrix(300 / 72, 300 / 72)  # match llm_extractor render DPI
-        pix = page.get_pixmap(matrix=mat)
+        pix = page.get_pixmap(matrix=fitz.Matrix(300 / 72, 300 / 72))
         img_bytes = pix.tobytes("png")
         doc.close()
         return img_bytes

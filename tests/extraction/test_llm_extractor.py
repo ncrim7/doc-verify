@@ -123,6 +123,54 @@ def test_reasoning_effort_is_omitted_when_not_configured(make_extractor):
     assert "reasoning_effort" not in client.calls[0]
 
 
+class TestPdfToImage:
+    """
+    A raster input (a photo, a screenshot) is already pixels. Rendering it as if
+    it were a 72-DPI vector page upscales it ~4x, which adds no information and
+    multiplies the API payload. Vector PDFs must still rasterise at 300 DPI.
+    """
+
+    def _extractor(self):
+        return LLMExtractor(provider="openai", strategy="direct")
+
+    def test_raster_input_is_not_upscaled(self, tmp_path):
+        from PIL import Image
+        import io as _io
+        src = tmp_path / "photo.png"
+        Image.new("RGB", (800, 600), "white").save(src)
+
+        out = self._extractor()._pdf_to_image(src)
+        got = Image.open(_io.BytesIO(out))
+        assert got.size == (800, 600), (
+            f"raster input was resampled to {got.size}; it must pass through "
+            "at its native resolution"
+        )
+
+    def test_oversized_raster_is_downscaled_not_upscaled(self, tmp_path):
+        from PIL import Image
+        import io as _io
+        src = tmp_path / "huge.png"
+        Image.new("RGB", (6000, 4000), "white").save(src)
+
+        got = Image.open(_io.BytesIO(self._extractor()._pdf_to_image(src)))
+        assert max(got.size) <= 4000, "a very large raster should be capped"
+        assert got.size[0] > got.size[1], "aspect ratio must be preserved"
+
+    def test_vector_pdf_still_renders_at_300_dpi(self, tmp_path):
+        import pymupdf
+        from PIL import Image
+        import io as _io
+        src = tmp_path / "page.pdf"
+        d = pymupdf.open()
+        d.new_page(width=595, height=842)      # A4 at 72 dpi
+        d.save(src)
+        d.close()
+
+        got = Image.open(_io.BytesIO(self._extractor()._pdf_to_image(src)))
+        # 595pt at 300 dpi ~= 2479 px
+        assert 2400 < got.size[0] < 2560, f"expected a 300-DPI render, got {got.size}"
+
+
 def test_json_object_response_format_is_always_requested(make_extractor):
     ex, client, pdf = make_extractor([VALID])
     ex.extract(pdf, "invoice")

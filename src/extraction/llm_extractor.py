@@ -437,14 +437,45 @@ class LLMExtractor:
     # ------------------------------------------------------------------
 
     def _pdf_to_image(self, pdf_path: Path) -> bytes:
-        """Convert first page of PDF to PNG bytes."""
+        """
+        First page of a document as PNG bytes.
+
+        A vector PDF is rasterised at 300 DPI. A raster input — a phone photo,
+        a screenshot — is already pixels and is passed through at its native
+        resolution: rendering it through the same 300/72 matrix upscales it
+        ~4x, which adds no information, multiplies the API payload (a 291 KB
+        photo became a 6.9 MB base64 blob), and on a modern 12 MP phone photo
+        produces a 234-megapixel image that fails outright.
+
+        Very large rasters are downscaled to MAX_RASTER_PX on the long side —
+        never upscaled.
+        """
+        MAX_RASTER_PX = 4000
+
+        # Raster input (photo, screenshot): handled by PIL at native pixel size.
+        # Routing it through PyMuPDF is wrong in both directions — with the
+        # 300/72 matrix it upscales ~4x, and without one it applies the file's
+        # embedded DPI and silently *downscales* (a 96-DPI screenshot comes back
+        # at 0.75x). PIL gives the actual pixels.
+        try:
+            from PIL import Image
+            with Image.open(pdf_path) as im:
+                im = im.convert("RGB")
+                if max(im.size) > MAX_RASTER_PX:
+                    s = MAX_RASTER_PX / max(im.size)
+                    im = im.resize((round(im.width * s), round(im.height * s)),
+                                   Image.LANCZOS)
+                buf = io.BytesIO()
+                im.save(buf, format="PNG")
+                return buf.getvalue()
+        except Exception:
+            pass          # not a raster image — fall through to the PDF path
+
         try:
             import fitz  # PyMuPDF
             doc = fitz.open(str(pdf_path))
             page = doc[0]
-            # Render at 300 DPI for high quality OCR/vision
-            mat = fitz.Matrix(300 / 72, 300 / 72)
-            pix = page.get_pixmap(matrix=mat)
+            pix = page.get_pixmap(matrix=fitz.Matrix(300 / 72, 300 / 72))
             img_bytes = pix.tobytes("png")
             doc.close()
             return img_bytes
