@@ -43,23 +43,21 @@ pass, no post-hoc tuning, model `gpt-5-nano`:
 
 | | |
 |---|---|
-| **Field-level exact match, all 60 documents** | **96.79%** |
-| Same metric, the 59 documents judged OK | 98.44% |
-| Semantic similarity / token F1 (OK docs) | 99.85% / 99.08% |
-| Documents scoring a perfect 1.0 | 36 / 59 |
+| **Field-level exact match, all 60 documents** | **97.66%** |
+| Semantic similarity / token F1 | 99.75% / 98.77% |
+| Documents scoring a perfect 1.0 | 28 / 60 |
+| Extractions that failed silently | **0** |
+| Runtime | ~5.6 min for 60 documents |
 
-One document produced no extraction at all and is scored 0 rather than dropped
-— dropping it is what the harness used to do.
+Every scored ground-truth value is verified present on the rendered page
+(0 / 1624), so the model is not being graded on data it cannot read. Residual
+errors are 46 field misses, all verified genuine; 83% are Turkish character
+corruption (`Zımba`→`Zimba`, `Bloğu`→`Blogu`).
 
-Residual errors are 30 field misses, all verified genuine — 87% of them the
-model normalising Turkish dotless `ı` to `i` (`Zımba`→`Zimba`).
+> Synthetic input only — no real / scanned / photographed documents. Real-world
+> accuracy is **unmeasured**, and that qualifier travels with the number.
 
-> Synthetic input only — no real / scanned / photographed documents; real-world
-> accuracy is unmeasured. **Not for marketing or sales use** while P0-1 is open:
-> one document in sixty still fails extraction and is skipped silently rather
-> than flagged for review.
-
-Detail: [`docs/measurements/2026-09-02-post-render-fix.md`](docs/measurements/2026-09-02-post-render-fix.md) ·
+Detail: [`docs/measurements/2026-09-02-reasoning-minimal.md`](docs/measurements/2026-09-02-reasoning-minimal.md) ·
 model choice: [`docs/adr/0001-extraction-model.md`](docs/adr/0001-extraction-model.md).
 
 ## Quick start
@@ -108,9 +106,9 @@ The LLM-calling modules need mocked-API tests — Phase 2.
 ## Status
 
 Phase 1 complete. Phase 2 backlog is in `CLAUDE.md`, priority-ordered.
-**P0-2 done** — the three data-generation rendering bugs are fixed and the
-measurement re-run (98.44%). **P0-1 open** — a broken extraction must route to
-REVIEW instead of being skipped silently. Then P1: the Turkish `ı`→`i`
-normalisation (the prompt may be inviting it), and a real-world validation run.
-Then P2/P3: data polish, `fitz` → `pymupdf`, mocked LLM tests, the poly-repo
-apps, the 3-way GR leg, accounting-API integration.
+**P0 closed**: broken extractions now route to REVIEW (`src/pipeline.py`) and
+no longer occur (`reasoning_effort=minimal`); every scored field renders on the
+page. **P1 next**: Turkish character corruption — 83% of remaining errors — and
+a real-world validation run on non-synthetic documents. Then P2/P3: data
+polish, `fitz` → `pymupdf`, mocked LLM tests, the poly-repo apps, the 3-way GR
+leg, accounting-API integration.

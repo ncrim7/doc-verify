@@ -24,23 +24,24 @@ Default `LLM_MODEL=gpt-5-nano`, read from `.env` by `src/config.py`. The model i
 a single env var, so switching is a one-line change with no code edit.
 
 **Measured 2026-09-02** on a 100%-synthetic 60-doc corpus whose every scored
-field is verified present on the rendered page (0/596 missing):
-**96.79% field-level EM over all 60 documents** (98.44% over the 59 the
-pipeline judged OK; one document produced no extraction and scores 0).
-99.85% semantic similarity, 99.08% token F1, 36/59 documents perfect.
-See `docs/measurements/2026-09-02-post-render-fix.md`.
+field — text and numeric — is verified present on the rendered page
+(0/1624 missing): **97.66% field-level EM over all 60 documents**, 99.75%
+semantic similarity, 98.77% token F1, zero silent failures, ~5.6 min per 60
+documents. See `docs/measurements/2026-09-02-reasoning-minimal.md`.
+
+The model is configured with `reasoning_effort="minimal"` (see that report for
+the trade-off: it eliminates the token-budget failure class and is 4x faster,
+at the cost of noisier per-field transcription).
 
 (The first run reported 96.10%, but three generator rendering bugs meant the
 model was scored on fields absent from the page. That report is retained and
 marked invalidated.)
 
-gpt-5-nano is **accepted**: 96.79% clears any "switch model" bar comfortably.
-The remaining defects are not model-choice problems — P0-1 is a pipeline
-safety-net gap (a broken extraction silently skips verification) plus a
-stochastic reasoning-token overflow that triggers it, and the residual 30 field
-errors are dominated by Turkish dotless-`ı` → `i` normalisation, which the
-prompt may currently be inviting (P1-4). Fallback to gpt-5-mini remains one
-`.env` line (ADR-0002). Real-world accuracy is still unmeasured.
+gpt-5-nano is **accepted**: 97.66% clears any "switch model" bar comfortably.
+The remaining defects are not model-choice problems — 83% of the residual 46
+field errors are Turkish character corruption, which the prompt may currently
+be inviting (P1-4). Fallback to gpt-5-mini remains one `.env` line (ADR-0002).
+Real-world accuracy is still unmeasured.
 
 ## Alternatives Considered
 

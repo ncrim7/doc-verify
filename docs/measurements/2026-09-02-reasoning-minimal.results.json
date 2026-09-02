@@ -1,0 +1,1094 @@
+{
+  "timestamp": "20260902_133144",
+  "config": {
+    "provider": "openai",
+    "model": "gpt-5-nano",
+    "strategy": "direct",
+    "split": "measure",
+    "correction_enabled": true
+  },
+  "aggregate": {
+    "documents": 60,
+    "verdicts": {
+      "OK": 60
+    },
+    "no_data": 0,
+    "overall": {
+      "documents": 60,
+      "exact_match_avg": 0.9766,
+      "semantic_similarity_avg": 0.9975,
+      "token_f1_avg": 0.9877
+    },
+    "ok_only": {
+      "documents": 60,
+      "exact_match_avg": 0.9766,
+      "semantic_similarity_avg": 0.9975,
+      "token_f1_avg": 0.9877
+    },
+    "per_doc_type": {
+      "invoice": {
+        "documents": 20,
+        "exact_match_avg": 0.9734,
+        "semantic_similarity_avg": 0.9973,
+        "token_f1_avg": 0.9887
+      },
+      "po": {
+        "documents": 20,
+        "exact_match_avg": 0.9713,
+        "semantic_similarity_avg": 0.9973,
+        "token_f1_avg": 0.9838
+      },
+      "receipt": {
+        "documents": 20,
+        "exact_match_avg": 0.9851,
+        "semantic_similarity_avg": 0.9979,
+        "token_f1_avg": 0.9906
+      }
+    }
+  },
+  "raw_extraction_em": 0.9766,
+  "per_document": [
+    {
+      "doc_id": "invoice_0001",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "invoice_0002",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "invoice_0003",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9302,
+      "sim": 0.9972,
+      "f1": 0.9826,
+      "raw_em": 0.9302,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[4].description",
+          "gt": "Laminasyon Filmi A4 (100'lü)",
+          "pred": "Laminasyon Filmi A4 (100'ü)"
+        },
+        {
+          "field": "items[5].description",
+          "gt": "Post-it Not Bloğu 76x76",
+          "pred": "Post-it Not Blogu 76x76"
+        },
+        {
+          "field": "items[6].description",
+          "gt": "Dizüstü Bilgisayar 14\" i5",
+          "pred": "Dizüstü Bilgisayar 14'' i5"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0004",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9429,
+      "sim": 0.995,
+      "f1": 0.9714,
+      "raw_em": 0.9429,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[3].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        },
+        {
+          "field": "items[4].description",
+          "gt": "Toplantı Masası 6 Kişilik",
+          "pred": "Toplanti Masasi 6 Kisĭlik"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0005",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9677,
+      "sim": 0.9958,
+      "f1": 0.9919,
+      "raw_em": 0.9677,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[3].description",
+          "gt": "Post-it Not Bloğu 76x76",
+          "pred": "Post-it Not Bโลğü 76x76"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0006",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9744,
+      "sim": 0.9996,
+      "f1": 0.9915,
+      "raw_em": 0.9744,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Grafik Tasarım Hizmeti (Proje)",
+          "pred": "Grafik Tasarım Hizmeti (Proj e)"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0007",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9714,
+      "sim": 0.9981,
+      "f1": 0.9929,
+      "raw_em": 0.9714,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[4].description",
+          "gt": "Post-it Not Bloğu 76x76",
+          "pred": "Post-it Not Bogu 76x76"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0008",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9429,
+      "sim": 0.9978,
+      "f1": 0.9824,
+      "raw_em": 0.9429,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[3].description",
+          "gt": "Web Sitesi Bakım Hizmeti (Aylık)",
+          "pred": "Web Sitesi Bakım Hizmeti (Aylik)"
+        },
+        {
+          "field": "items[4].description",
+          "gt": "Bulut Yedekleme Hizmeti (Aylık)",
+          "pred": "Bulut Yedekleme Hizmeti (Aylik)"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0009",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "invoice_0010",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9994,
+      "f1": 0.9959,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "invoice_0011",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "invoice_0012",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9362,
+      "sim": 0.9977,
+      "f1": 0.9823,
+      "raw_em": 0.9362,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Aydınlatma Armatürü LED Panel",
+          "pred": "Aydınlatma Armaturü LED Panel"
+        },
+        {
+          "field": "items[6].description",
+          "gt": "Aydınlatma Armatürü LED Panel",
+          "pred": "Aydınlatma Armaturü LED Panel"
+        },
+        {
+          "field": "items[7].description",
+          "gt": "Ofis Sandalyesi (Ergonomik)",
+          "pred": "Ofis Sandalyəsi (Ergonomik)"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0013",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9714,
+      "sim": 0.9966,
+      "f1": 0.9857,
+      "raw_em": 0.9714,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[4].description",
+          "gt": "Aydınlatma Armatürü LED Panel",
+          "pred": "Aydinlatma Armatu̇ru LED Panel"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0014",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9787,
+      "sim": 0.9787,
+      "f1": 0.9787,
+      "raw_em": 0.9787,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "due_date",
+          "gt": "2025-11-13",
+          "pred": ""
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0015",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9744,
+      "sim": 0.999,
+      "f1": 0.9917,
+      "raw_em": 0.9744,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Kilitli Dolap (Metal, 4 Raflı)",
+          "pred": "Kilittli Dolap (Metal, 4 Raflı)"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0016",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9997,
+      "f1": 0.9959,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "invoice_0017",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9574,
+      "sim": 0.9979,
+      "f1": 0.9734,
+      "raw_em": 0.9574,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "buyer_tax_id",
+          "gt": "6499091334",
+          "pred": "64990091334"
+        },
+        {
+          "field": "items[7].description",
+          "gt": "LED Monitör 24\" IPS",
+          "pred": "LED Monitor 24\" IPS"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0018",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9714,
+      "sim": 0.9975,
+      "f1": 0.9813,
+      "raw_em": 0.9714,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[4].description",
+          "gt": "Yazılım Lisansı (Yıllık, 1 Kullanıcı)",
+          "pred": "Yazılım Lisansi (Yıllık, 1 Kullanıcı)"
+        }
+      ]
+    },
+    {
+      "doc_id": "invoice_0019",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.999,
+      "f1": 0.9936,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "invoice_0020",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9487,
+      "sim": 0.9976,
+      "f1": 0.9829,
+      "raw_em": 0.9487,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[4].description",
+          "gt": "Aydınlatma Armatürü LED Panel",
+          "pred": "Aydinlatma Armatürü LED Panel"
+        },
+        {
+          "field": "items[5].description",
+          "gt": "Maskeleme Bandı 48 mm",
+          "pred": "Maskeleme Bandi 48 mm"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0001",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9744,
+      "sim": 0.9981,
+      "f1": 0.9863,
+      "raw_em": 0.9744,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0002",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9981,
+      "f1": 0.998,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0003",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0004",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0005",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9994,
+      "f1": 0.9963,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0006",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0007",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.931,
+      "sim": 0.9885,
+      "f1": 0.9234,
+      "raw_em": 0.931,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "supplier_name",
+          "gt": "Otokoç",
+          "pred": "Otokoc"
+        },
+        {
+          "field": "buyer_name",
+          "gt": "Sarkuysan",
+          "pred": "Sarkıysan"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0008",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9583,
+      "sim": 0.9945,
+      "f1": 0.9653,
+      "raw_em": 0.9583,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "supplier_name",
+          "gt": "Erdoğan San.",
+          "pred": "Erdogan San."
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0009",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.8974,
+      "sim": 0.9944,
+      "f1": 0.9668,
+      "raw_em": 0.8974,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "supplier_name",
+          "gt": "Fırat San.",
+          "pred": "Firat San."
+        },
+        {
+          "field": "items[3].description",
+          "gt": "Yazılım Lisansı (Yıllık, 1 Kullanıcı)",
+          "pred": "Yazılıml Lisansı (Yıllık, 1 Kullanıcı)"
+        },
+        {
+          "field": "items[4].description",
+          "gt": "Kilitli Dolap (Metal, 4 Raflı)",
+          "pred": "Kilitle Dolap (Metal, 4 Raflı)"
+        },
+        {
+          "field": "items[5].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0010",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0011",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9474,
+      "sim": 0.9951,
+      "f1": 0.9737,
+      "raw_em": 0.9474,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0012",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.931,
+      "sim": 0.9969,
+      "f1": 0.9747,
+      "raw_em": 0.931,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[2].description",
+          "gt": "Kilitli Dolap (Metal, 4 Raflı)",
+          "pred": "Kiliti Dolap (Metal, 4 Rafl)"
+        },
+        {
+          "field": "items[3].description",
+          "gt": "Web Kamerası 1080p",
+          "pred": "Web Kamerasi 1080p"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0013",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9474,
+      "sim": 0.9975,
+      "f1": 0.9868,
+      "raw_em": 0.9474,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Maskeleme Bandı 48 mm",
+          "pred": "Maskeleme Bandi 48 mm"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0014",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0015",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9744,
+      "sim": 0.9986,
+      "f1": 0.9904,
+      "raw_em": 0.9744,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Post-it Not Bloğu 76x76",
+          "pred": "Post-it Not Blogu 76x76"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0016",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9984,
+      "f1": 0.9934,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0017",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9474,
+      "sim": 0.9968,
+      "f1": 0.9741,
+      "raw_em": 0.9474,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Yazılım Lisansı (Yıllık, 1 Kullanıcı)",
+          "pred": "Yazılım Lisansi (Yıllık, 1 Kullanıcı)"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0018",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9583,
+      "sim": 0.9983,
+      "f1": 0.9896,
+      "raw_em": 0.9583,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[2].description",
+          "gt": "Toplantı Masası 6 Kişilik",
+          "pred": "Toplantı Masası 6 Kisilik"
+        }
+      ]
+    },
+    {
+      "doc_id": "po_0019",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9984,
+      "f1": 0.9845,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "po_0020",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9583,
+      "sim": 0.9925,
+      "f1": 0.9722,
+      "raw_em": 0.9583,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "supplier_name",
+          "gt": "Limak Yatırım",
+          "pred": "Limak Yatirim"
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0001",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9845,
+      "f1": 0.9356,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0002",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0003",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.999,
+      "f1": 0.994,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0004",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0005",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0006",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9991,
+      "f1": 0.9947,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0007",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0008",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0009",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.96,
+      "sim": 0.9982,
+      "f1": 0.9867,
+      "raw_em": 0.96,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[3].description",
+          "gt": "Tuvalet Kağıdı (16'lı)",
+          "pred": "Tuvalet Kağıdı (16’lı)"
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0010",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9459,
+      "sim": 0.9958,
+      "f1": 0.9824,
+      "raw_em": 0.9459,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Diş Macunu (75 ml)",
+          "pred": "Dış Macunu (75 ml)"
+        },
+        {
+          "field": "items[6].description",
+          "gt": "Sıvı Çamaşır Deterjanı (2.5 L)",
+          "pred": "Sivi Çamaşır Deterjani (2.5 L)"
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0011",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.96,
+      "sim": 0.9976,
+      "f1": 0.9867,
+      "raw_em": 0.96,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "store_name",
+          "gt": "Demir Öcalan Tic.",
+          "pred": "Demir Ocalan Tic."
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0012",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9996,
+      "f1": 0.9957,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0013",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0014",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0015",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9997,
+      "f1": 0.997,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": []
+    },
+    {
+      "doc_id": "receipt_0016",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.96,
+      "sim": 0.9973,
+      "f1": 0.992,
+      "raw_em": 0.96,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[3].description",
+          "gt": "Sıvı Çamaşır Deterjanı (2.5 L)",
+          "pred": "Sivi Çamaşır Deterjanı (2.5 L)"
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0017",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9697,
+      "sim": 0.997,
+      "f1": 0.9879,
+      "raw_em": 0.9697,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Sıvı Çamaşır Deterjanı (2.5 L)",
+          "pred": "Sivi Çamaşır Deterjani (2.5 L)"
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0018",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.973,
+      "sim": 0.9975,
+      "f1": 0.991,
+      "raw_em": 0.973,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[6].description",
+          "gt": "Tavuk Göğsü (kg)",
+          "pred": "Tavuk Göggsü (kg)"
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0019",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.973,
+      "sim": 0.9964,
+      "f1": 0.9838,
+      "raw_em": 0.973,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[6].description",
+          "gt": "Sıvı Çamaşır Deterjanı (2.5 L)",
+          "pred": "Sivi Çamaşir Deterjani (2.5 L)"
+        }
+      ]
+    },
+    {
+      "doc_id": "receipt_0020",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.96,
+      "sim": 0.9966,
+      "f1": 0.984,
+      "raw_em": 0.96,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[3].description",
+          "gt": "Sıvı Çamaşır Deterjanı (2.5 L)",
+          "pred": "Sivi Çamaşır Deterjan (2.5 L)"
+        }
+      ]
+    }
+  ]
+}

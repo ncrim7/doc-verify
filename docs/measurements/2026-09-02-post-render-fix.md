@@ -1,5 +1,12 @@
 # Measurement — 2026-09-02 (2) · after the render fix
 
+> **Superseded by
+> [`2026-09-02-reasoning-minimal.md`](2026-09-02-reasoning-minimal.md) (97.66%).**
+> This run's corpus still had one contaminated field: receipt `unit_price` was
+> in the ground truth but on no receipt page. Its numbers stand for what they
+> measured, but the receipt figures in particular were flattered by the model
+> deriving `unit_price = total / qty` rather than reading it.
+
 Re-run of the Phase-1 measurement on a corpus where every scored field is
 actually printed on the page. Supersedes
 [`2026-09-02-baseline.md`](2026-09-02-baseline.md), which was invalidated by

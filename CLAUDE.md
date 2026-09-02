@@ -96,14 +96,14 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 
 ## Phase 2 backlog — priority-ordered
 
-Rule: **no accuracy number goes into marketing, demo, or sales material until
-P0-1 and P0-2 are closed.** P0-2 is closed — the current figure is
-**96.79%** field-level EM over all 60 documents, on a corpus verified 0/596
-contaminated (`docs/measurements/2026-09-02-post-render-fix.md`). P0-1 is
-partly closed: the rule is codified and the harness now counts failures, but
-(b) is open — 1 document in 60 still fails extraction, so the product still has
-a failure class that reaches a human only because the pipeline flags it, not
-because it succeeded.
+**P0-1 and P0-2 are both closed.** Current figure: **97.66%** field-level EM
+over all 60 documents, corpus verified **0/1624** contaminated, **0 silent
+failures** (`docs/measurements/2026-09-02-reasoning-minimal.md`).
+
+The embargo on the number is lifted on P0 grounds, but one qualifier is
+permanent until P1-5: **this is clean synthetic input only**. Real, scanned or
+photographed documents are unmeasured. That sentence travels with the number
+wherever it goes.
 
 ### P0 — must close before the product ships
 
@@ -124,10 +124,15 @@ because it succeeded.
     because the one silent failure was an invoice — the old aggregation hid
     that entirely. `PipelineResult.raw` added so the raw-vs-final delta is
     still reportable. `apply_corrections` de-duplicated into `src/pipeline.py`.
-  - [ ] **(b) remove the trigger.** gpt-5-nano reasoning tokens overflow
-    `max_completion_tokens=4096` → `reasoning_effort="minimal"` (also cuts the
-    ~15-35 s/doc latency) + retry when `_parse_json_response` returns None.
-    Needs its own measurement run.
+  - [x] **(b) trigger removed.** `reasoning_effort="minimal"` for gpt-5 models
+    (measured: 0 reasoning tokens vs 128 default), `max_completion_tokens`
+    4096 → 8192, and one bounded retry when `_parse_json_response` returns
+    None. Result: **0 silent failures, 0 retries needed** — minimal reasoning
+    prevents the overflow outright rather than the retry hiding it. Runtime
+    ~22 min → ~5.6 min. 7 mocked-API tests. **P0-1 CLOSED.**
+    Trade-off recorded in the measurement report: per-field transcription gets
+    noisier (46 misses vs 30, 28/60 perfect docs vs 36/59). Kept because the
+    failure class it removes is a P0 and the headline EM still rose.
 - **P0-2  fix the data-generation rendering bugs, then re-measure.**
   - [x] generator fixed: currency printed on the grand-total row
     (`TRY 600034.31`); item-table body rows given `FONTNAME` (Turkish glyphs);
@@ -147,20 +152,20 @@ because it succeeded.
 
 ### P1 — in Phase 2, after P0
 
-- **P1-4  Turkish `ı` → `i` normalisation — 26 of the 30 residual errors.**
-  With the corpus clean, the model's own error profile is visible for the first
-  time: it rewrites Turkish characters toward ASCII (`Zımba`→`Zimba`,
-  `Aylık`→`Aylik`, `Bloğu`→`Blogu`, `Monitör`→`Monitor`), inconsistently — it
-  keeps some `ı` in the same string and converts others.
-  **First hypothesis to test:** `SYSTEM_PROMPT` still contains the thesis-era
-  workaround *"Turkish characters can be misread as I/II/s/g … auto-correct
-  these typos"*, written for the font bug fixed in `3fdb53d`. The pages now
-  render Turkish correctly, so that instruction may be inviting the model to
-  rewrite correct text. Replace it with "copy verbatim, preserve every Turkish
-  character (`ı` is not `i`), do not transliterate", re-measure. One variable,
-  ~$0.05.
-  Remaining 4: an added diacritic (`Korutürk`→`Korütürk`), a dropped letter,
-  one tax-id digit, and a stray backslash around an inch quote (`14\" i5`).
+- **P1-4  Turkish character corruption — 38 of the 46 residual errors (83%).**
+  The single remaining problem. `ı`→`i`, `ğ`→`g`, `ö`→`o`, `ü`→`u`, plus real
+  transcription noise under `reasoning_effort=minimal`: Thai glyphs
+  (`Bloğu`→`Bโลğü`), combining marks (`Armatu̇ru`), schwa (`Sandalyəsi`),
+  doubled letters (`Göggsü`, `Kilittli`), an inserted tax-id digit
+  (10 → 11 digits), a dropped `due_date`.
+  Two hypotheses, one variable each, ~$0.05 per run:
+  (i) `SYSTEM_PROMPT` still carries the thesis-era workaround *"Turkish
+      characters can be misread as I/II/s/g … auto-correct these typos"*,
+      written for a font bug that no longer exists. Replace with "copy
+      verbatim, preserve every Turkish character, do not transliterate".
+  (ii) `reasoning_effort="low"` (64 reasoning tokens, measured) as a middle
+      ground — possibly enough to stop the glyph-noise class without
+      re-opening the token-budget failure.
 - **P1-5  real-world validation run.** A few dozen genuine (non-synthetic)
   documents, small extra measurement, update the scope note. Answers "is there
   a synthetic-vs-real gap".
