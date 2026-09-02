@@ -107,6 +107,19 @@ wherever it goes.
 
 ### P0 — must close before the product ships
 
+- **P0-4  `arithmetic_repair` fabricates totals on real documents.**
+  Found by the real-document pilot (`docs/measurements/2026-09-02-real-pilot.md`).
+  On a telecom bill the payable amount is printed twice, once highlighted; the
+  module overwrote it with `subtotal + tax` in one run and `sum(items)` in
+  another, both wrong, `verdict: OK` both times. Its assumptions
+  (`total = subtotal + tax`, `subtotal = Σ items`) hold for a clean commercial
+  invoice and not for a bill carrying discounts, a previous-month balance, a
+  late fee and two tax bases. It also blinds the rule verifier: by forcing
+  internal consistency it guarantees the arithmetic checks pass.
+  Proposed fix: repair only when the document is *already* internally
+  consistent enough to trust the components; when it is not, **flag, do not
+  overwrite**. Never silently replace a value that is printed on the page.
+
 - **P0-1  D1: silent extraction failure → generic "broken output = REVIEW".**
   - [x] **(a2) the rule, codified.** `src/pipeline.py` — `DocumentPipeline`
     returns a `PipelineResult` with an explicit `Verdict.OK | REVIEW`. It never
@@ -169,9 +182,14 @@ wherever it goes.
   across runs. Turkish VKN/TCKN are 10 or 11 digits with a checksum — a
   deterministic check in `rule_based_verifier` catches it with no LLM call.
   A silently wrong tax id matters for a financial product.
-- **P1-5  real-world validation run.** A few dozen genuine (non-synthetic)
-  documents, small extra measurement, update the scope note. Answers "is there
-  a synthetic-vs-real gap".
+- **P1-5  real-world validation.** Pilot done at n=4
+  (`docs/measurements/2026-09-02-real-pilot.md`): **57.81% vs 98.23%
+  synthetic**, on the owner's own documents. Four documents is far too few to
+  quote as an accuracy figure — what it established is the defect classes.
+  Next: ground-truth the remaining 11 documents and widen the base.
+  Ground-truth rules that must carry over: GT never comes from the system under
+  test; a field a careful human cannot read from the image is not scored;
+  `available_fields` per document; documents and their GT are never committed.
 
 ### P2 — data / infra polish, as time allows
 
