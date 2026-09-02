@@ -96,9 +96,9 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 
 ## Phase 2 backlog — priority-ordered
 
-**P0-1 and P0-2 are both closed.** Current figure: **97.66%** field-level EM
-over all 60 documents, corpus verified **0/1624** contaminated, **0 silent
-failures** (`docs/measurements/2026-09-02-reasoning-minimal.md`).
+**P0-1, P0-2 and P1-4 are closed.** Current figure: **98.23%** field-level EM
+over all 60 documents, 35/60 perfect, corpus verified **0/1624** contaminated,
+**0 silent failures** (`docs/measurements/2026-09-02-reasoning-low.md`).
 
 The embargo on the number is lifted on P0 grounds, but one qualifier is
 permanent until P1-5: **this is clean synthetic input only**. Real, scanned or
@@ -152,20 +152,23 @@ wherever it goes.
 
 ### P1 — in Phase 2, after P0
 
-- **P1-4  Turkish character corruption — 38 of the 46 residual errors (83%).**
-  The single remaining problem. `ı`→`i`, `ğ`→`g`, `ö`→`o`, `ü`→`u`, plus real
-  transcription noise under `reasoning_effort=minimal`: Thai glyphs
-  (`Bloğu`→`Bโลğü`), combining marks (`Armatu̇ru`), schwa (`Sandalyəsi`),
-  doubled letters (`Göggsü`, `Kilittli`), an inserted tax-id digit
-  (10 → 11 digits), a dropped `due_date`.
-  Two hypotheses, one variable each, ~$0.05 per run:
-  (i) `SYSTEM_PROMPT` still carries the thesis-era workaround *"Turkish
-      characters can be misread as I/II/s/g … auto-correct these typos"*,
-      written for a font bug that no longer exists. Replace with "copy
-      verbatim, preserve every Turkish character, do not transliterate".
-  (ii) `reasoning_effort="low"` (64 reasoning tokens, measured) as a middle
-      ground — possibly enough to stop the glyph-noise class without
-      re-opening the token-budget failure.
+- [x] **P1-4  Turkish character handling.** Both hypotheses tested, one
+  variable each (`docs/measurements/2026-09-02-reasoning-low.md`):
+  (i) the stale "auto-correct Turkish typos" prompt instruction removed —
+      +0.31 EM, `description` misses 38 → 28;
+  (ii) `reasoning_effort` `minimal` → `low` — +0.26 EM, 35/60 perfect, and it
+      eliminated the straight-to-curly apostrophe class outright (4 → 0).
+  97.66% → **98.23%**. 34 misses remain, all genuine Turkish character
+  handling. Two follow-ups fell out of it, below.
+- **P1-4b  over-correction.** The new prompt made the model invent Turkish
+  characters that are not on the page (`Grafik`→`Grafık`, `Diş`→`Dış`). The
+  next prompt iteration should be symmetric: preserve what is printed, in both
+  directions.
+- **P1-6  tax-id length/checksum check.** The digit-doubling
+  (`9993867749`→`99938667749`) is document-specific, not random, and repeats
+  across runs. Turkish VKN/TCKN are 10 or 11 digits with a checksum — a
+  deterministic check in `rule_based_verifier` catches it with no LLM call.
+  A silently wrong tax id matters for a financial product.
 - **P1-5  real-world validation run.** A few dozen genuine (non-synthetic)
   documents, small extra measurement, update the scope note. Answers "is there
   a synthetic-vs-real gap".

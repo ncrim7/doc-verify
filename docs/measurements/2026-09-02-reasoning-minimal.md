@@ -1,5 +1,9 @@
 # Measurement — 2026-09-02 (3) · reasoning_effort=minimal, unit price rendered
 
+> **Superseded by [`2026-09-02-reasoning-low.md`](2026-09-02-reasoning-low.md)
+> (98.23%).** The prompt fix and `reasoning_effort="low"` both landed after
+> this run; `low` is now the default.
+
 Supersedes [`2026-09-02-post-render-fix.md`](2026-09-02-post-render-fix.md).
 Closes P0-1(b).
 

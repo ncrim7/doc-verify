@@ -25,23 +25,25 @@ a single env var, so switching is a one-line change with no code edit.
 
 **Measured 2026-09-02** on a 100%-synthetic 60-doc corpus whose every scored
 field — text and numeric — is verified present on the rendered page
-(0/1624 missing): **97.66% field-level EM over all 60 documents**, 99.75%
-semantic similarity, 98.77% token F1, zero silent failures, ~5.6 min per 60
-documents. See `docs/measurements/2026-09-02-reasoning-minimal.md`.
+(0/1624 missing): **98.23% field-level EM over all 60 documents**, 99.86%
+semantic similarity, 99.11% token F1, zero silent failures, ~8.3 min per 60
+documents. See `docs/measurements/2026-09-02-reasoning-low.md`.
 
-The model is configured with `reasoning_effort="minimal"` (see that report for
-the trade-off: it eliminates the token-budget failure class and is 4x faster,
-at the cost of noisier per-field transcription).
+`reasoning_effort` is set to `"low"`, measured against the alternatives:
+the model default overflows the completion budget and produces the
+silent-failure class; `"minimal"` removes that but transcribes more noisily
+(97.97%, 31/60 perfect); `"low"` is the best measured (98.23%, 35/60) and is
+still 2.6x faster than the default.
 
 (The first run reported 96.10%, but three generator rendering bugs meant the
 model was scored on fields absent from the page. That report is retained and
 marked invalidated.)
 
-gpt-5-nano is **accepted**: 97.66% clears any "switch model" bar comfortably.
-The remaining defects are not model-choice problems — 83% of the residual 46
-field errors are Turkish character corruption, which the prompt may currently
-be inviting (P1-4). Fallback to gpt-5-mini remains one `.env` line (ADR-0002).
-Real-world accuracy is still unmeasured.
+gpt-5-nano is **accepted**: 98.23% clears any "switch model" bar comfortably.
+The remaining 34 field errors are almost all Turkish character handling and are
+a prompt/decoding problem rather than a model-choice one. Fallback to
+gpt-5-mini remains one `.env` line (ADR-0002). Real-world accuracy is still
+unmeasured.
 
 ## Alternatives Considered
 

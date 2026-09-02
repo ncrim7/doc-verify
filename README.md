@@ -37,27 +37,27 @@ PDF ──▶ extract ──▶ rule verify ──▶ correction agent ──▶
 
 ## Accuracy
 
-Measured 2026-09-02 on a 60-document synthetic corpus (`seed=42`) where every
-scored field is verified present on the rendered page (0/596 missing), single
-pass, no post-hoc tuning, model `gpt-5-nano`:
+Measured 2026-09-02 on a 60-document synthetic corpus (`seed=42`), single pass,
+no post-hoc tuning, `gpt-5-nano` with `reasoning_effort=low`:
 
 | | |
 |---|---|
-| **Field-level exact match, all 60 documents** | **97.66%** |
-| Semantic similarity / token F1 | 99.75% / 98.77% |
-| Documents scoring a perfect 1.0 | 28 / 60 |
+| **Field-level exact match, all 60 documents** | **98.23%** |
+| Semantic similarity / token F1 | 99.86% / 99.11% |
+| Documents scoring a perfect 1.0 | 35 / 60 |
 | Extractions that failed silently | **0** |
-| Runtime | ~5.6 min for 60 documents |
+| Runtime | ~8.3 min for 60 documents |
 
-Every scored ground-truth value is verified present on the rendered page
-(0 / 1624), so the model is not being graded on data it cannot read. Residual
-errors are 46 field misses, all verified genuine; 83% are Turkish character
-corruption (`Zımba`→`Zimba`, `Bloğu`→`Blogu`).
+Every scored ground-truth value — text and numeric — is verified present on the
+rendered page (**0 / 1624** missing), so the model is not graded on data it
+cannot read. Residual errors are 34 field misses, all verified genuine; almost
+all are Turkish character handling (`Zımba`→`Zimba`, `Bloğu`→`Blogu`, plus some
+over-correction the other way).
 
 > Synthetic input only — no real / scanned / photographed documents. Real-world
 > accuracy is **unmeasured**, and that qualifier travels with the number.
 
-Detail: [`docs/measurements/2026-09-02-reasoning-minimal.md`](docs/measurements/2026-09-02-reasoning-minimal.md) ·
+Detail: [`docs/measurements/2026-09-02-reasoning-low.md`](docs/measurements/2026-09-02-reasoning-low.md) ·
 model choice: [`docs/adr/0001-extraction-model.md`](docs/adr/0001-extraction-model.md).
 
 ## Quick start
