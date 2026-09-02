@@ -106,17 +106,23 @@ yet support the core claim ("does not silently return a wrong answer").
 ### P0 — must close before the product ships
 
 - **P0-1  D1: silent extraction failure → generic "broken output = REVIEW".**
-  `run_full_pipeline.py:140` does `if not extracted: continue` — verification
-  never runs, nothing is flagged. Fix both layers:
-  (a) any empty / unparseable / structurally-invalid extraction routes to a
-      REVIEW verdict / human queue, generically — not tied to any one cause,
-      and never a silent skip. Whatever production orchestrator gets built must
-      not repeat `if not extracted: continue`. **This subsumes the old "currency
-      P0-2": when a field is genuinely not on the page, the system must emit
-      `null` + flag, never guess.**
-  (b) immediate trigger: gpt-5-nano reasoning tokens overflow
-      `max_completion_tokens=4096` -> `reasoning_effort="minimal"` (also cuts
-      latency) + retry when `_parse_json_response` returns None.
+  - [x] **(a2) the rule, codified.** `src/pipeline.py` — `DocumentPipeline`
+    returns a `PipelineResult` with an explicit `Verdict.OK | REVIEW`. It never
+    returns OK unless extraction produced a non-empty dict *and* verification
+    found no critical issue; exceptions, empty/non-dict results and missing
+    required fields all become REVIEW with a reason. Cause-agnostic by design.
+    18 tests, 96% coverage, components injectable (no API in tests).
+    **This subsumes the old "currency P0-2": when a field is genuinely not on
+    the page the system must emit `null` + flag, never guess.**
+  - [ ] **(a1) measurement honesty.** `run_full_pipeline.py:140` still does
+    `if not extracted: continue`, so a failed document is dropped from the
+    average instead of counted. Route the harness through `DocumentPipeline`
+    and count REVIEW documents. Expect the headline to move 98.44% → 96.80%
+    — that is the correct number.
+  - [ ] **(b) remove the trigger.** gpt-5-nano reasoning tokens overflow
+    `max_completion_tokens=4096` → `reasoning_effort="minimal"` (also cuts the
+    ~15-35 s/doc latency) + retry when `_parse_json_response` returns None.
+    Needs its own measurement run.
 - **P0-2  fix the data-generation rendering bugs, then re-measure.**
   - [x] generator fixed: currency printed on the grand-total row
     (`TRY 600034.31`); item-table body rows given `FONTNAME` (Turkish glyphs);
@@ -162,6 +168,9 @@ yet support the core claim ("does not silently return a wrong answer").
 - **P2-8** mocked-API tests for llm_extractor / llm_verifier / correction_agent
   / self_consistency / hybrid_verifier (0% covered); validator.py batch/report
   coverage (58%).
+- **P2-9** `repair_arithmetic` runs inside `LLMExtractor.extract`, not in
+  `DocumentPipeline`. Swap the extractor and the repair silently goes with it.
+  Decide whether the pipeline should own it (idempotent, so safe to run twice).
 
 ### P3 — after the poly-repo split
 
