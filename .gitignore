@@ -31,6 +31,24 @@ htmlcov/
 *.pdf
 !tests/fixtures/**/*.pdf
 
+# --- REAL DOCUMENTS — never commit -------------------------------------
+# Real invoices/receipts carry tax ids, addresses, amounts and counterparty
+# names. They stay on disk and out of git; only aggregate measurement results
+# are ever committed. Belt and braces: whole directories, plus every image
+# extension, so a stray screenshot cannot slip in.
+inv/
+data/real/
+data/real_world/
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.heic
+*.tif
+*.tiff
+!results/charts/**
+!docs/**/*.png
+
 # --- os / editor ---
 .DS_Store
 Thumbs.db
