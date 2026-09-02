@@ -37,18 +37,26 @@ PDF ──▶ extract ──▶ rule verify ──▶ correction agent ──▶
 
 ## Accuracy
 
-**No usable number yet.** The 2026-09-02 run scored **96.10%** field-level EM on
-a 60-doc synthetic corpus, but a post-run check found that three scored fields
-(`currency`, item `description`, `buyer_address`) are absent or mangled in the
-rendered PDFs — data-generation bugs, not model errors. 96.10% is a
-contaminated *floor*; real accuracy is higher. A re-measurement is pending the
-generator fix (Phase 2 P0-2).
+Measured 2026-09-02 on a 60-document synthetic corpus (`seed=42`) where every
+scored field is verified present on the rendered page (0/596 missing), single
+pass, no post-hoc tuning, model `gpt-5-nano`:
 
-Synthetic input only — no real / scanned / photographed documents; real-world
-accuracy is unmeasured. Do not use any figure from this run in marketing, demo,
-or sales material.
+| | |
+|---|---|
+| Field-level exact match | **98.44%** (59 docs; 96.80% counting 1 unparseable response as 0) |
+| Semantic similarity | 99.85% |
+| Token F1 | 99.08% |
+| Documents scoring a perfect 1.0 | 36 / 59 |
 
-Detail: [`docs/measurements/2026-09-02-baseline.md`](docs/measurements/2026-09-02-baseline.md) ·
+Residual errors are 30 field misses, all verified genuine — 87% of them the
+model normalising Turkish dotless `ı` to `i` (`Zımba`→`Zimba`).
+
+> Synthetic input only — no real / scanned / photographed documents; real-world
+> accuracy is unmeasured. **Not for marketing or sales use** while P0-1 is open:
+> one document in sixty still fails extraction and is skipped silently rather
+> than flagged for review.
+
+Detail: [`docs/measurements/2026-09-02-post-render-fix.md`](docs/measurements/2026-09-02-post-render-fix.md) ·
 model choice: [`docs/adr/0001-extraction-model.md`](docs/adr/0001-extraction-model.md).
 
 ## Quick start
@@ -96,10 +104,10 @@ The LLM-calling modules need mocked-API tests — Phase 2.
 
 ## Status
 
-Phase 1 (cleanup + first run) complete. Phase 2 backlog is in `CLAUDE.md`,
-priority-ordered. P0: (1) the silent extraction-failure safety-net gap;
-(2) fix the three data-generation rendering bugs (currency never printed,
-Turkish glyphs dropped in item rows, buyer-address column clipped) and re-run
-the measurement — the current number does not measure the model. Then P1:
-real-world validation run. Then P2/P3: data polish, `fitz` → `pymupdf`, mocked
-LLM tests, the poly-repo apps, the 3-way GR leg, accounting-API integration.
+Phase 1 complete. Phase 2 backlog is in `CLAUDE.md`, priority-ordered.
+**P0-2 done** — the three data-generation rendering bugs are fixed and the
+measurement re-run (98.44%). **P0-1 open** — a broken extraction must route to
+REVIEW instead of being skipped silently. Then P1: the Turkish `ı`→`i`
+normalisation (the prompt may be inviting it), and a real-world validation run.
+Then P2/P3: data polish, `fitz` → `pymupdf`, mocked LLM tests, the poly-repo
+apps, the 3-way GR leg, accounting-API integration.

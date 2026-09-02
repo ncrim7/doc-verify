@@ -23,20 +23,23 @@ For a bookkeeping-office product, per-document cost is a first-order concern
 Default `LLM_MODEL=gpt-5-nano`, read from `.env` by `src/config.py`. The model is
 a single env var, so switching is a one-line change with no code edit.
 
-**First run 2026-09-02** on a 100%-synthetic 60-doc corpus: 96.10% field-level
-EM (58 docs). This figure is **contaminated** — three data-generation rendering
-bugs meant `currency`, item `description` and `buyer_address` were absent or
-mangled on the page, so the model was scored on fields it could not read (see
-the measurement report). Contamination can only subtract, so real accuracy is
-**≥ 96.10%**.
+**Measured 2026-09-02** on a 100%-synthetic 60-doc corpus whose every scored
+field is verified present on the rendered page (0/596 missing):
+**98.44% field-level EM** (59 docs), 99.85% semantic similarity, 99.08% token
+F1; 36/59 documents perfect. Counting the one unparseable document as 0% gives
+96.80%. See `docs/measurements/2026-09-02-post-render-fix.md`.
 
-gpt-5-nano is accepted on that basis: even the contaminated floor clears any
-"switch model" bar, so the open defects are not model-choice problems. They
-are: P0-1 a pipeline safety-net gap (broken extraction silently skips
-verification) + a reasoning-token overflow that triggers it; P0-2 the generator
-render bugs (then a clean re-measurement). Fallback to gpt-5-mini remains one
-`.env` line (ADR-0002) if the post-fix number is unacceptable. Real-world
-accuracy is unmeasured.
+(The first run reported 96.10%, but three generator rendering bugs meant the
+model was scored on fields absent from the page. That report is retained and
+marked invalidated.)
+
+gpt-5-nano is **accepted**: 98.44% clears any "switch model" bar comfortably.
+The remaining defects are not model-choice problems — P0-1 is a pipeline
+safety-net gap (a broken extraction silently skips verification) plus a
+stochastic reasoning-token overflow that triggers it, and the residual 30 field
+errors are dominated by Turkish dotless-`ı` → `i` normalisation, which the
+prompt may currently be inviting (P1-4). Fallback to gpt-5-mini remains one
+`.env` line (ADR-0002). Real-world accuracy is still unmeasured.
 
 ## Alternatives Considered
 

@@ -97,9 +97,11 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 ## Phase 2 backlog — priority-ordered
 
 Rule: **no accuracy number goes into marketing, demo, or sales material until
-P0-1 and P0-2 are closed.** The 2026-09-02 96.10% is a contaminated floor, not
-a model measurement (P0-2). Until P0-1 is closed the number also does not
-support the core claim ("does not silently return a wrong answer").
+P0-1 and P0-2 are closed.** P0-2 is now closed — the current figure is
+**98.44%** field-level EM on a corpus verified 0/596 contaminated
+(`docs/measurements/2026-09-02-post-render-fix.md`). P0-1 is still open: 1
+document in 60 fails extraction and is skipped silently, so the number does not
+yet support the core claim ("does not silently return a wrong answer").
 
 ### P0 — must close before the product ships
 
@@ -123,18 +125,31 @@ support the core claim ("does not silently return a wrong answer").
     (`test_rendered_pdf_contains_every_scored_field`) added — RED before,
     GREEN after; full-corpus check now **0/596** fields missing (was ~264).
     Corpus regenerated (seed=42).
-  - [ ] re-run `run_full_pipeline.py --split measure` on the clean corpus,
-    write the result as a new `docs/measurements/*.md`, and update ADR-0001 /
-    README with the real number.
+  - [x] re-measured on the clean corpus (only the corpus changed, model config
+    byte-identical): **98.44% field-level EM** (was 96.10%), 99.85% semantic,
+    99.08% F1, 36/59 documents perfect (was 20/58). All 30 residual misses
+    verified genuine — 0 contaminated.
+    `docs/measurements/2026-09-02-post-render-fix.md`. **P0-2 CLOSED.**
 - **P0-3  document the measurement scope.** DONE — the 2026-09-02 report carries
   the INVALIDATED banner, the D2 root cause, the synthetic-only scope, and the
   marketing embargo.
 
 ### P1 — in Phase 2, after P0
 
-- **P1-4  residual model errors after P0-2.** Once the corpus renders correctly,
-  measure what is actually the model: tax-id character slips (`Korutürk`→
-  `Korütürk`), any real description normalisation. Small so far.
+- **P1-4  Turkish `ı` → `i` normalisation — 26 of the 30 residual errors.**
+  With the corpus clean, the model's own error profile is visible for the first
+  time: it rewrites Turkish characters toward ASCII (`Zımba`→`Zimba`,
+  `Aylık`→`Aylik`, `Bloğu`→`Blogu`, `Monitör`→`Monitor`), inconsistently — it
+  keeps some `ı` in the same string and converts others.
+  **First hypothesis to test:** `SYSTEM_PROMPT` still contains the thesis-era
+  workaround *"Turkish characters can be misread as I/II/s/g … auto-correct
+  these typos"*, written for the font bug fixed in `3fdb53d`. The pages now
+  render Turkish correctly, so that instruction may be inviting the model to
+  rewrite correct text. Replace it with "copy verbatim, preserve every Turkish
+  character (`ı` is not `i`), do not transliterate", re-measure. One variable,
+  ~$0.05.
+  Remaining 4: an added diacritic (`Korutürk`→`Korütürk`), a dropped letter,
+  one tax-id digit, and a stray backslash around an inch quote (`14\" i5`).
 - **P1-5  real-world validation run.** A few dozen genuine (non-synthetic)
   documents, small extra measurement, update the scope note. Answers "is there
   a synthetic-vs-real gap".
