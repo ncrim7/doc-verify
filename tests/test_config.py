@@ -40,6 +40,23 @@ def test_gpt41_model_keeps_zero_temperature(reload_config):
     assert p["cost_per_1k_tokens"] == 0.00010
 
 
+def test_reasoning_effort_defaults_to_low_for_gpt5(reload_config):
+    # "low" is the measured best (docs/measurements/2026-09-02-reasoning-low.md)
+    cfg = reload_config(LLM_MODEL="gpt-5-nano", LLM_REASONING_EFFORT=None)
+    assert cfg.LLM_PROVIDERS["openai"]["reasoning_effort"] == "low"
+
+
+def test_reasoning_effort_is_env_overridable(reload_config):
+    cfg = reload_config(LLM_MODEL="gpt-5-nano", LLM_REASONING_EFFORT="minimal")
+    assert cfg.LLM_PROVIDERS["openai"]["reasoning_effort"] == "minimal"
+
+
+def test_reasoning_effort_never_set_for_non_gpt5(reload_config):
+    # the parameter would be rejected by the API for these models
+    cfg = reload_config(LLM_MODEL="gpt-4.1-nano", LLM_REASONING_EFFORT="low")
+    assert cfg.LLM_PROVIDERS["openai"]["reasoning_effort"] is None
+
+
 def test_unknown_model_falls_back_to_nano_cost(reload_config):
     p = reload_config(LLM_MODEL="some-future-model").LLM_PROVIDERS["openai"]
     assert p["cost_per_1k_tokens"] == 0.00005

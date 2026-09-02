@@ -18,6 +18,21 @@ _MODEL = os.getenv("LLM_MODEL", "gpt-5-nano")
 # Approximate input price, USD per 1K tokens. Informational only — used for the
 # call log / Langfuse cost display, never for control flow. Unknown models fall
 # back to the gpt-5-nano rate.
+# Reasoning budget for gpt-5 models, measured on the 60-document corpus:
+#   default   ~22 min, and the reasoning tokens overflow the completion budget
+#             -> unparseable JSON, the silent-failure class (P0-1)
+#   minimal   ~5.6 min, 97.97% EM, 31/60 perfect — 0 reasoning tokens
+#   low       ~8.3 min, 98.23% EM, 35/60 perfect — best measured
+# "low" is the default: +0.26 EM and +4 perfect documents over "minimal" for
+# ~2.7 min, still 2.6x faster than the model default, and it eliminated the
+# straight-to-curly apostrophe error class outright.
+# Override with LLM_REASONING_EFFORT ("minimal" | "low" | "medium" | "high").
+# Never sent for models that do not accept the parameter.
+_REASONING_EFFORT = (
+    (os.getenv("LLM_REASONING_EFFORT") or "low")
+    if _MODEL.startswith("gpt-5") else None
+)
+
 _COST_PER_1K: dict[str, float] = {
     "gpt-5-nano":   0.00005,
     "gpt-5-mini":   0.00025,
@@ -32,12 +47,7 @@ LLM_PROVIDERS: dict = {
         "model": _MODEL,
         "backend": "openai",
         "temperature": None if _MODEL.startswith("gpt-5") else 0.0,
-        # gpt-5 models spend "reasoning" tokens out of max_completion_tokens.
-        # On vision extraction that budget ran out mid-JSON and the response
-        # came back unparseable (docs/measurements/2026-09-02-post-render-fix.md,
-        # D1). "minimal" measures at 0 reasoning tokens and is also ~3x faster.
-        # None for models that do not accept the parameter.
-        "reasoning_effort": "minimal" if _MODEL.startswith("gpt-5") else None,
+        "reasoning_effort": _REASONING_EFFORT,
         "cost_per_1k_tokens": _COST_PER_1K.get(_MODEL, 0.00005),
     },
     # --- Optional: Groq / Llama-4 Scout vision -----------------------------

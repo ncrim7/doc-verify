@@ -100,6 +100,9 @@ def main() -> None:
     logger.info("  provider=%s  model=%s  strategy=%s  split=%s  docs=%d",
                 args.provider, args.model or LLM_PROVIDERS[args.provider]["model"],
                 args.strategy, args.split, len(manifest))
+    logger.info("  reasoning_effort=%s  temperature=%s",
+                LLM_PROVIDERS[args.provider].get("reasoning_effort"),
+                LLM_PROVIDERS[args.provider].get("temperature"))
     logger.info("=" * 68)
 
     try:
@@ -199,12 +202,18 @@ def main() -> None:
         out_path = RESULTS_DIR / f"pipeline_{model_tag}_{args.strategy}_{ts}.json"
         out_path.write_text(json.dumps({
             "timestamp": ts,
+            # Record the *effective* config, not just the CLI flags — a result
+            # file has to say which run it was. reasoning_effort in particular
+            # is env-driven and was missing here, which made two runs
+            # indistinguishable from their artefacts alone.
             "config": {
                 "provider": args.provider,
                 "model": args.model or LLM_PROVIDERS[args.provider]["model"],
                 "strategy": args.strategy,
                 "split": args.split,
                 "correction_enabled": not args.no_correction,
+                "reasoning_effort": LLM_PROVIDERS[args.provider].get("reasoning_effort"),
+                "temperature": LLM_PROVIDERS[args.provider].get("temperature"),
             },
             "aggregate": agg,
             "raw_extraction_em": raw_em_all,
