@@ -25,15 +25,16 @@ a single env var, so switching is a one-line change with no code edit.
 
 **Measured 2026-09-02** on a 100%-synthetic 60-doc corpus whose every scored
 field is verified present on the rendered page (0/596 missing):
-**98.44% field-level EM** (59 docs), 99.85% semantic similarity, 99.08% token
-F1; 36/59 documents perfect. Counting the one unparseable document as 0% gives
-96.80%. See `docs/measurements/2026-09-02-post-render-fix.md`.
+**96.79% field-level EM over all 60 documents** (98.44% over the 59 the
+pipeline judged OK; one document produced no extraction and scores 0).
+99.85% semantic similarity, 99.08% token F1, 36/59 documents perfect.
+See `docs/measurements/2026-09-02-post-render-fix.md`.
 
 (The first run reported 96.10%, but three generator rendering bugs meant the
 model was scored on fields absent from the page. That report is retained and
 marked invalidated.)
 
-gpt-5-nano is **accepted**: 98.44% clears any "switch model" bar comfortably.
+gpt-5-nano is **accepted**: 96.79% clears any "switch model" bar comfortably.
 The remaining defects are not model-choice problems — P0-1 is a pipeline
 safety-net gap (a broken extraction silently skips verification) plus a
 stochastic reasoning-token overflow that triggers it, and the residual 30 field

@@ -194,6 +194,52 @@ def evaluate_batch(
     }
 
 
+def aggregate_run(doc_results: list[dict]) -> dict:
+    """
+    Aggregate a whole measurement run.
+
+    Each entry carries `doc_id`, `doc_type`, `verdict`, `has_data` and the
+    per-document `em` / `sim` / `f1` (0.0 when the document produced no data).
+
+    The point of this function: **a document that failed extraction stays in
+    the denominator with a score of 0.** Dropping it inflates the headline —
+    that is what let the 2026-09-02 run report 98.44% over 59 documents when
+    the honest figure over all 60 was 96.80%.
+
+    `overall` is the honest headline (all documents). `ok_only` restricts the
+    same metric to documents the pipeline judged OK, kept for continuity with
+    earlier reports — note OK means "no detectable problem", not "correct".
+    """
+    def _mean(vals: list[float]) -> float:
+        return round(sum(vals) / len(vals), 4) if vals else 0.0
+
+    def _block(rows: list[dict]) -> dict:
+        return {
+            "documents": len(rows),
+            "exact_match_avg": _mean([r["em"] for r in rows]),
+            "semantic_similarity_avg": _mean([r["sim"] for r in rows]),
+            "token_f1_avg": _mean([r["f1"] for r in rows]),
+        }
+
+    verdicts: dict[str, int] = {}
+    for r in doc_results:
+        v = r.get("verdict", "UNKNOWN")
+        verdicts[v] = verdicts.get(v, 0) + 1
+
+    by_type: dict[str, list[dict]] = {}
+    for r in doc_results:
+        by_type.setdefault(r.get("doc_type", "unknown"), []).append(r)
+
+    return {
+        "documents": len(doc_results),
+        "verdicts": verdicts,
+        "no_data": sum(1 for r in doc_results if not r.get("has_data", True)),
+        "overall": _block(doc_results),
+        "ok_only": _block([r for r in doc_results if r.get("verdict") == "OK"]),
+        "per_doc_type": {k: _block(v) for k, v in sorted(by_type.items())},
+    }
+
+
 def _item_similarity(pred_item: dict, gt_item: dict) -> float:
     """
     Compute similarity score between two item dicts.

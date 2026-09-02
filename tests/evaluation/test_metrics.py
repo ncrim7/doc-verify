@@ -88,6 +88,59 @@ class TestEvaluateDocument:
         assert res["aggregate"]["exact_match_avg"] == 1.0
 
 
+class TestAggregateRun:
+    """A failed document must be counted as 0, never dropped from the average."""
+
+    def _doc(self, doc_id, doc_type="invoice", verdict="OK", has_data=True,
+             em=1.0, sim=1.0, f1=1.0):
+        return {"doc_id": doc_id, "doc_type": doc_type, "verdict": verdict,
+                "has_data": has_data, "em": em, "sim": sim, "f1": f1}
+
+    def test_failed_document_stays_in_the_denominator(self):
+        docs = [self._doc("a", em=1.0), self._doc("b", em=1.0),
+                self._doc("c", verdict="REVIEW", has_data=False,
+                          em=0.0, sim=0.0, f1=0.0)]
+        out = M.aggregate_run(docs)
+        assert out["documents"] == 3
+        # rounded to 4 dp by aggregate_run
+        assert out["overall"]["exact_match_avg"] == pytest.approx(0.6667, abs=1e-4)
+
+    def test_ok_only_view_excludes_the_failure(self):
+        docs = [self._doc("a", em=1.0), self._doc("b", em=1.0),
+                self._doc("c", verdict="REVIEW", has_data=False,
+                          em=0.0, sim=0.0, f1=0.0)]
+        out = M.aggregate_run(docs)
+        assert out["ok_only"]["exact_match_avg"] == pytest.approx(1.0)
+        assert out["ok_only"]["documents"] == 2
+
+    def test_verdict_counts_and_no_data_count(self):
+        docs = [self._doc("a"),
+                self._doc("b", verdict="REVIEW", em=0.5, sim=0.5, f1=0.5),
+                self._doc("c", verdict="REVIEW", has_data=False,
+                          em=0.0, sim=0.0, f1=0.0)]
+        out = M.aggregate_run(docs)
+        assert out["verdicts"] == {"OK": 1, "REVIEW": 2}
+        assert out["no_data"] == 1
+
+    def test_review_with_data_still_scores_its_real_value(self):
+        docs = [self._doc("a", verdict="REVIEW", em=0.6, sim=0.6, f1=0.6)]
+        out = M.aggregate_run(docs)
+        assert out["overall"]["exact_match_avg"] == pytest.approx(0.6)
+
+    def test_per_doc_type_includes_failures(self):
+        docs = [self._doc("a", doc_type="po", em=1.0),
+                self._doc("b", doc_type="po", verdict="REVIEW",
+                          has_data=False, em=0.0, sim=0.0, f1=0.0)]
+        out = M.aggregate_run(docs)
+        assert out["per_doc_type"]["po"]["documents"] == 2
+        assert out["per_doc_type"]["po"]["exact_match_avg"] == pytest.approx(0.5)
+
+    def test_empty_input_is_safe(self):
+        out = M.aggregate_run([])
+        assert out["documents"] == 0
+        assert out["overall"]["exact_match_avg"] == 0.0
+
+
 def test_evaluate_batch_averages_documents():
     gt1 = {"invoice_number": "A", "total_amount": 100.0}
     gt2 = {"invoice_number": "B", "total_amount": 200.0}

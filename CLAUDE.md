@@ -97,11 +97,13 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 ## Phase 2 backlog — priority-ordered
 
 Rule: **no accuracy number goes into marketing, demo, or sales material until
-P0-1 and P0-2 are closed.** P0-2 is now closed — the current figure is
-**98.44%** field-level EM on a corpus verified 0/596 contaminated
-(`docs/measurements/2026-09-02-post-render-fix.md`). P0-1 is still open: 1
-document in 60 fails extraction and is skipped silently, so the number does not
-yet support the core claim ("does not silently return a wrong answer").
+P0-1 and P0-2 are closed.** P0-2 is closed — the current figure is
+**96.79%** field-level EM over all 60 documents, on a corpus verified 0/596
+contaminated (`docs/measurements/2026-09-02-post-render-fix.md`). P0-1 is
+partly closed: the rule is codified and the harness now counts failures, but
+(b) is open — 1 document in 60 still fails extraction, so the product still has
+a failure class that reaches a human only because the pipeline flags it, not
+because it succeeded.
 
 ### P0 — must close before the product ships
 
@@ -114,11 +116,14 @@ yet support the core claim ("does not silently return a wrong answer").
     18 tests, 96% coverage, components injectable (no API in tests).
     **This subsumes the old "currency P0-2": when a field is genuinely not on
     the page the system must emit `null` + flag, never guess.**
-  - [ ] **(a1) measurement honesty.** `run_full_pipeline.py:140` still does
-    `if not extracted: continue`, so a failed document is dropped from the
-    average instead of counted. Route the harness through `DocumentPipeline`
-    and count REVIEW documents. Expect the headline to move 98.44% → 96.80%
-    — that is the correct number.
+  - [x] **(a1) measurement honesty.** `run_full_pipeline.py` now runs the
+    product path (`DocumentPipeline`) and aggregates with
+    `metrics.aggregate_run`, which keeps a failed document in the denominator
+    at 0. Headline moved **98.44% → 96.79%** (all 60 docs); 98.44% is retained
+    as the "OK documents only" view. Per-type honesty: invoice 97.5% → 92.59%,
+    because the one silent failure was an invoice — the old aggregation hid
+    that entirely. `PipelineResult.raw` added so the raw-vs-final delta is
+    still reportable. `apply_corrections` de-duplicated into `src/pipeline.py`.
   - [ ] **(b) remove the trigger.** gpt-5-nano reasoning tokens overflow
     `max_completion_tokens=4096` → `reasoning_effort="minimal"` (also cuts the
     ~15-35 s/doc latency) + retry when `_parse_json_response` returns None.

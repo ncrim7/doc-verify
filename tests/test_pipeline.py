@@ -157,6 +157,18 @@ def test_to_dict_is_json_serialisable():
     json.dumps(_pipe(_valid_invoice()).process("x.pdf", "invoice").to_dict())
 
 
+def test_raw_snapshot_survives_auto_correction():
+    bad = _valid_invoice()
+    bad["items"][0]["total"] = 999.0
+    r = _pipe(bad).process("x.pdf", "invoice")
+    assert r.raw["items"][0]["total"] == 999.0      # untouched extraction
+    assert r.data["items"][0]["total"] == 200.0     # repaired
+
+
+def test_raw_is_none_when_extraction_failed():
+    assert _pipe({}).process("x.pdf", "invoice").raw is None
+
+
 def test_needs_human_tracks_the_verdict():
     assert _pipe({}).process("x.pdf", "invoice").needs_human is True
     assert _pipe(_valid_invoice()).process("x.pdf", "invoice").needs_human is False

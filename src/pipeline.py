@@ -45,6 +45,7 @@ class PipelineResult:
     doc_type: str
     pdf_path: str
     data: Optional[dict] = None
+    raw: Optional[dict] = None      # extraction as returned, before any repair
     reasons: list[str] = field(default_factory=list)
     verification: Optional[dict] = None
     corrected: bool = False
@@ -61,6 +62,7 @@ class PipelineResult:
             "doc_type": self.doc_type,
             "pdf_path": self.pdf_path,
             "data": self.data,
+            "raw": self.raw,
             "reasons": list(self.reasons),
             "verification": self.verification,
             "corrected": self.corrected,
@@ -166,6 +168,8 @@ class DocumentPipeline:
                 timings=timings,
             )
 
+        raw = json.loads(json.dumps(extracted))   # snapshot before any repair
+
         # 3. Rule verification + deterministic auto-corrections.
         t1 = time.time()
         verification = self.verifier.verify(extracted, doc_type)
@@ -203,6 +207,7 @@ class DocumentPipeline:
             doc_type=doc_type,
             pdf_path=pdf_path,
             data=data,
+            raw=raw,
             reasons=reasons,
             verification=verification,
             corrected=corrected,

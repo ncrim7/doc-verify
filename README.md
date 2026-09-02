@@ -43,10 +43,13 @@ pass, no post-hoc tuning, model `gpt-5-nano`:
 
 | | |
 |---|---|
-| Field-level exact match | **98.44%** (59 docs; 96.80% counting 1 unparseable response as 0) |
-| Semantic similarity | 99.85% |
-| Token F1 | 99.08% |
+| **Field-level exact match, all 60 documents** | **96.79%** |
+| Same metric, the 59 documents judged OK | 98.44% |
+| Semantic similarity / token F1 (OK docs) | 99.85% / 99.08% |
 | Documents scoring a perfect 1.0 | 36 / 59 |
+
+One document produced no extraction at all and is scored 0 rather than dropped
+— dropping it is what the harness used to do.
 
 Residual errors are 30 field misses, all verified genuine — 87% of them the
 model normalising Turkish dotless `ı` to `i` (`Zımba`→`Zimba`).

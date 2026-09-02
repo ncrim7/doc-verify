@@ -1,10 +1,16 @@
 """
-Run the full pipeline: Extract → Verify → Correct → Re-verify.
-Tests the complete self-verifying agent loop.
+Measurement harness: run DocumentPipeline over a manifest and report accuracy.
+
+It measures the product path — the same `DocumentPipeline` an application would
+call — so the number describes what the product actually does.
+
+A document that fails extraction is **counted as 0, not dropped**. Dropping it
+is what let the 2026-09-02 run report 98.44% over 59 documents when the honest
+figure over all 60 was 96.80%.
 
 Usage:
-    python scripts/run_full_pipeline.py --provider openai --model gpt-4.1-mini
-    python scripts/run_full_pipeline.py --provider openai --model gpt-4.1-nano --limit 5
+    python scripts/run_full_pipeline.py --split measure
+    python scripts/run_full_pipeline.py --split test --model gpt-5-mini --limit 5
 """
 import sys
 import json
@@ -12,291 +18,189 @@ import argparse
 import logging
 from pathlib import Path
 from datetime import datetime
-from collections import defaultdict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.extraction.llm_extractor import LLMExtractor
-from src.extraction.correction_agent import CorrectionAgent
-from src.verification.rule_based_verifier import RuleBasedVerifier
-from src.evaluation.metrics import evaluate_document
-from src.config import LLM_PROVIDERS
+from src.pipeline import DocumentPipeline, Verdict          # noqa: E402
+from src.evaluation.metrics import evaluate_document, aggregate_run  # noqa: E402
+from src.config import LLM_PROVIDERS                        # noqa: E402
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    datefmt="%H:%M:%S",
-)
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(levelname)s %(message)s",
+                    datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
 RESULTS_DIR = Path("results")
+CHECKPOINT_FORMAT = 2
 
 
-def load_manifest(split: str = "test") -> list[dict]:
-    path = Path(f"data/processed/{split}_manifest.json")
-    with open(path, "r", encoding="utf-8") as f:
+def load_manifest(split: str) -> list[dict]:
+    with open(Path(f"data/processed/{split}_manifest.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
 def load_ground_truth(entry: dict) -> dict:
-    with open(entry["json"], "r", encoding="utf-8") as f:
+    with open(entry["json"], encoding="utf-8") as f:
         return json.load(f)
 
 
-def apply_corrections(extracted: dict, corrections: dict) -> dict:
-    """Apply auto-corrections from rule-based verifier."""
-    import re as re_module
-    corrected = json.loads(json.dumps(extracted))
-    for key, value in corrections.items():
-        if key.startswith("items["):
-            m = re_module.match(r"items\[(\d+)\]\.(\w+)", key)
-            if m:
-                idx, field = int(m.group(1)), m.group(2)
-                if idx < len(corrected.get("items", [])):
-                    corrected["items"][idx][field] = value
-        else:
-            corrected[key] = value
-    return corrected
+def _score(extracted: dict | None, gt: dict, doc_type: str) -> tuple[float, float, float]:
+    """Field-level EM / semantic sim / token F1, or zeros when there is no data."""
+    if not extracted:
+        return 0.0, 0.0, 0.0
+    agg = evaluate_document(extracted, gt, doc_type)["aggregate"]
+    return (agg["exact_match_avg"], agg["semantic_similarity_avg"],
+            agg["token_f1_avg"])
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Full self-verifying pipeline")
+    p = argparse.ArgumentParser(description="Run the pipeline over a manifest")
     p.add_argument("--provider", default="openai")
-    p.add_argument("--model", default=None, help="Model override (e.g., gpt-4.1-mini)")
+    p.add_argument("--model", default=None, help="Model override (e.g. gpt-5-mini)")
     p.add_argument("--strategy", default="direct")
-    p.add_argument("--split", default="test")
+    p.add_argument("--split", default="measure")
     p.add_argument("--limit", type=int, default=None)
-    p.add_argument("--no-correction", action="store_true", help="Skip correction agent")
-    p.add_argument("--delay", type=float, default=0.0,
-                   help="Seconds to wait between documents (for rate limiting)")
+    p.add_argument("--no-correction", action="store_true")
+    p.add_argument("--delay", type=float, default=0.0)
     p.add_argument("--checkpoint", action="store_true",
-                   help="Save checkpoint after each doc and resume if interrupted")
+                   help="Save after each document and resume if interrupted")
     args = p.parse_args()
-
-    logger.info("=" * 65)
-    logger.info("FULL SELF-VERIFYING PIPELINE")
-    logger.info("  Provider: %s | Model: %s | Strategy: %s",
-                args.provider, args.model or "default", args.strategy)
-    logger.info("=" * 65)
 
     manifest = load_manifest(args.split)
     if args.limit:
         manifest = manifest[:args.limit]
 
-    # Checkpoint setup
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    provider_tag = args.provider.replace("-", "_")
-    ckpt_path = RESULTS_DIR / f"checkpoint_{provider_tag}_{args.split}.json"
-    checkpoint = {}
+    ckpt_path = RESULTS_DIR / f"checkpoint_{args.provider.replace('-', '_')}_{args.split}.json"
+    checkpoint: dict = {}
     if args.checkpoint and ckpt_path.exists():
-        checkpoint = json.loads(ckpt_path.read_text(encoding="utf-8"))
-        logger.info("Resuming from checkpoint: %d docs already done", len(checkpoint))
+        saved = json.loads(ckpt_path.read_text(encoding="utf-8"))
+        if saved.get("_format") == CHECKPOINT_FORMAT:
+            checkpoint = saved.get("docs", {})
+            logger.info("Resuming: %d documents already done", len(checkpoint))
+        else:
+            logger.warning("Ignoring checkpoint written in an older format")
 
-
-    # Model override
     original_model = None
     if args.model:
         original_model = LLM_PROVIDERS[args.provider]["model"]
         LLM_PROVIDERS[args.provider]["model"] = args.model
 
+    logger.info("=" * 68)
+    logger.info("PIPELINE MEASUREMENT")
+    logger.info("  provider=%s  model=%s  strategy=%s  split=%s  docs=%d",
+                args.provider, args.model or LLM_PROVIDERS[args.provider]["model"],
+                args.strategy, args.split, len(manifest))
+    logger.info("=" * 68)
+
     try:
-        # Initialize components
-        extractor = LLMExtractor(provider=args.provider, strategy=args.strategy)
-        verifier = RuleBasedVerifier()
-        corrector = None if args.no_correction else CorrectionAgent(
-            provider=args.provider, model_override=args.model
+        pipeline = DocumentPipeline(
+            provider=args.provider,
+            strategy=args.strategy,
+            enable_correction=not args.no_correction,
         )
 
-        # Results storage
-        results_baseline = []      # raw extraction
-        results_verified = []      # after rule verification + corrections
-        results_corrected = []     # after correction agent
-
-        stats = defaultdict(int)
-
+        rows: list[dict] = []
         for i, entry in enumerate(manifest, 1):
+            doc_id = entry.get("doc_id", Path(entry["pdf"]).stem)
             doc_type = entry["doc_type"]
-            pdf_path = entry["pdf"]
-            doc_id = entry.get("doc_id", Path(pdf_path).stem)
+            logger.info("[%d/%d] %s (%s)", i, len(manifest),
+                        Path(entry["pdf"]).name, doc_type)
+
+            if doc_id in checkpoint:
+                logger.info("  [skip] in checkpoint")
+                rows.append(checkpoint[doc_id])
+                continue
+
             gt = load_ground_truth(entry)
+            result = pipeline.process(entry["pdf"], doc_type)
 
-            logger.info("\n[%d/%d] %s (%s)", i, len(manifest),
-                        Path(pdf_path).name, doc_type)
+            em, sim, f1 = _score(result.data, gt, doc_type)
+            raw_em, _, _ = _score(result.raw, gt, doc_type)
 
-            # Resume: skip already-processed docs
-            if args.checkpoint and doc_id in checkpoint:
-                logger.info("  [SKIP] already in checkpoint")
-                saved = checkpoint[doc_id]
-                results_baseline.append(saved["baseline"])
-                results_verified.append(saved["verified"])
-                results_corrected.append(saved["corrected"])
-                stats["total_issues"] += saved.get("issues", 0)
-                stats["auto_corrections"] += saved.get("auto_corrections", 0)
-                stats["correction_calls"] += saved.get("correction_calls", 0)
-                continue
+            row = {
+                "doc_id": doc_id,
+                "doc_type": doc_type,
+                "verdict": result.verdict.value,
+                "has_data": result.data is not None,
+                "em": em, "sim": sim, "f1": f1,
+                "raw_em": raw_em,
+                "reasons": result.reasons,
+                "corrected": result.corrected,
+            }
+            rows.append(row)
 
-            # --- Step 1: Extract ---
-            extracted = extractor.extract(pdf_path, doc_type)
-            if not extracted:
-                logger.warning("  Extraction failed, skipping")
-                results_baseline.append({})
-                results_verified.append({})
-                results_corrected.append({})
-                continue
-
-            # Evaluate baseline
-            eval_baseline = evaluate_document(extracted, gt, doc_type)
-            results_baseline.append(eval_baseline)
-
-            # --- Step 2: Rule-based verification ---
-            verif = verifier.verify(extracted, doc_type)
-            rule_corrected = apply_corrections(extracted, verif["auto_corrections"])
-
-            eval_verified = evaluate_document(rule_corrected, gt, doc_type)
-            results_verified.append(eval_verified)
-
-            stats["total_issues"] += len(verif["issues"])
-            stats["auto_corrections"] += len(verif["auto_corrections"])
-
-            # --- Step 3: Correction agent (if issues found) ---
-            if corrector and verif["issues"]:
-                logger.info("  %d issues found, running correction agent...",
-                            len(verif["issues"]))
-                final = corrector.correct(rule_corrected, pdf_path, verif["issues"], doc_type)
-                stats["correction_calls"] += 1
+            if result.verdict is Verdict.OK:
+                logger.info("  OK      EM %.1f%%", em * 100)
             else:
-                final = rule_corrected
+                logger.warning("  REVIEW  EM %.1f%%  <- %s",
+                               em * 100, "; ".join(result.reasons[:3]))
 
-            eval_corrected = evaluate_document(final, gt, doc_type)
-            results_corrected.append(eval_corrected)
-
-            # Log progress
-            base_em = eval_baseline["aggregate"]["exact_match_avg"]
-            final_em = eval_corrected["aggregate"]["exact_match_avg"]
-            delta = final_em - base_em
-            if abs(delta) > 0.001:
-                logger.info("  EM: %.1f%% → %.1f%% (%+.1f%%)",
-                            base_em * 100, final_em * 100, delta * 100)
-            else:
-                logger.info("  EM: %.1f%% (no change)", base_em * 100)
-
-            # Checkpoint save
             if args.checkpoint:
-                checkpoint[doc_id] = {
-                    "baseline": eval_baseline,
-                    "verified": eval_verified,
-                    "corrected": eval_corrected,
-                    "issues": len(verif["issues"]),
-                    "auto_corrections": len(verif["auto_corrections"]),
-                    "correction_calls": 1 if (corrector and verif["issues"]) else 0,
-                }
+                checkpoint[doc_id] = row
                 ckpt_path.write_text(
-                    json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8"
-                )
+                    json.dumps({"_format": CHECKPOINT_FORMAT, "docs": checkpoint},
+                               ensure_ascii=False, indent=2),
+                    encoding="utf-8")
 
-            # Rate limit delay
             if args.delay > 0:
                 import time
                 time.sleep(args.delay)
 
         # ------------------------------------------------------------------
-        # Aggregate results
-        # ------------------------------------------------------------------
-        def avg_metric(results, key):
-            vals = [r["aggregate"][key] for r in results if r and "aggregate" in r]
-            return sum(vals) / max(len(vals), 1)
+        agg = aggregate_run(rows)
+        raw_em_all = round(sum(r["raw_em"] for r in rows) / max(len(rows), 1), 4)
 
-        n = len(manifest)
-        metrics = {}
-        for label, results in [("baseline", results_baseline),
-                                ("verified", results_verified),
-                                ("corrected", results_corrected)]:
-            metrics[label] = {
-                "em": avg_metric(results, "exact_match_avg"),
-                "sim": avg_metric(results, "semantic_similarity_avg"),
-                "f1": avg_metric(results, "token_f1_avg"),
-            }
+        logger.info("\n" + "=" * 68)
+        logger.info("RESULTS  (%d documents)", agg["documents"])
+        logger.info("=" * 68)
+        for verdict, n in sorted(agg["verdicts"].items()):
+            logger.info("  verdict %-8s %3d", verdict, n)
+        logger.info("    of which produced no data at all: %d", agg["no_data"])
+        logger.info("-" * 68)
+        o, ok = agg["overall"], agg["ok_only"]
+        logger.info("  %-34s %8s %8s %8s", "", "EM", "Sim", "F1")
+        logger.info("  %-34s %7.2f%% %7.2f%% %7.2f%%",
+                    f"ALL documents (n={o['documents']})",
+                    o["exact_match_avg"] * 100, o["semantic_similarity_avg"] * 100,
+                    o["token_f1_avg"] * 100)
+        logger.info("  %-34s %7.2f%% %7.2f%% %7.2f%%",
+                    f"OK documents only (n={ok['documents']})",
+                    ok["exact_match_avg"] * 100, ok["semantic_similarity_avg"] * 100,
+                    ok["token_f1_avg"] * 100)
+        logger.info("-" * 68)
+        logger.info("  raw extraction EM (before repair/correction): %.2f%%",
+                    raw_em_all * 100)
+        logger.info("  delta from repair + correction:               %+.2f pp",
+                    (o["exact_match_avg"] - raw_em_all) * 100)
+        logger.info("=" * 68)
+        logger.info("  ALL-documents EM is the honest headline. 'OK' means no")
+        logger.info("  detectable problem, not 'correct'.")
+        logger.info("=" * 68)
 
-        logger.info("\n" + "=" * 65)
-        logger.info("FULL PIPELINE RESULTS (%d docs)", n)
-        logger.info("=" * 65)
-        logger.info("%-25s %12s %12s %12s", "Stage", "Exact Match", "Semantic Sim", "Token F1")
-        logger.info("-" * 65)
-        for label in ["baseline", "verified", "corrected"]:
-            m = metrics[label]
-            logger.info("%-25s %11.2f%% %11.2f%% %11.2f%%",
-                        label.capitalize(), m["em"]*100, m["sim"]*100, m["f1"]*100)
-        logger.info("=" * 65)
+        logger.info("\nPer document type (all documents):")
+        for dtype, blk in agg["per_doc_type"].items():
+            logger.info("  %-9s %6.2f%% EM  (n=%d)",
+                        dtype, blk["exact_match_avg"] * 100, blk["documents"])
 
-        # Delta
-        base_em = metrics["baseline"]["em"]
-        final_em = metrics["corrected"]["em"]
-        logger.info("\nTotal improvement: %.2f%% → %.2f%% (%+.2f%%)",
-                    base_em * 100, final_em * 100, (final_em - base_em) * 100)
-        logger.info("Issues found: %d | Auto-corrections: %d | Correction calls: %d",
-                    stats["total_issues"], stats["auto_corrections"],
-                    stats["correction_calls"])
-
-        # Per doc type
-        by_type = defaultdict(list)
-        for idx, entry in enumerate(manifest):
-            if idx < len(results_corrected) and results_corrected[idx]:
-                by_type[entry["doc_type"]].append(
-                    results_corrected[idx]["aggregate"]["exact_match_avg"]
-                )
-
-        logger.info("\nPer document type (after correction):")
-        for dtype in sorted(by_type.keys()):
-            scores = by_type[dtype]
-            avg = sum(scores) / len(scores) * 100
-            logger.info("  %s: %.1f%% EM (n=%d)", dtype, avg, len(scores))
-
-        # Save results
-        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_tag = (args.model or "default").replace(".", "").replace("-", "")
-        result_file = RESULTS_DIR / f"pipeline_{model_tag}_{args.strategy}_{ts}.json"
-
-        output = {
+        model_tag = (args.model or LLM_PROVIDERS[args.provider]["model"]) \
+            .replace(".", "").replace("-", "")
+        out_path = RESULTS_DIR / f"pipeline_{model_tag}_{args.strategy}_{ts}.json"
+        out_path.write_text(json.dumps({
             "timestamp": ts,
             "config": {
                 "provider": args.provider,
                 "model": args.model or LLM_PROVIDERS[args.provider]["model"],
                 "strategy": args.strategy,
                 "split": args.split,
-                "num_documents": n,
                 "correction_enabled": not args.no_correction,
             },
-            "stages": {
-                stage: {
-                    "exact_match_avg": round(metrics[stage]["em"], 4),
-                    "semantic_similarity_avg": round(metrics[stage]["sim"], 4),
-                    "token_f1_avg": round(metrics[stage]["f1"], 4),
-                }
-                for stage in ["baseline", "verified", "corrected"]
-            },
-            "improvement": {
-                "em_delta": round(final_em - base_em, 4),
-                "sim_delta": round(metrics["corrected"]["sim"] - metrics["baseline"]["sim"], 4),
-                "f1_delta": round(metrics["corrected"]["f1"] - metrics["baseline"]["f1"], 4),
-            },
-            "stats": dict(stats),
-            "per_document": [
-                {
-                    "doc_id": manifest[i]["doc_id"],
-                    "doc_type": manifest[i]["doc_type"],
-                    "baseline_em": results_baseline[i]["aggregate"]["exact_match_avg"]
-                    if results_baseline[i] and "aggregate" in results_baseline[i] else None,
-                    "corrected_em": results_corrected[i]["aggregate"]["exact_match_avg"]
-                    if results_corrected[i] and "aggregate" in results_corrected[i] else None,
-                }
-                for i in range(len(manifest))
-            ],
-        }
-
-        with open(result_file, "w", encoding="utf-8") as f:
-            json.dump(output, f, indent=2, ensure_ascii=False)
-        logger.info("\nResults saved → %s", result_file)
+            "aggregate": agg,
+            "raw_extraction_em": raw_em_all,
+            "per_document": rows,
+        }, indent=2, ensure_ascii=False), encoding="utf-8")
+        logger.info("\nResults saved -> %s", out_path)
 
     finally:
         if original_model:

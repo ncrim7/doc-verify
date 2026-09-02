@@ -23,18 +23,34 @@ attributable to the generator fix alone.
 
 ## Result
 
-| Metric | Invalidated run | **This run** | Δ |
-|---|---|---|---|
-| Field-level exact match | 96.10% | **98.44%** | **+2.34** |
-| Semantic similarity | 99.11% | **99.85%** | +0.74 |
-| Token F1 | 97.92% | **99.08%** | +1.16 |
-| Docs scored | 58 / 60 | 59 / 60 | |
-| Documents scoring a perfect 1.0 | 20 / 58 (34%) | **36 / 59 (61%)** | +27 pp |
-| Lowest document | 0.842 | 0.895 | |
+**Headline: 96.79% field-level exact match over all 60 documents.**
 
-Per type: invoice 97.5% (n=19) · PO 98.5% (n=20) · receipt 99.3% (n=20).
+One document produced no data at all (D1) and is counted as 0 — not dropped.
+The 98.44% figure below is the same metric restricted to the 59 documents the
+pipeline judged OK; it is kept for continuity with the invalidated run, but it
+is not the headline. (Recomputed from the committed `*.results.json` with
+`metrics.aggregate_run`, added in P0-1(a1).)
 
-Counting the one unparseable document as 0% gives **96.80%**.
+| Metric | Invalidated run | **This run** |
+|---|---|---|
+| **EM, all documents (n=60)** | — | **96.79%** |
+| EM, OK documents only (n=59) | 96.10% (over 58) | 98.44% |
+| Semantic similarity (OK docs) | 99.11% | 99.85% |
+| Token F1 (OK docs) | 97.92% | 99.08% |
+| Documents scoring a perfect 1.0 | 20 / 58 (34%) | **36 / 59 (61%)** |
+| Lowest scoring document | 0.842 | 0.895 |
+
+Per type, **with the failure counted**:
+
+| | all documents | OK only |
+|---|---|---|
+| invoice | **92.59%** (n=20) | 97.5% (n=19) |
+| PO | 98.48% (n=20) | 98.5% (n=20) |
+| receipt | 99.31% (n=20) | 99.3% (n=20) |
+
+The invoice figure moves 97.5% → 92.59% once the failed document is counted:
+the single silent failure landed in one document type, which the "drop the
+failure" aggregation hid entirely.
 
 Baseline == verified == corrected again (see D4).
 
