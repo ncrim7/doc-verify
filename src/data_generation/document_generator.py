@@ -501,18 +501,23 @@ class DocumentGenerator:
         story.append(Paragraph(f"{lbl['cashier']}: {gt['cashier']}", small))
         story.append(Spacer(1, 4*mm))
 
-        # narrow 40 mm description column — wrap in Paragraph so long item names
-        # wrap instead of being clipped
+        # Narrow description column — wrap in Paragraph so long item names wrap
+        # instead of being clipped.
+        # The middle column carries "qty x unit_price", the way a real till
+        # receipt prints it. Without it `unit_price` is in the ground truth but
+        # nowhere on the page, and the model can only guess — that is what sank
+        # receipt accuracy in the 2026-09-02 (3) run.
         rows = [[lbl["description"], lbl["qty"], lbl["total"]]]
         for item in gt["items"]:
             rows.append([_para(item["description"], small),
-                         str(item["quantity"]), f"{item['total']:.2f}"])
+                         f"{item['quantity']} x {item['unit_price']:.2f}",
+                         f"{item['total']:.2f}"])
         rows.append([lbl["subtotal"], "", f"{gt['subtotal']:.2f}"])
         rows.append([lbl["tax"],      "", f"{gt['tax_amount']:.2f}"])
         rows.append([lbl["grand_total"], "",
                      f"{gt['currency']} {gt['total_amount']:.2f}"])
 
-        it = Table(rows, colWidths=[40*mm, 10*mm, 20*mm])
+        it = Table(rows, colWidths=[32*mm, 22*mm, 16*mm])
         it.setStyle(TableStyle([
             ("FONTNAME",  (0, 0), (-1, 0), FONT_NAME_BOLD),
             ("FONTNAME",  (0, 1), (-1, -1), FONT_NAME),   # body rows: Unicode font

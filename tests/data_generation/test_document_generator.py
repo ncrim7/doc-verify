@@ -110,6 +110,35 @@ def test_rendered_pdf_contains_every_scored_field(gen, doc_type):
             assert _squash(str(gt[f])) in page, f"{f} not on the page"
 
 
+@pytest.mark.parametrize("doc_type", ["invoice", "po", "receipt"])
+def test_rendered_pdf_contains_every_scored_number(gen, doc_type):
+    """
+    The numeric half of the same contract. Money is checked as the generator
+    formats it (two decimals) — distinctive enough to be a real assertion.
+    Quantity is a bare small integer, so that check is necessarily weak; the
+    money assertions are what catch a column that is not rendered at all.
+    """
+    pdf, gt = gen.generate(doc_type)
+    page = _squash(_pdf_text(pdf))
+
+    for i, it in enumerate(gt["items"]):
+        for f in ("unit_price", "total"):
+            if f in it:
+                assert f"{float(it[f]):.2f}" in page, (
+                    f"items[{i}].{f} = {it[f]} is not printed on the page"
+                )
+        if "quantity" in it:
+            assert _squash(str(it["quantity"])) in page, (
+                f"items[{i}].quantity = {it['quantity']} is not on the page"
+            )
+
+    for f in ("subtotal", "tax_amount", "total_amount"):
+        if f in gt:
+            assert f"{float(gt[f]):.2f}" in page, (
+                f"{f} = {gt[f]} is not printed on the page"
+            )
+
+
 def test_para_helper_keeps_xml_special_chars_literal():
     # a company name like "Shell&Turcas Petrol" must not be eaten by ReportLab's
     # Paragraph XML parser
