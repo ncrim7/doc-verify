@@ -37,6 +37,7 @@ class LLMExtractor:
         self.strategy = strategy
         self.config = LLM_PROVIDERS[provider]
         self.call_log: list[dict] = []
+        self.retries = 0              # unparseable responses that were retried
         self._last_usage: dict = {}   # populated by each _call_* method
 
         logger.info("LLMExtractor initialized: provider=%s, strategy=%s, model=%s",
@@ -99,8 +100,24 @@ class LLMExtractor:
                 raw_response = self._call_groq(image_bytes, user_prompt, pdf_path)
             elapsed = time.time() - t0
 
-        # Parse JSON from response
+        # Parse JSON from response. An unparseable response is retried exactly
+        # once — the failure is stochastic (a different document failed on each
+        # run, see docs/measurements/2026-09-02-post-render-fix.md D1), so a
+        # second attempt usually succeeds. Bounded at one retry: an extraction
+        # that still will not parse must reach the caller as {} so the pipeline
+        # turns it into REVIEW rather than looping.
         extracted = self._parse_json_response(raw_response)
+        if extracted is None:
+            logger.warning("Unparseable %s response for %s — retrying once",
+                           self.provider, pdf_path.name)
+            self.retries += 1
+            t_retry = time.time()
+            try:
+                raw_response = self._raw_call(image_bytes, user_prompt, pdf_path)
+                elapsed += time.time() - t_retry
+                extracted = self._parse_json_response(raw_response)
+            except Exception as exc:      # noqa: BLE001 - retry is best-effort
+                logger.warning("  retry failed: %s", exc)
 
         # Compute cost for call_log
         cost_per_1k = self.config.get("cost_per_1k_tokens", 0.01)
@@ -124,8 +141,9 @@ class LLMExtractor:
         })
 
         if extracted is None:
-            logger.warning("Failed to parse JSON from %s response for %s",
-                           self.provider, pdf_path.name)
+            logger.error("Still unparseable after retry — %s (%s). Returning {} "
+                         "so the pipeline flags it for review.",
+                         pdf_path.name, self.provider)
             return {}
 
         # Aritmetik tutarlılık onarımı (Çözüm #2): büyük sayılarda basamak
@@ -243,6 +261,14 @@ class LLMExtractor:
     # Provider implementations
     # ------------------------------------------------------------------
 
+    def _raw_call(self, image_bytes: bytes, user_prompt: str, pdf_path) -> str:
+        """One provider call, no tracing wrapper. Used by the retry path."""
+        if self.config["backend"] == "openai":
+            return self._call_openai(image_bytes, user_prompt)
+        if self.config["backend"] == "groq":
+            return self._call_groq(image_bytes, user_prompt, pdf_path)
+        raise ValueError(f"Provider not implemented: {self.provider}")
+
     def _call_openai(self, image_bytes: bytes, user_prompt: str) -> str:
         """Call OpenAI Vision API with image."""
         import openai
@@ -268,12 +294,15 @@ class LLMExtractor:
                     ],
                 },
             ],
-            max_completion_tokens=4096,
+            max_completion_tokens=8192,
             response_format={"type": "json_object"},
         )
         temp = self.config.get("temperature", 0.0)
         if temp is not None:
             call_kwargs["temperature"] = temp
+        effort = self.config.get("reasoning_effort")
+        if effort:
+            call_kwargs["reasoning_effort"] = effort
         resp = client.chat.completions.create(**call_kwargs)
         if resp.usage:
             self._last_usage = {

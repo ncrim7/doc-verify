@@ -44,13 +44,22 @@ def load_ground_truth(entry: dict) -> dict:
         return json.load(f)
 
 
-def _score(extracted: dict | None, gt: dict, doc_type: str) -> tuple[float, float, float]:
-    """Field-level EM / semantic sim / token F1, or zeros when there is no data."""
+def _score(extracted: dict | None, gt: dict, doc_type: str) -> tuple[float, float, float, list]:
+    """
+    Field-level EM / semantic sim / token F1 plus the list of fields that
+    missed, so a run is diagnosable from its own output without a second
+    API pass.
+    """
     if not extracted:
-        return 0.0, 0.0, 0.0
-    agg = evaluate_document(extracted, gt, doc_type)["aggregate"]
+        return 0.0, 0.0, 0.0, []
+    ev = evaluate_document(extracted, gt, doc_type)
+    agg = ev["aggregate"]
+    misses = [
+        {"field": name, "gt": fd["ground_truth"], "pred": fd["predicted"]}
+        for name, fd in ev["fields"].items() if fd["exact_match"] == 0.0
+    ]
     return (agg["exact_match_avg"], agg["semantic_similarity_avg"],
-            agg["token_f1_avg"])
+            agg["token_f1_avg"], misses)
 
 
 def main() -> None:
@@ -115,8 +124,8 @@ def main() -> None:
             gt = load_ground_truth(entry)
             result = pipeline.process(entry["pdf"], doc_type)
 
-            em, sim, f1 = _score(result.data, gt, doc_type)
-            raw_em, _, _ = _score(result.raw, gt, doc_type)
+            em, sim, f1, misses = _score(result.data, gt, doc_type)
+            raw_em, _, _, _ = _score(result.raw, gt, doc_type)
 
             row = {
                 "doc_id": doc_id,
@@ -127,6 +136,7 @@ def main() -> None:
                 "raw_em": raw_em,
                 "reasons": result.reasons,
                 "corrected": result.corrected,
+                "misses": misses,
             }
             rows.append(row)
 

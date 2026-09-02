@@ -32,6 +32,12 @@ LLM_PROVIDERS: dict = {
         "model": _MODEL,
         "backend": "openai",
         "temperature": None if _MODEL.startswith("gpt-5") else 0.0,
+        # gpt-5 models spend "reasoning" tokens out of max_completion_tokens.
+        # On vision extraction that budget ran out mid-JSON and the response
+        # came back unparseable (docs/measurements/2026-09-02-post-render-fix.md,
+        # D1). "minimal" measures at 0 reasoning tokens and is also ~3x faster.
+        # None for models that do not accept the parameter.
+        "reasoning_effort": "minimal" if _MODEL.startswith("gpt-5") else None,
         "cost_per_1k_tokens": _COST_PER_1K.get(_MODEL, 0.00005),
     },
     # --- Optional: Groq / Llama-4 Scout vision -----------------------------

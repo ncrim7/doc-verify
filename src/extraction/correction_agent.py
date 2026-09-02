@@ -135,12 +135,15 @@ class CorrectionAgent:
                     ],
                 },
             ],
-            max_completion_tokens=4096,
+            max_completion_tokens=8192,
             response_format={"type": "json_object"},
         )
         temp = self.config.get("temperature", 0.0)
         if temp is not None:
             call_kwargs["temperature"] = temp
+        effort = self.config.get("reasoning_effort")
+        if effort:
+            call_kwargs["reasoning_effort"] = effort
         resp = client.chat.completions.create(**call_kwargs)
 
         raw = resp.choices[0].message.content.strip()
