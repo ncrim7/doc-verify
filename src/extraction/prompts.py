@@ -24,11 +24,16 @@ after you have carefully scanned the WHOLE document:
 Only use null when, after carefully scanning the entire document, the value is truly
 not present.
 
-WARNING: The input may be rendered from documents where Turkish characters
-(ç, ğ, ı, ö, ş, ü, İ) can be misread as 'I', 'II', 's', 'g', 'c' or dropped entirely
-(e.g. 'SatIcI' instead of 'Satıcı', 'KoIullar' instead of 'Koşullar'). Auto-correct
-these typos to proper Turkish words based on context. Preserve company-type suffixes
-EXACTLY as written (A.Ş., Ltd. Şti., San. ve Tic. A.Ş.) — do not truncate them."""
+TURKISH TEXT — TRANSCRIBE, DO NOT CORRECT. Copy every string exactly as it is
+printed on the page, character for character.
+- Preserve every Turkish letter as-is: ı ğ ş ç ö ü İ Ğ Ş Ç Ö Ü.
+- 'ı' (dotless i) and 'i' (dotted i) are DIFFERENT letters — never swap them.
+  The same holds for ğ/g, ş/s, ö/o, ü/u, ç/c.
+- Do not transliterate to ASCII, do not normalise, do not fix spelling, do not
+  translate. If the page says "Zımba Teli", output "Zımba Teli" — not "Zimba".
+- Reproduce punctuation as printed, including quote and apostrophe characters.
+- Preserve company-type suffixes exactly (A.Ş., Ltd. Şti., San. ve Tic. A.Ş.)
+  — do not truncate them."""
 
 INVOICE_SCHEMA = """{
   "doc_type": "invoice",
