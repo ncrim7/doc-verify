@@ -53,6 +53,7 @@ class RuleBasedVerifier:
 
         # --- Plausibility checks ---
         issues += self._check_plausibility(extracted, doc_type)
+        issues += self._check_tax_ids(extracted)
 
         # Severity summary
         severity = {"critical": 0, "warning": 0, "info": 0}
@@ -363,6 +364,68 @@ class RuleBasedVerifier:
                 "message": f"Total amount {total:,.2f} seems unusually large",
             })
 
+        return issues
+
+    # ------------------------------------------------------------------
+    # Tax identifiers (P1-6)
+    # ------------------------------------------------------------------
+
+    TAX_ID_FIELDS = ("vendor_tax_id", "buyer_tax_id", "supplier_tax_id",
+                     "store_tax_id", "tax_id")
+
+    # A failed check digit means the number is provably wrong: either the model
+    # misread it or the document carries a bogus one. Both need a human before
+    # anything is posted, so this is critical. Flip to "warning" if throughput
+    # ever matters more than correctness here — it is deliberately one constant.
+    TAX_ID_SEVERITY = "critical"
+
+    def _check_tax_ids(self, extracted: dict) -> list[dict]:
+        """
+        Validate Turkish tax ids against their own check digit.
+
+        This is the only self-verifying field in the schema — no second source
+        and no model call needed. On the real-document pilot it separates all
+        four genuine ids from all three model corruptions.
+
+        Known limit: a 10-digit *foreign* numeric tax id (Russia's INN, say)
+        would be judged by the VKN algorithm and could be flagged wrongly. For
+        a Turkey-facing bookkeeping product the trade is worth it, and lengths
+        Turkey does not use are explicitly not judged.
+        """
+        from src.verification.tax_id import classify_tax_id
+
+        issues = []
+        for field in self.TAX_ID_FIELDS:
+            if field not in extracted:
+                continue
+            raw = extracted.get(field)
+            if raw is None or str(raw).strip() == "":
+                continue
+
+            verdict = classify_tax_id(raw)
+            if verdict["valid"] is True:
+                continue
+            if verdict["valid"] is None:
+                # We cannot judge it. Say so quietly rather than guess.
+                issues.append({
+                    "rule": "tax_id_unverifiable",
+                    "field": field,
+                    "severity": "info",
+                    "message": f"{field} '{raw}' not checked: {verdict['reason']}",
+                    "value": raw,
+                })
+                continue
+
+            issues.append({
+                "rule": "tax_id_checksum_invalid",
+                "field": field,
+                "severity": self.TAX_ID_SEVERITY,
+                "message": (f"{field} '{raw}' fails the "
+                            f"{verdict['kind'].upper()} check digit — "
+                            f"misread, or the document carries a bogus number"),
+                "value": raw,
+                "kind": verdict["kind"],
+            })
         return issues
 
     # ------------------------------------------------------------------
