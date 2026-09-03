@@ -157,6 +157,33 @@ def test_to_dict_is_json_serialisable():
     json.dumps(_pipe(_valid_invoice()).process("x.pdf", "invoice").to_dict())
 
 
+def test_pipeline_does_not_fabricate_a_printed_total():
+    """
+    P0-4, end to end. arithmetic_repair no longer overwrites a printed total;
+    the rule verifier's auto-corrections must not re-introduce the same
+    fabrication one layer later, because apply_corrections writes them straight
+    into the data.
+
+    Shape taken from the real telecom bill: subtotal and tax do not add up to
+    the printed total, because the bill also carries discounts, a carried-over
+    balance and a late fee. The right answer is to flag it, not to invent one.
+    """
+    bill = {
+        "invoice_number": "X-1", "date": "2026-07-31", "vendor_name": "V",
+        "items": [{"description": "İnternet", "quantity": 1,
+                   "unit_price": 990.01, "total": 990.01}],
+        "subtotal": 990.01,
+        "tax_amount": 141.82,
+        "total_amount": 615.43,          # printed on the page, twice
+    }
+    r = _pipe(bill).process("x.pdf", "invoice")
+    assert r.data["total_amount"] == 615.43, (
+        f"a printed total was overwritten with {r.data['total_amount']}"
+    )
+    assert r.data["subtotal"] == 990.01, "a printed subtotal was overwritten"
+    assert r.verdict == Verdict.REVIEW, "the mismatch has to reach a human"
+
+
 def test_raw_snapshot_survives_auto_correction():
     bad = _valid_invoice()
     bad["items"][0]["total"] = 999.0

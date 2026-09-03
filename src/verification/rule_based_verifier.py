@@ -203,7 +203,9 @@ class RuleBasedVerifier:
                     "expected": item_sum,
                     "actual": subtotal,
                 })
-                corrections["subtotal"] = item_sum
+                # No auto-correction. A subtotal printed on the page is
+                # evidence; our sum is inference. Flag it, never overwrite it.
+                # P0-4 — docs/measurements/2026-09-02-real-pilot.md
 
         # Total = subtotal + tax
         total = self._to_float(extracted.get("total_amount"))
@@ -219,7 +221,9 @@ class RuleBasedVerifier:
                     "expected": expected_total,
                     "actual": total,
                 })
-                corrections["total_amount"] = expected_total
+                # No auto-correction — see above. On a bill carrying discounts,
+                # a carried-over balance, a late fee or two tax bases this
+                # mismatch is real information, not an error to paper over.
 
         return issues, corrections
 
@@ -259,7 +263,7 @@ class RuleBasedVerifier:
                     "expected": item_sum,
                     "actual": total,
                 })
-                corrections["total_amount"] = item_sum
+                # No auto-correction — a printed PO total is evidence. P0-4.
 
         return issues, corrections
 

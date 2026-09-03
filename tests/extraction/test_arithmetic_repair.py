@@ -40,26 +40,24 @@ class TestRepairArithmetic:
         repair_arithmetic(d, "invoice")
         assert d["items"][0]["total"] == 30.005
 
-    def test_subtotal_corrected_only_when_key_present(self):
-        with_key = {"items": [{"quantity": 2, "unit_price": 10, "total": 20}],
-                    "subtotal": 999}
-        repair_arithmetic(with_key, "invoice")
-        assert with_key["subtotal"] == 20.0
+    # NOTE: the three tests below asserted the pre-P0-4 contract, where a
+    # computed value overwrote a printed one. That behaviour was deliberately
+    # removed (see TestNeverOverwritesEvidence); these now pin the replacement.
 
+    def test_subtotal_key_is_never_invented(self):
         without_key = {"items": [{"quantity": 2, "unit_price": 10, "total": 20}]}
         repair_arithmetic(without_key, "invoice")
         assert "subtotal" not in without_key
 
-    def test_total_amount_is_subtotal_plus_tax(self):
+    def test_total_amount_is_subtotal_plus_tax_when_absent(self):
         d = {"items": [{"quantity": 1, "unit_price": 100, "total": 100}],
-             "subtotal": 100, "tax_amount": 18, "total_amount": 200}
+             "subtotal": 100, "tax_amount": 18}
         repair_arithmetic(d, "invoice")
         assert d["total_amount"] == 118.0
 
-    def test_total_amount_falls_back_to_line_sum_for_po(self):
+    def test_total_amount_falls_back_to_line_sum_for_po_when_absent(self):
         d = {"items": [{"quantity": 2, "unit_price": 25, "total": 50},
-                       {"quantity": 1, "unit_price": 30, "total": 30}],
-             "total_amount": 999}
+                       {"quantity": 1, "unit_price": 30, "total": 30}]}
         repair_arithmetic(d, "po")
         assert d["total_amount"] == 80.0
 
@@ -82,3 +80,55 @@ class TestRepairArithmetic:
     def test_returns_same_object(self):
         d = {"items": []}
         assert repair_arithmetic(d, "invoice") is d
+
+
+class TestNeverOverwritesEvidence:
+    """
+    P0-4. A value printed on the document is evidence; a value we compute is
+    inference. Inference fills gaps; it never silently overwrites evidence.
+
+    Found on a real telecom bill where the payable amount is printed twice,
+    once highlighted, and the module replaced it with subtotal+tax — wrong by
+    ~2x, verdict OK. The module's assumptions hold for a clean commercial
+    invoice and not for a bill carrying discounts, a carried-over balance, a
+    late fee and two tax bases.
+    """
+
+    def test_present_total_amount_is_not_overwritten(self):
+        d = {"items": [{"quantity": 1, "unit_price": 990.01, "total": 990.01}],
+             "subtotal": 990.01, "tax_amount": 141.82,
+             "total_amount": 615.43}          # printed on the page
+        repair_arithmetic(d, "invoice")
+        assert d["total_amount"] == 615.43
+
+    def test_absent_total_amount_is_still_filled(self):
+        d = {"items": [{"quantity": 1, "unit_price": 100.0, "total": 100.0}],
+             "subtotal": 100.0, "tax_amount": 18.0}
+        repair_arithmetic(d, "invoice")
+        assert d["total_amount"] == 118.0
+
+    def test_present_subtotal_is_not_overwritten(self):
+        d = {"items": [{"quantity": 1, "unit_price": 10.0, "total": 10.0}],
+             "subtotal": 999.0}               # printed, disagrees with the items
+        repair_arithmetic(d, "invoice")
+        assert d["subtotal"] == 999.0
+
+    def test_absent_subtotal_is_still_filled(self):
+        d = {"items": [{"quantity": 2, "unit_price": 10.0, "total": 20.0}],
+             "subtotal": None}
+        repair_arithmetic(d, "invoice")
+        assert d["subtotal"] == 20.0
+
+    def test_item_level_repair_is_kept(self):
+        # the original justification: qty and unit_price are read reliably,
+        # the derived line total loses a digit. Two values corroborate one.
+        d = {"items": [{"quantity": 53, "unit_price": 3267.94, "total": 17320.82}]}
+        repair_arithmetic(d, "invoice")
+        assert d["items"][0]["total"] == 173200.82
+
+    def test_the_real_bill_shape_survives_intact(self):
+        d = {"items": [{"description": "İnternet", "quantity": 1,
+                        "unit_price": 990.01, "total": 990.01}],
+             "subtotal": 990.01, "tax_amount": 141.82, "total_amount": 615.43}
+        repair_arithmetic(d, "invoice")
+        assert (d["total_amount"], d["subtotal"]) == (615.43, 990.01)

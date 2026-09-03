@@ -67,18 +67,30 @@ def test_wrong_item_total_yields_critical_and_autocorrection():
     assert r["auto_corrections"].get("items[0].total") == 200.0
 
 
-def test_subtotal_mismatch_autocorrected_for_invoice():
+# P0-4: a total or subtotal printed on the page is evidence; the sum we compute
+# is inference. The verifier still raises the mismatch as critical — so the
+# document reaches a human — but it must not hand back a correction, because
+# apply_corrections would write the invented number straight into the data.
+# On a real telecom bill this replaced a figure printed twice on the page.
+
+def test_subtotal_mismatch_is_flagged_but_not_autocorrected():
     d = _clean_invoice()
     d["subtotal"] = 111.0
     r = V.verify(d, "invoice")
-    assert r["auto_corrections"].get("subtotal") == 250.0
+    assert any(i["rule"] == "subtotal_mismatch" and i["severity"] == "critical"
+               for i in r["issues"])
+    assert "subtotal" not in r["auto_corrections"]
+    assert r["valid"] is False
 
 
-def test_total_mismatch_autocorrected_for_invoice():
+def test_total_mismatch_is_flagged_but_not_autocorrected():
     d = _clean_invoice()
     d["total_amount"] = 111.0
     r = V.verify(d, "invoice")
-    assert r["auto_corrections"].get("total_amount") == 295.0
+    assert any(i["rule"] == "total_mismatch" and i["severity"] == "critical"
+               for i in r["issues"])
+    assert "total_amount" not in r["auto_corrections"]
+    assert r["valid"] is False
 
 
 def test_negative_amount_is_warning():
@@ -114,12 +126,22 @@ def test_too_many_items_is_info():
                for i in r["issues"])
 
 
-def test_po_total_is_sum_of_items():
+def test_po_total_mismatch_is_flagged_but_not_autocorrected():
     d = {"po_number": "PO-1", "date": "2026-03-15", "supplier_name": "S",
          "items": [{"quantity": 2, "unit_price": 10.0, "total": 20.0}],
          "total_amount": 999.0}
     r = V.verify(d, "po")
-    assert r["auto_corrections"].get("total_amount") == 20.0
+    assert any(i["rule"] == "total_mismatch" for i in r["issues"])
+    assert "total_amount" not in r["auto_corrections"]
+
+
+def test_item_level_corrections_are_kept():
+    # the one repair with real corroboration: qty and unit_price are two
+    # independent values confirming one derived one
+    d = _clean_invoice()
+    d["items"][0]["total"] = 999.0
+    r = V.verify(d, "invoice")
+    assert r["auto_corrections"]["items[0].total"] == 200.0
 
 
 def test_receipt_subtotal_mismatch_flags_but_does_not_autocorrect():

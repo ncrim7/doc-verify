@@ -7,8 +7,23 @@ Görsel BDM'ler büyük sayıları okurken bazen bir basamak düşürmektedir
 okunduğundan, türetilmiş sayısal alanlar (kalem toplamı, ara toplam, genel
 toplam) bileşenlerinden yeniden hesaplanarak deterministik biçimde onarılabilir.
 
-İlke: türetilmiş alan ile hesaplanan değer arasında belirgin fark varsa,
-hesaplanan (daha güvenilir) değer kullanılır. Bu, ek BDM çağrısı gerektirmez.
+İLKE (P0-4 sonrası revize edildi):
+    Sayfada yazan değer *kanıt*, bizim hesapladığımız *çıkarım*dır.
+    Çıkarım boşluğu doldurur; kanıtı asla sessizce ezmez.
+
+  - Kalem toplamı (qty × unit_price): ONARILIR. Yerel bir ilişkidir ve iki
+    bağımsız değer tek bir türetilmiş değeri doğrular. Çözüm #2'nin asıl
+    kazanımı buydu.
+  - Ara toplam / genel toplam: yalnızca EKSİKSE doldurulur. Sayfada yazan ama
+    hesapla çelişen bir toplam, modellemediğimiz bir yapının işaretidir
+    (indirim, önceki aydan devir, gecikme bedeli, iki farklı vergi matrahı) —
+    ezilmez, kural doğrulayıcıya bırakılır ve belge incelemeye düşer.
+
+Gerçek bir telekom faturasında eski davranış, sayfada iki kez basılı (biri
+vurgulu) ödenecek tutarı `ara toplam + vergi` ile ezip ~2 kat yanlış bir sayı
+yazmış, üstelik belgeyi kendi içinde tutarlı hale getirdiği için kural
+doğrulayıcıyı da kör edip `verdict: OK` ürettirmişti.
+Bkz. docs/measurements/2026-09-02-real-pilot.md
 """
 from typing import Any
 
@@ -60,14 +75,14 @@ def repair_arithmetic(data: dict, doc_type: str = None) -> dict:
     line_sum = round(sum((_num(it.get("total")) or 0.0)
                          for it in items if isinstance(it, dict)), 2)
 
-    # 2) Ara toplam (varsa) = kalem toplamları toplamı
+    # 2) Ara toplam: YALNIZCA EKSİKSE doldurulur.
+    #    Sayfada yazan ama kalem toplamıyla çelişen bir ara toplam ezilmez.
     if "subtotal" in data and items:
-        sub = _num(data.get("subtotal"))
-        if sub is None or abs(sub - line_sum) > _TOL:
+        if _num(data.get("subtotal")) is None:
             data["subtotal"] = line_sum
             repairs += 1
 
-    # 3) Genel toplam = ara toplam + vergi  (yoksa kalem toplamı)
+    # 3) Genel toplam: YALNIZCA EKSİKSE doldurulur. Aynı gerekçe.
     if items or "total_amount" in data:
         sub = _num(data.get("subtotal"))
         tax = _num(data.get("tax_amount"))
@@ -77,8 +92,7 @@ def repair_arithmetic(data: dict, doc_type: str = None) -> dict:
             expected = sub
         else:
             expected = line_sum  # ör. PO: ayrı ara toplam/vergi yok
-        ta = _num(data.get("total_amount"))
-        if expected > 0 and (ta is None or abs(ta - expected) > _TOL):
+        if _num(data.get("total_amount")) is None and expected > 0:
             data["total_amount"] = expected
             repairs += 1
 
