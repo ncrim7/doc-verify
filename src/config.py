@@ -33,13 +33,22 @@ _REASONING_EFFORT = (
     if _MODEL.startswith("gpt-5") else None
 )
 
-_COST_PER_1K: dict[str, float] = {
-    "gpt-5-nano":   0.00005,
-    "gpt-5-mini":   0.00025,
-    "gpt-4.1-nano": 0.00010,
-    "gpt-4.1-mini": 0.00040,
-    "gpt-4o-mini":  0.00015,
+# USD per 1K tokens, (input, output). Output is the expensive half and this
+# workload is output-heavy relative to its price: measured on the 60-document
+# corpus, gpt-5-nano averages 4846 input and 991 output tokens per document, so
+# output is 62% of the bill despite being 17% of the tokens.
+#
+# This used to be a single number applied to input+output, which understated
+# the real cost by 1.9x. It is informational, but a figure someone watches a
+# balance against should not be wrong.
+_COST_PER_1K: dict[str, tuple[float, float]] = {
+    "gpt-5-nano":   (0.00005, 0.00040),
+    "gpt-5-mini":   (0.00025, 0.00200),
+    "gpt-4.1-nano": (0.00010, 0.00040),
+    "gpt-4.1-mini": (0.00040, 0.00160),
+    "gpt-4o-mini":  (0.00015, 0.00060),
 }
+_RATES = _COST_PER_1K.get(_MODEL, (0.00005, 0.00040))
 
 LLM_PROVIDERS: dict = {
     "openai": {
@@ -48,7 +57,8 @@ LLM_PROVIDERS: dict = {
         "backend": "openai",
         "temperature": None if _MODEL.startswith("gpt-5") else 0.0,
         "reasoning_effort": _REASONING_EFFORT,
-        "cost_per_1k_tokens": _COST_PER_1K.get(_MODEL, 0.00005),
+        "cost_per_1k_input": _RATES[0],
+        "cost_per_1k_output": _RATES[1],
     },
     # --- Optional: Groq / Llama-4 Scout vision -----------------------------
     # Disabled by default: customer documents should not transit a second

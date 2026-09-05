@@ -119,10 +119,17 @@ class LLMExtractor:
             except Exception as exc:      # noqa: BLE001 - retry is best-effort
                 logger.warning("  retry failed: %s", exc)
 
-        # Compute cost for call_log
-        cost_per_1k = self.config.get("cost_per_1k_tokens", 0.01)
+        # Compute cost for call_log. Input and output are priced separately —
+        # output is 8x input on gpt-5-nano and 62% of this workload's bill, so
+        # the old single-rate-on-total-tokens formula understated it by 1.9x.
+        tokens_in = self._last_usage.get("input_tokens", 0)
+        tokens_out = self._last_usage.get("output_tokens", 0)
         total_tokens = self._last_usage.get("total_tokens", 0)
-        cost_usd = round((total_tokens / 1000) * cost_per_1k, 7)
+        cost_usd = round(
+            (tokens_in / 1000) * self.config.get("cost_per_1k_input", 0.00005)
+            + (tokens_out / 1000) * self.config.get("cost_per_1k_output", 0.0004),
+            7,
+        )
 
         # Log the call (trace_id stored for downstream use)
         self.call_log.append({
@@ -134,8 +141,8 @@ class LLMExtractor:
             "elapsed_sec": round(elapsed, 2),
             "success": extracted is not None,
             "trace_id": trace_id,
-            "tokens_in":    self._last_usage.get("input_tokens", 0),
-            "tokens_out":   self._last_usage.get("output_tokens", 0),
+            "tokens_in":    tokens_in,
+            "tokens_out":   tokens_out,
             "tokens_total": total_tokens,
             "cost_usd":     cost_usd,
         })
@@ -236,8 +243,12 @@ class LLMExtractor:
                     raise ValueError(f"Provider not implemented: {self.provider}")
 
                 if self._last_usage:
-                    cost_per_1k = self.config.get("cost_per_1k_tokens", 0.01)
-                    cost_usd = (self._last_usage.get("total_tokens", 0) / 1000) * cost_per_1k
+                    cost_usd = (
+                        (self._last_usage.get("input_tokens", 0) / 1000)
+                        * self.config.get("cost_per_1k_input", 0.00005)
+                        + (self._last_usage.get("output_tokens", 0) / 1000)
+                        * self.config.get("cost_per_1k_output", 0.0004)
+                    )
                     try:
                         lf.update_current_generation(
                             usage_details={

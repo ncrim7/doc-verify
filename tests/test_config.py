@@ -30,14 +30,14 @@ def test_default_model_is_gpt5_nano_with_no_temperature(reload_config):
     p = cfg.LLM_PROVIDERS["openai"]
     assert p["model"] == "gpt-5-nano"
     assert p["temperature"] is None            # gpt-5* rejects explicit temperature
-    assert p["cost_per_1k_tokens"] == 0.00005
+    assert (p["cost_per_1k_input"], p["cost_per_1k_output"]) == (0.00005, 0.00040)
 
 
 def test_gpt41_model_keeps_zero_temperature(reload_config):
     p = reload_config(LLM_MODEL="gpt-4.1-nano").LLM_PROVIDERS["openai"]
     assert p["model"] == "gpt-4.1-nano"
     assert p["temperature"] == 0.0
-    assert p["cost_per_1k_tokens"] == 0.00010
+    assert (p["cost_per_1k_input"], p["cost_per_1k_output"]) == (0.00010, 0.00040)
 
 
 def test_reasoning_effort_defaults_to_low_for_gpt5(reload_config):
@@ -59,7 +59,7 @@ def test_reasoning_effort_never_set_for_non_gpt5(reload_config):
 
 def test_unknown_model_falls_back_to_nano_cost(reload_config):
     p = reload_config(LLM_MODEL="some-future-model").LLM_PROVIDERS["openai"]
-    assert p["cost_per_1k_tokens"] == 0.00005
+    assert (p["cost_per_1k_input"], p["cost_per_1k_output"]) == (0.00005, 0.00040)
 
 
 def test_dataset_splits_sum_to_one():
