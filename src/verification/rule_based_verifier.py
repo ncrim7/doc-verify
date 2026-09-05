@@ -16,6 +16,30 @@ class RuleBasedVerifier:
     Produces a structured report with severity levels and auto-corrections.
     """
 
+    # Issues an LLM correction pass must never be given.
+    #
+    # The test is not "is this field wrong" — it is "does telling a model about
+    # this invite it to manufacture an answer". A failed check digit does:
+    # measured 2026-09-03, the agent responded by recomputing the check digit
+    # on five documents rather than re-reading the page, and re-verification
+    # then reported OK. In principle a transposed digit IS recoverable by
+    # looking again, so this is a restraint imposed by observed behaviour, not
+    # by logic — see P1-8b for the better shape, where correction may propose a
+    # value but never clears the flag.
+    #
+    # Deliberately narrow. `seller_tax_id_missing` is NOT here: a VKN that is
+    # printed on the page and was not read is exactly what re-reading fixes.
+    # It stays out of the agent's way through its severity, not by being
+    # mislabelled uncorrectable.
+    UNCORRECTABLE_RULES = frozenset({"tax_id_checksum_invalid"})
+
+    @classmethod
+    def is_correctable(cls, issue: dict) -> bool:
+        """Whether an issue may be handed to the LLM correction agent."""
+        if "correctable" in issue:
+            return bool(issue["correctable"])
+        return issue.get("rule") not in cls.UNCORRECTABLE_RULES
+
     def verify(self, extracted: dict, doc_type: str) -> dict:
         """
         Run all applicable rules on extracted data.
@@ -53,7 +77,7 @@ class RuleBasedVerifier:
 
         # --- Plausibility checks ---
         issues += self._check_plausibility(extracted, doc_type)
-        issues += self._check_tax_ids(extracted)
+        issues += self._check_tax_ids(extracted, doc_type)
 
         # Severity summary
         severity = {"critical": 0, "warning": 0, "info": 0}
@@ -379,13 +403,32 @@ class RuleBasedVerifier:
     # ever matters more than correctness here — it is deliberately one constant.
     TAX_ID_SEVERITY = "critical"
 
-    def _check_tax_ids(self, extracted: dict) -> list[dict]:
-        """
-        Validate Turkish tax ids against their own check digit.
+    # An ABSENT seller tax id is a different case from a wrong one. Under UBL-TR
+    # the seller's PartyIdentification (VKN for a company, TCKN for a person) is
+    # mandatory on every Turkish e-fatura and e-arşiv document, so a missing one
+    # means we failed to read it, not that the document lacks it. But it is not
+    # critical: nothing is provably wrong, and a document should not be blocked
+    # on a field we merely failed to find.
+    MISSING_TAX_ID_SEVERITY = "warning"
 
-        This is the only self-verifying field in the schema — no second source
-        and no model call needed. On the real-document pilot it separates all
-        four genuine ids from all three model corruptions.
+    # Which party must carry a tax id, per document type.
+    #
+    # Invoices only. The justification for this rule is UBL-TR, which mandates
+    # the seller's PartyIdentification on e-fatura and e-arşiv documents — a
+    # purchase order is neither, and PO_SCHEMA does not even ask for a supplier
+    # tax id. Including "po" here warned about a field the extractor was never
+    # told to produce: 20 of 20 POs flagged, a 100% false positive rate, found
+    # in run 10. Over-applying a good argument is still over-applying it.
+    SELLER_TAX_ID_FIELD = {"invoice": "vendor_tax_id"}
+
+    def _check_tax_ids(self, extracted: dict, doc_type: str = "") -> list[dict]:
+        """
+        Validate Turkish tax ids against their own check digit, and notice when
+        a mandatory one is missing entirely.
+
+        The check digit makes this the only self-verifying field in the schema
+        — no second source and no model call needed. On the real-document pilot
+        it separates all four genuine ids from all three model corruptions.
 
         Known limit: a 10-digit *foreign* numeric tax id (Russia's INN, say)
         would be judged by the VKN algorithm and could be flagged wrongly. For
@@ -394,7 +437,7 @@ class RuleBasedVerifier:
         """
         from src.verification.tax_id import classify_tax_id
 
-        issues = []
+        issues = self._check_seller_tax_id_present(extracted, doc_type)
         for field in self.TAX_ID_FIELDS:
             if field not in extracted:
                 continue
@@ -406,13 +449,20 @@ class RuleBasedVerifier:
             if verdict["valid"] is True:
                 continue
             if verdict["valid"] is None:
-                # We cannot judge it. Say so quietly rather than guess.
+                # We cannot judge the number. Two different silences, though:
+                # an unknown length may be a perfectly good foreign tax number,
+                # whereas a label captured with the value is our own extraction
+                # error and posts to the books malformed. The second earns a
+                # warning; the first stays quiet.
+                label_captured = verdict["kind"] == "label_captured"
                 issues.append({
-                    "rule": "tax_id_unverifiable",
+                    "rule": ("tax_id_label_captured" if label_captured
+                             else "tax_id_unverifiable"),
                     "field": field,
-                    "severity": "info",
+                    "severity": "warning" if label_captured else "info",
                     "message": f"{field} '{raw}' not checked: {verdict['reason']}",
                     "value": raw,
+                    "suggested": verdict["normalized"] if label_captured else None,
                 })
                 continue
 
@@ -420,13 +470,57 @@ class RuleBasedVerifier:
                 "rule": "tax_id_checksum_invalid",
                 "field": field,
                 "severity": self.TAX_ID_SEVERITY,
-                "message": (f"{field} '{raw}' fails the "
-                            f"{verdict['kind'].upper()} check digit — "
-                            f"misread, or the document carries a bogus number"),
+                # Wording matters here: this message used to be handed verbatim
+                # to the correction agent, which read "fails the check digit"
+                # as an instruction and rewrote the last digit until it passed.
+                # It now says what to DO, and `correctable` keeps it away from
+                # the agent regardless.
+                "message": (f"{field} '{raw}' does not satisfy the "
+                            f"{verdict['kind'].upper()} check digit. A person "
+                            f"must compare it against the document. Do not "
+                            f"derive a replacement value."),
                 "value": raw,
                 "kind": verdict["kind"],
+                "correctable": False,
             })
         return issues
+
+    def _check_seller_tax_id_present(self, extracted: dict, doc_type: str) -> list[dict]:
+        """
+        Warn when a Turkish document has no seller tax id.
+
+        Under UBL-TR the seller's PartyIdentification — VKN for a company,
+        TCKN for an individual — is mandatory on every e-fatura and e-arşiv
+        document. So on a Turkish invoice an absent one means the extraction
+        missed it, and on a real telecom bill in the pilot it did exactly that,
+        with the VKN printed plainly next to the tax office name. The document
+        still came out OK.
+
+        `currency == "TRY"` is a PROXY for "this is a Turkish document". The
+        schema carries no country or language field, and inventing one here
+        would be guessing. The proxy is deliberately narrow: a foreign invoice
+        legitimately has no Turkish tax id, and flagging every one of them
+        would train the user to ignore the warning. When a real country signal
+        exists, this condition is the single line that changes.
+        """
+        field = self.SELLER_TAX_ID_FIELD.get(doc_type)
+        if not field:
+            return []
+        if str(extracted.get("currency") or "").strip().upper() != "TRY":
+            return []
+
+        raw = extracted.get(field)
+        if raw is not None and str(raw).strip() != "":
+            return []
+
+        return [{
+            "rule": "seller_tax_id_missing",
+            "field": field,
+            "severity": self.MISSING_TAX_ID_SEVERITY,
+            "message": (f"{field} is missing on a TRY document — the seller's "
+                        f"VKN/TCKN is mandatory under UBL-TR, so it is most "
+                        f"likely on the page and was not read"),
+        }]
 
     # ------------------------------------------------------------------
     # Helpers

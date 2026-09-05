@@ -113,6 +113,42 @@ class TestTcknAlgorithm:
         assert all(not is_valid_tckn(m) for m in mutations)
 
 
+class TestLabelCapturedWithTheValue:
+    """
+    On a real invoice the model returned buyer_tax_id = 'TR TIN 29698065498'.
+    The digits are right; the field is not, and that string posts to the books
+    malformed. Reporting nothing was too quiet.
+
+    The signature is narrow on purpose — a run of exactly 10 or 11 digits AND
+    a space — so a foreign VAT number written as one token does not trip it.
+    """
+
+    def test_the_real_case(self):
+        v = classify_tax_id("TR TIN 12345678950")
+        assert v["kind"] == "label_captured"
+        assert v["normalized"] == "12345678950"
+        assert v["valid"] is None
+
+    @pytest.mark.parametrize("raw", ["Vergi No 1234567890",
+                                     "VKN: 1234567890",
+                                     "Tax ID 12345678950"])
+    def test_other_label_shapes(self, raw):
+        assert classify_tax_id(raw)["kind"] == "label_captured"
+
+    @pytest.mark.parametrize("raw", ["DE123456789",      # 9 digits, no space
+                                     "FR12345678901",    # 11 digits, no space
+                                     "GB123456789012"])  # 12 digits, no space
+    def test_a_single_token_foreign_vat_is_not_flagged(self, raw):
+        assert classify_tax_id(raw)["kind"] == "not_numeric"
+
+    def test_prose_without_a_tax_id_length_run_is_not_flagged(self):
+        assert classify_tax_id("Boğaziçi Kurumlar V.D.")["kind"] == "not_numeric"
+
+    def test_a_longer_digit_run_is_not_a_tax_id(self):
+        # a Mersis number is 16 digits — not a VKN, and not a captured label
+        assert classify_tax_id("Mersis 0859049187200014")["kind"] == "not_numeric"
+
+
 class TestClassify:
     def test_not_numeric(self):
         v = classify_tax_id("Boğaziçi Kurumlar V.D.")

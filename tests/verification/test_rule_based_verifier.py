@@ -200,6 +200,16 @@ class TestTaxIdIntegration:
         assert ids[0]["severity"] == "info"
         assert r["valid"] is True
 
+    def test_a_captured_label_is_a_warning_not_info(self):
+        # the real case: the model returned 'TR TIN <digits>' for buyer_tax_id
+        # and the document went out OK with a malformed id in it
+        r = V.verify(self._with(buyer_tax_id="TR TIN 12345678950"), "invoice")
+        issue = next(i for i in r["issues"] if i["field"] == "buyer_tax_id")
+        assert issue["rule"] == "tax_id_label_captured"
+        assert issue["severity"] == "warning"
+        assert issue["suggested"] == "12345678950"
+        assert r["valid"] is True, "malformed, but nothing is provably wrong"
+
     def test_non_numeric_tax_id_is_info(self):
         r = V.verify(self._with(vendor_tax_id="Boğaziçi Kurumlar V.D."), "invoice")
         assert any(i["rule"] == "tax_id_unverifiable" for i in r["issues"])
@@ -236,3 +246,121 @@ class TestTaxIdIntegration:
         # there is no way to infer the right digits — only a human can fix it
         r = V.verify(self._with(vendor_tax_id="1234576890"), "invoice")
         assert not any("tax_id" in k for k in r["auto_corrections"])
+
+
+# Under UBL-TR the seller's VKN/TCKN is mandatory on every Turkish e-fatura and
+# e-arşiv document. An absent one therefore means we failed to read it — which
+# is what happened on a real telecom bill in the pilot, with the VKN printed
+# plainly beside the tax office name, and the document still came out OK.
+
+class TestSellerTaxIdPresence:
+    def _tr(self, **kw):
+        d = _clean_invoice()
+        d["currency"] = "TRY"
+        d.update(kw)
+        return d
+
+    def test_missing_vendor_tax_id_on_a_try_invoice_warns(self):
+        r = V.verify(self._tr(), "invoice")
+        issues = [i for i in r["issues"] if i["rule"] == "seller_tax_id_missing"]
+        assert issues and issues[0]["field"] == "vendor_tax_id"
+        assert issues[0]["severity"] == "warning"
+
+    def test_it_warns_but_does_not_block(self):
+        # nothing is provably wrong — a document must not be held on a field we
+        # merely failed to find
+        assert V.verify(self._tr(), "invoice")["valid"] is True
+
+    @pytest.mark.parametrize("empty", [None, "", "   "])
+    def test_empty_counts_as_missing(self, empty):
+        r = V.verify(self._tr(vendor_tax_id=empty), "invoice")
+        assert any(i["rule"] == "seller_tax_id_missing" for i in r["issues"])
+
+    def test_present_vendor_tax_id_raises_nothing(self):
+        r = V.verify(self._tr(vendor_tax_id="1234567890"), "invoice")
+        assert not any(i["rule"] == "seller_tax_id_missing" for i in r["issues"])
+
+    def test_a_foreign_invoice_is_not_warned(self):
+        # the whole point of the currency proxy: a USD invoice legitimately has
+        # no Turkish tax id, and warning on every one would train the user to
+        # ignore the warning
+        d = _clean_invoice()
+        d["currency"] = "USD"
+        r = V.verify(d, "invoice")
+        assert not any(i["rule"] == "seller_tax_id_missing" for i in r["issues"])
+
+    def test_no_currency_at_all_is_not_warned(self):
+        # absence of the proxy is not evidence for it
+        assert not any(i["rule"] == "seller_tax_id_missing"
+                       for i in V.verify(_clean_invoice(), "invoice")["issues"])
+
+    def test_a_purchase_order_is_not_checked(self):
+        # UBL-TR mandates the seller's PartyIdentification on e-fatura and
+        # e-arşiv documents. A PO is neither, and PO_SCHEMA does not ask for a
+        # supplier tax id at all — warning there flagged 20 of 20 POs in run 10
+        # about a field the extractor was never told to produce.
+        d = {"po_number": "PO-1", "date": "2026-03-15", "supplier_name": "S",
+             "items": [{"quantity": 1, "unit_price": 10.0, "total": 10.0}],
+             "total_amount": 10.0, "currency": "TRY"}
+        assert not any(i["rule"] == "seller_tax_id_missing"
+                       for i in V.verify(d, "po")["issues"])
+
+    def test_the_rule_only_names_fields_the_schema_asks_for(self):
+        # the defect in one line: every field this rule can complain about must
+        # exist in the schema the extractor is given
+        from src.extraction.prompts import SCHEMAS
+        for doc_type, field in RuleBasedVerifier.SELLER_TAX_ID_FIELD.items():
+            assert field in SCHEMAS[doc_type], (
+                f"{doc_type} schema does not ask for {field}, so its absence "
+                f"is our omission, not the document's")
+
+    def test_a_receipt_is_not_checked(self):
+        # a retail receipt is not an e-fatura; the rule does not apply
+        d = {"receipt_number": "R-1", "date": "2026-03-15", "store_name": "M",
+             "items": [{"quantity": 1, "unit_price": 10.0, "total": 10.0}],
+             "total_amount": 10.0, "currency": "TRY"}
+        assert not any(i["rule"] == "seller_tax_id_missing"
+                       for i in V.verify(d, "receipt")["issues"])
+
+    def test_lowercase_currency_still_matches(self):
+        r = V.verify(self._tr(currency="try"), "invoice")
+        assert any(i["rule"] == "seller_tax_id_missing" for i in r["issues"])
+
+
+class TestIsCorrectable:
+    """
+    Which issues an LLM correction pass may be given. The test is not "is the
+    field wrong" but "does telling a model about this invite it to manufacture
+    an answer" — measured 2026-09-03, a check-digit complaint did exactly that.
+    """
+
+    def test_a_failed_check_digit_is_not_correctable(self):
+        r = V.verify({**_clean_invoice(), "vendor_tax_id": "1234576890"}, "invoice")
+        issue = next(i for i in r["issues"]
+                     if i["rule"] == "tax_id_checksum_invalid")
+        assert V.is_correctable(issue) is False
+
+    def test_a_missing_seller_tax_id_IS_correctable(self):
+        # deliberately narrow: a VKN printed on the page that was not read is
+        # exactly what re-reading fixes. It stays away from the agent through
+        # its severity, not by being mislabelled uncorrectable — so that if it
+        # is ever raised to critical, correction does the right thing.
+        r = V.verify({**_clean_invoice(), "currency": "TRY"}, "invoice")
+        issue = next(i for i in r["issues"]
+                     if i["rule"] == "seller_tax_id_missing")
+        assert V.is_correctable(issue) is True
+
+    def test_ordinary_issues_default_to_correctable(self):
+        d = _clean_invoice()
+        del d["invoice_number"]
+        issue = next(i for i in V.verify(d, "invoice")["issues"]
+                     if i["rule"] == "required_field_missing")
+        assert V.is_correctable(issue) is True
+
+    def test_an_explicit_flag_wins_over_the_rule_list(self):
+        assert V.is_correctable({"rule": "anything", "correctable": False}) is False
+        assert V.is_correctable(
+            {"rule": "tax_id_checksum_invalid", "correctable": True}) is True
+
+    def test_an_issue_with_no_rule_is_correctable(self):
+        assert V.is_correctable({}) is True

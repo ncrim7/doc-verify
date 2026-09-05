@@ -37,6 +37,7 @@ inputs), sum, and the check digit is the complement to the next multiple of 10.
 TCKN (11 digits): digit 10 is (7*sum(odd positions) - sum(even positions)) mod
 10; digit 11 is sum of the first ten mod 10; the first digit cannot be 0.
 """
+import re
 from typing import Optional
 
 __all__ = ["classify_tax_id", "is_valid_vkn", "is_valid_tckn", "normalize_tax_id"]
@@ -99,6 +100,22 @@ def classify_tax_id(value) -> dict:
     """
     normalized = normalize_tax_id(value)
     if normalized is None:
+        # A label captured along with the value looks like this:
+        #   buyer_tax_id = 'TR TIN 29698065498'
+        # The digits are right; the field is not. Worth more than silence,
+        # because that string posts to the books malformed.
+        #
+        # The signature is deliberately narrow — a run of exactly 10 or 11
+        # digits AND a space. A foreign VAT number written as one token
+        # (DE123456789, FR12345678901) has no space and does not trip it.
+        text = str(value)
+        embedded = re.search(r"(?<!\d)(\d{10,11})(?!\d)", text)
+        if embedded and " " in text.strip():
+            return {"kind": "label_captured", "normalized": embedded.group(1),
+                    "valid": None,
+                    "reason": (f"value '{text}' looks like a label captured "
+                               f"with the number; the id is probably "
+                               f"'{embedded.group(1)}'")}
         return {"kind": "not_numeric", "normalized": None, "valid": None,
                 "reason": "value is not a plain digit string"}
 

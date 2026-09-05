@@ -8,6 +8,8 @@ drops a document silently.
 
 All tests inject fakes — no API calls.
 """
+import json
+
 import pytest
 
 from src.pipeline import DocumentPipeline, Verdict
@@ -199,3 +201,114 @@ def test_raw_is_none_when_extraction_failed():
 def test_needs_human_tracks_the_verdict():
     assert _pipe({}).process("x.pdf", "invoice").needs_human is True
     assert _pipe(_valid_invoice()).process("x.pdf", "invoice").needs_human is False
+
+
+# --- the correction agent is not allowed to rewrite the document ------------
+#
+# Measured 2026-09-03: the agent was told to return every field and the merge
+# took every non-null value, so it re-rolled whole documents on any issue.
+# It ran on 39 of 60, damaged 8, improved 2, and destroyed four perfect
+# extractions — including turning 'Post-it Not Bloğu' into 'Blogu' on a
+# document whose only complaint was a tax id.
+
+class RecordingCorrector:
+    """Returns a fixed result and remembers what it was asked to fix."""
+
+    def __init__(self, result=None):
+        self._result = result
+        self.calls = 0
+        self.issues_seen = None
+
+    def correct(self, extracted, pdf_path, issues, doc_type):
+        self.calls += 1
+        self.issues_seen = issues
+        return self._result if self._result is not None else extracted
+
+
+def _tax_id_invoice(**kw):
+    d = _valid_invoice()
+    d["currency"] = "TRY"
+    d.update(kw)
+    return d
+
+
+class TestCorrectionIsConstrained:
+    def test_a_failed_check_digit_is_never_sent_to_the_agent(self):
+        # there is no way to derive the right digits, and asking for them is
+        # what produced the fabrication: the model rewrote the last digit until
+        # the checksum passed
+        corr = RecordingCorrector()
+        r = _pipe(_tax_id_invoice(vendor_tax_id="1234576890"),
+                  corrector=corr).process("x.pdf", "invoice")
+        assert corr.calls == 0
+        assert r.verdict == Verdict.REVIEW
+        assert any("tax_id_checksum_invalid" in x for x in r.reasons)
+
+    def test_a_warning_does_not_trigger_an_llm_pass(self):
+        # the old trigger was "any issue at all", info included
+        corr = RecordingCorrector()
+        _pipe(_tax_id_invoice(), corrector=corr).process("x.pdf", "invoice")
+        assert corr.calls == 0, "a missing seller tax id is a warning, not a job"
+
+    def test_a_correctable_critical_issue_still_triggers_it(self):
+        bad = _valid_invoice()
+        bad["items"][0]["total"] = 999.0
+        corr = RecordingCorrector()
+        _pipe(bad, corrector=corr).process("x.pdf", "invoice")
+        assert corr.calls == 1
+
+    def test_only_the_correctable_issues_are_handed_over(self):
+        bad = _tax_id_invoice(vendor_tax_id="1234576890")
+        del bad["invoice_number"]          # critical AND correctable
+        corr = RecordingCorrector()
+        _pipe(bad, corrector=corr).process("x.pdf", "invoice")
+        assert corr.calls == 1
+        rules = {i["rule"] for i in corr.issues_seen}
+        assert "required_field_missing" in rules
+        assert "tax_id_checksum_invalid" not in rules
+
+    def test_a_change_to_an_unflagged_field_becomes_a_review_reason(self):
+        bad = _valid_invoice()
+        del bad["invoice_number"]                       # the only complaint
+        rewritten = _valid_invoice()
+        rewritten["vendor_name"] = "Acme Ltd"           # nobody asked for this
+        r = _pipe(bad, corrector=RecordingCorrector(rewritten)).process(
+            "x.pdf", "invoice")
+        assert any("unrequested_correction: vendor_name" in x for x in r.reasons)
+        assert r.verdict == Verdict.REVIEW
+
+    def test_an_unrequested_item_rewrite_is_caught_too(self):
+        # the real shape: asked about a total, changed a description
+        bad = _valid_invoice()
+        bad["items"][0]["total"] = 999.0
+        rewritten = _valid_invoice()
+        rewritten["items"][0]["description"] = "Post-it Not Blogu"
+        r = _pipe(bad, corrector=RecordingCorrector(rewritten)).process(
+            "x.pdf", "invoice")
+        assert any("items[0].description" in x for x in r.reasons)
+
+    def test_fixing_exactly_what_was_flagged_raises_nothing(self):
+        bad = _valid_invoice()
+        del bad["vendor_name"]
+        r = _pipe(bad, corrector=RecordingCorrector(_valid_invoice())).process(
+            "x.pdf", "invoice")
+        assert not any("unrequested_correction" in x for x in r.reasons)
+        assert r.verdict == Verdict.OK
+
+
+class TestChangedFields:
+    def test_detects_nested_and_item_paths(self):
+        from src.pipeline import _changed_fields
+        a = {"x": 1, "items": [{"d": "a", "t": 1.0}]}
+        b = {"x": 1, "items": [{"d": "b", "t": 1.0}]}
+        assert _changed_fields(a, b) == ["items[0].d"]
+
+    def test_added_and_removed_keys_both_count(self):
+        from src.pipeline import _changed_fields
+        assert _changed_fields({"a": 1}, {"a": 1, "b": 2}) == ["b"]
+        assert _changed_fields({"a": 1, "b": 2}, {"a": 1}) == ["b"]
+
+    def test_identical_documents_have_no_diff(self):
+        from src.pipeline import _changed_fields
+        d = _valid_invoice()
+        assert _changed_fields(d, json.loads(json.dumps(d))) == []

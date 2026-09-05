@@ -6,6 +6,7 @@ the LLM to re-examine and correct only those specific fields.
 import json
 import base64
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -15,23 +16,26 @@ from src.extraction.prompts import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
-CORRECTION_PROMPT = """You previously extracted data from this document, but some fields may be incorrect.
+CORRECTION_PROMPT = """You previously extracted data from this document. A checker
+found a problem with SOME of the fields. Re-read the document image and report
+what those fields actually say.
 
-Here is the ORIGINAL extraction result:
+Here is the previous extraction, for context only:
 {extracted_json}
 
-The following fields were flagged as potentially incorrect:
+RE-READ ONLY THESE FIELDS — nothing else on the document is in question:
 {field_issues}
 
-Please re-examine the document image carefully and provide CORRECTED values for the flagged fields.
-Focus especially on:
-- Reading numbers precisely (check decimal points, thousand separators)
-- Reading addresses character by character
-- Verifying item descriptions match exactly what's on the document
-- Checking dates are in YYYY-MM-DD format
+Return a JSON object containing ONLY the fields listed above, using exactly the
+keys shown. Do not include any other field. Do not repeat the whole document.
 
-Return a COMPLETE corrected JSON object with ALL fields (not just the corrected ones).
-The JSON must match this schema exactly — return ONLY valid JSON, no explanations."""
+For each one, report what is PRINTED on the page. If, after looking again, the
+previous value was right, return it unchanged — that is a valid answer and
+often the correct one. Do not adjust a value to make it satisfy a rule, and do
+not compute a value you cannot read. If a field is genuinely illegible, return
+null for it.
+
+Return ONLY valid JSON, no explanations."""
 
 
 class CorrectionAgent:
@@ -72,6 +76,9 @@ class CorrectionAgent:
             return extracted
 
         pdf_path = Path(pdf_path)
+        allowed = {i.get("field") for i in issues if i.get("field")}
+        if not allowed:
+            return extracted
 
         # Format issues for the prompt
         field_issues = self._format_issues(issues)
@@ -88,9 +95,12 @@ class CorrectionAgent:
             corrected = self._call_correction(image_bytes, prompt)
 
             if corrected:
-                logger.info("  Correction agent returned %d fields", len(corrected))
-                # Merge: use corrected values but keep original for fields not in corrected
-                merged = self._merge_results(extracted, corrected)
+                merged, applied, refused = self._merge_results(
+                    extracted, corrected, allowed)
+                logger.info("  Correction agent: %d field(s) applied%s",
+                            len(applied),
+                            f", {len(refused)} refused ({', '.join(sorted(refused))})"
+                            if refused else "")
                 return merged
             else:
                 logger.warning("  Correction agent failed to parse response")
@@ -149,25 +159,62 @@ class CorrectionAgent:
         raw = resp.choices[0].message.content.strip()
         return self.base_extractor._parse_json_response(raw)
 
-    def _merge_results(self, original: dict, corrected: dict) -> dict:
+    _ITEM_FIELD = re.compile(r"^items\[(\d+)\]\.(\w+)$")
+
+    def _merge_results(
+        self, original: dict, corrected: dict, allowed: set[str],
+    ) -> tuple[dict, set[str], set[str]]:
         """
-        Merge corrected results with original.
-        Prefer corrected values when they exist, keep original otherwise.
+        Apply the correction to the flagged fields ONLY.
+
+        Returns (merged, applied, refused).
+
+        This used to take every non-null value the model returned and write it
+        over the original. Measured 2026-09-03, that let a correction asked to
+        look at one tax id also rewrite `Post-it Not Bloğu` to `Blogu` and
+        `Tevetoğlu A.Ş.` to `Tevetoglu A.Ş.` — the ASCII transliteration
+        regression the extraction prompt had been fixed to prevent, coming back
+        in through the correction pass on fields nobody had questioned.
+
+        The allowlist is the structural fix: a field that was not flagged
+        cannot be changed here, whatever the model returns. The prompt asks for
+        the same restraint, but a prompt is a request and this is a guarantee.
+        Refused keys are returned so the caller can log them — a model that
+        keeps trying to rewrite unflagged fields is worth knowing about.
         """
         merged = json.loads(json.dumps(original))  # deep copy
+        applied: set[str] = set()
+        refused: set[str] = set()
 
         for key, value in corrected.items():
             if key == "items" and isinstance(value, list):
-                # For items, merge item by item
-                if isinstance(merged.get("items"), list):
-                    for i, item in enumerate(value):
-                        if i < len(merged["items"]) and isinstance(item, dict):
-                            merged["items"][i].update(item)
-                        elif isinstance(item, dict):
-                            merged["items"].append(item)
-                else:
-                    merged["items"] = value
-            elif value is not None:
-                merged[key] = value
+                # Item corrections are addressed as items[i].field, so unpack
+                # the list into those paths and let the same allowlist decide.
+                for i, item in enumerate(value):
+                    if not isinstance(item, dict):
+                        continue
+                    for fld, val in item.items():
+                        path = f"items[{i}].{fld}"
+                        if path not in allowed or val is None:
+                            if path not in allowed:
+                                refused.add(path)
+                            continue
+                        items = merged.get("items")
+                        if isinstance(items, list) and i < len(items) \
+                                and isinstance(items[i], dict):
+                            items[i][fld] = val
+                            applied.add(path)
+                continue
 
-        return merged
+            if key not in allowed:
+                refused.add(key)
+                continue
+            if value is None:
+                # An explicit "I cannot read this" is not a correction. Keeping
+                # the original leaves the issue standing, which is right: the
+                # document still goes to a human.
+                continue
+            merged[key] = value
+            applied.add(key)
+
+        return merged, applied, refused

@@ -89,6 +89,34 @@ def apply_corrections(extracted: dict, corrections: dict) -> dict:
     return out
 
 
+def _flatten_for_diff(obj: Any, prefix: str = "") -> dict:
+    """Flatten a document to dotted paths so two versions can be compared."""
+    out: dict[str, Any] = {}
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            out.update(_flatten_for_diff(v, f"{prefix}.{k}" if prefix else k))
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            out.update(_flatten_for_diff(v, f"{prefix}[{i}]"))
+    else:
+        out[prefix] = obj
+    return out
+
+
+def _changed_fields(before: dict, after: dict) -> list[str]:
+    """
+    Dotted paths whose value differs between two versions of a document.
+
+    Item paths collapse to their field name (`items[3].description` reports as
+    `items[3].description`, but the caller compares against flagged field names
+    which are of the same shape), so a correction that was asked to fix
+    `items[3].total` does not excuse a change to `items[3].description`.
+    """
+    a, b = _flatten_for_diff(before), _flatten_for_diff(after)
+    keys = set(a) | set(b)
+    return sorted(k for k in keys if a.get(k) != b.get(k))
+
+
 class DocumentPipeline:
     """
     Orchestrates one document. Components can be injected for testing; the real
@@ -177,17 +205,44 @@ class DocumentPipeline:
         timings["verify_sec"] = round(time.time() - t1, 2)
 
         # 4. Targeted re-extraction of flagged fields.
+        #
+        # "Targeted" was a comment, not a fact. Measured 2026-09-03: the agent
+        # was told to return every field, the merge accepted every non-null
+        # value, and it therefore re-rolled the whole document on any issue —
+        # `info` included. It ran on 39 of 60 documents, damaged 8, improved 2,
+        # and destroyed four perfect extractions. Three constraints now hold:
+        #
+        #   a) only CRITICAL issues justify an LLM pass at all
+        #   b) only CORRECTABLE ones are sent — a failed check digit has no
+        #      derivable right answer, and asking for one invites a fabrication
+        #   c) whatever comes back is diffed, and a change to a field nobody
+        #      flagged is itself a reason for review
         corrected = False
-        if self.enable_correction and verification.get("issues"):
+        correctable = [i for i in verification.get("issues", [])
+                       if i.get("severity") == "critical"
+                       and self.verifier.is_correctable(i)]
+        if self.enable_correction and correctable:
+            before = json.loads(json.dumps(data))
             t2 = time.time()
             try:
                 data = self.corrector.correct(
-                    data, pdf_path, verification["issues"], doc_type
+                    data, pdf_path, correctable, doc_type
                 )
                 corrected = True
             except Exception as exc:                  # noqa: BLE001 - deliberate
                 reasons.append(f"correction_error: {exc}")
             timings["correct_sec"] = round(time.time() - t2, 2)
+
+            # (c) The agent may only touch what was flagged. Anything else it
+            # changed is an unrequested rewrite — the class that turned
+            # 'Post-it Not Bloğu' into 'Blogu' on a document whose only
+            # complaint was a tax id. Flagging it means a fabrication can never
+            # quietly become OK.
+            flagged = {i.get("field") for i in correctable}
+            for fld in _changed_fields(before, data):
+                if fld not in flagged:
+                    reasons.append(f"unrequested_correction: {fld}")
+
             # Re-verify whatever we ended up with.
             verification = self.verifier.verify(data, doc_type)
 
