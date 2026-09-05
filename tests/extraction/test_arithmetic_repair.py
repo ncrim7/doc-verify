@@ -25,10 +25,12 @@ class TestRepairArithmetic:
     def test_non_dict_passthrough(self):
         assert repair_arithmetic([1, 2, 3]) == [1, 2, 3]
 
-    def test_wrong_item_total_is_recomputed(self):
+    def test_a_printed_item_total_is_never_recomputed(self):
+        # asserted the pre-P0-7 contract, where qty x unit_price overwrote the
+        # printed line total. See TestDiscountedLine for why that fell.
         d = {"items": [{"quantity": 3, "unit_price": 10.0, "total": 31.0}]}
         repair_arithmetic(d, "invoice")
-        assert d["items"][0]["total"] == 30.0
+        assert d["items"][0]["total"] == 31.0
 
     def test_missing_item_total_is_filled(self):
         d = {"items": [{"quantity": 4, "unit_price": 2.5}]}
@@ -61,16 +63,28 @@ class TestRepairArithmetic:
         repair_arithmetic(d, "po")
         assert d["total_amount"] == 80.0
 
-    def test_digit_drop_scenario_from_the_thesis(self):
-        # qty 53 * 3267.94 = 173200.82, model wrote 17320.82 (one digit dropped)
+    def test_the_digit_drop_recovery_is_deliberately_gone(self):
+        # The thesis case: 53 x 3267.94 = 173200.82 and the model wrote
+        # 17320.82, one digit short. Recovering it was the original point of
+        # this module. It is gone on purpose -- the same overwrite turned a
+        # printed 20,83 into 69,42 on a real discounted invoice, and the
+        # measured benefit of the whole repair layer was +0.00 pp across two
+        # 60-document runs. An unproven gain does not justify a proven
+        # fabrication. The mismatch is still raised as critical, so the
+        # document reaches a human.
         d = {"items": [{"quantity": 53, "unit_price": 3267.94, "total": 17320.82}]}
         repair_arithmetic(d, "po")
-        assert d["items"][0]["total"] == 173200.82
+        assert d["items"][0]["total"] == 17320.82
 
-    def test_string_numbers_are_handled(self):
-        d = {"items": [{"quantity": "3", "unit_price": "10.5", "total": "1"}]}
+    def test_string_numbers_are_handled_when_filling_a_gap(self):
+        d = {"items": [{"quantity": "3", "unit_price": "10.5"}]}
         repair_arithmetic(d, "invoice")
         assert d["items"][0]["total"] == 31.5
+
+    def test_a_string_zero_is_a_printed_value_not_a_gap(self):
+        d = {"items": [{"quantity": "3", "unit_price": "10.5", "total": "0"}]}
+        repair_arithmetic(d, "invoice")
+        assert d["items"][0]["total"] == "0"
 
     def test_item_without_qty_or_price_is_skipped(self):
         d = {"items": [{"description": "x", "total": 5}]}
@@ -119,12 +133,17 @@ class TestNeverOverwritesEvidence:
         repair_arithmetic(d, "invoice")
         assert d["subtotal"] == 20.0
 
-    def test_item_level_repair_is_kept(self):
-        # the original justification: qty and unit_price are read reliably,
-        # the derived line total loses a digit. Two values corroborate one.
-        d = {"items": [{"quantity": 53, "unit_price": 3267.94, "total": 17320.82}]}
-        repair_arithmetic(d, "invoice")
-        assert d["items"][0]["total"] == 173200.82
+    def test_item_level_repair_only_fills_a_gap(self):
+        # the original justification was that qty and unit_price corroborate
+        # the derived line total. They only do when nothing sits between them.
+        present = {"items": [{"quantity": 53, "unit_price": 3267.94,
+                              "total": 17320.82}]}
+        repair_arithmetic(present, "invoice")
+        assert present["items"][0]["total"] == 17320.82, "evidence was overwritten"
+
+        absent = {"items": [{"quantity": 53, "unit_price": 3267.94}]}
+        repair_arithmetic(absent, "invoice")
+        assert absent["items"][0]["total"] == 173200.82, "a gap must still fill"
 
     def test_the_real_bill_shape_survives_intact(self):
         d = {"items": [{"description": "İnternet", "quantity": 1,
@@ -142,6 +161,27 @@ class TestNeverOverwritesEvidence:
              "subtotal": 100.0, "tax_amount": 18.0, "total_amount": 118.0}
         repair_arithmetic(d, "invoice")
         assert "amount_payable" not in d
+
+    def test_the_discounted_line_that_closed_the_last_exception(self):
+        """
+        P0-7, from a real e-arşiv invoice (a Windows licence sold via n11):
+
+            1 Adet × 69,4167 TL, %70 iskonto → Mal Hizmet Tutarı 20,83 TL
+
+        Item-level repair was the one overwrite P0-4 deliberately kept, on the
+        grounds that quantity and unit_price corroborate the derived total.
+        They only do when nothing sits between them. Here a discount does, the
+        schema has no field for it, and the repair replaced the printed 20,83
+        with 69,42 — 3.3x. Worse, the fabricated line total then made the
+        page's *correct* subtotal look wrong.
+        """
+        d = {"items": [{"description": "Windows 11 Pro Lisans", "quantity": 1,
+                        "unit_price": 69.4167, "total": 20.83}],
+             "subtotal": 20.83, "tax_amount": 4.17, "total_amount": 24.99}
+        repair_arithmetic(d, "invoice")
+        assert d["items"][0]["total"] == 20.83
+        assert d["subtotal"] == 20.83
+        assert d["total_amount"] == 24.99
 
     def test_a_printed_amount_payable_is_left_alone(self):
         # the real telecom bill: payable exceeds the invoice total by a

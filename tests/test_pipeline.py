@@ -100,11 +100,25 @@ def test_ok_always_implies_data_present():
 
 # --- verification / correction behaviour ------------------------------------
 
-def test_rule_auto_corrections_are_applied_to_data():
+def test_apply_corrections_still_writes_what_it_is_given():
+    # No rule produces an auto-correction any more (P0-4, P0-7), so this
+    # exercises the mechanism directly. It survives for format normalisation --
+    # '15/03/2026' -> '2026-03-15' changes representation, not meaning -- and
+    # must never again carry a derived value.
+    from src.pipeline import apply_corrections
+    d = {"date": "15/03/2026", "items": [{"total": 999.0}]}
+    out = apply_corrections(d, {"date": "2026-03-15", "items[0].total": 200.0})
+    assert out["date"] == "2026-03-15"
+    assert out["items"][0]["total"] == 200.0
+    assert d["date"] == "15/03/2026", "the input must not be mutated"
+
+
+def test_a_wrong_item_total_reaches_a_human_instead_of_being_rewritten():
     bad = _valid_invoice()
-    bad["items"][0]["total"] = 999.0            # should be 200
+    bad["items"][0]["total"] = 999.0
     r = _pipe(bad, corrector=FakeCorrector()).process("x.pdf", "invoice")
-    assert r.data["items"][0]["total"] == 200.0
+    assert r.data["items"][0]["total"] == 999.0, "a printed total was overwritten"
+    assert r.verdict == Verdict.REVIEW
 
 
 def test_correction_agent_runs_when_issues_found():
@@ -186,12 +200,14 @@ def test_pipeline_does_not_fabricate_a_printed_total():
     assert r.verdict == Verdict.REVIEW, "the mismatch has to reach a human"
 
 
-def test_raw_snapshot_survives_auto_correction():
+def test_raw_snapshot_is_taken_before_anything_touches_the_data():
     bad = _valid_invoice()
-    bad["items"][0]["total"] = 999.0
-    r = _pipe(bad).process("x.pdf", "invoice")
-    assert r.raw["items"][0]["total"] == 999.0      # untouched extraction
-    assert r.data["items"][0]["total"] == 200.0     # repaired
+    del bad["vendor_name"]
+    repaired = _valid_invoice()
+    r = _pipe(bad, corrector=FakeCorrector(result=repaired)).process(
+        "x.pdf", "invoice")
+    assert "vendor_name" not in r.raw, "raw must be the extraction as returned"
+    assert r.data["vendor_name"] == "Acme Ltd."
 
 
 def test_raw_is_none_when_extraction_failed():

@@ -58,13 +58,17 @@ def test_implausible_year_is_warning():
     assert any(i["rule"] == "date_implausible" for i in r["issues"])
 
 
-def test_wrong_item_total_yields_critical_and_autocorrection():
+def test_wrong_item_total_is_critical_but_not_autocorrected():
+    # P0-7: quantity x unit_price is inference, the printed line total is
+    # evidence. On a real invoice a 70% discount sat between them and writing
+    # the product back replaced 20,83 with 69,42.
     d = _clean_invoice()
-    d["items"][0]["total"] = 999.0                 # should be 200
+    d["items"][0]["total"] = 999.0
     r = V.verify(d, "invoice")
     assert any(i["rule"] == "item_total_mismatch" and i["severity"] == "critical"
                for i in r["issues"])
-    assert r["auto_corrections"].get("items[0].total") == 200.0
+    assert "items[0].total" not in r["auto_corrections"]
+    assert r["valid"] is False, "the mismatch has to reach a human"
 
 
 # P0-4: a total or subtotal printed on the page is evidence; the sum we compute
@@ -135,13 +139,39 @@ def test_po_total_mismatch_is_flagged_but_not_autocorrected():
     assert "total_amount" not in r["auto_corrections"]
 
 
-def test_item_level_corrections_are_kept():
-    # the one repair with real corroboration: qty and unit_price are two
-    # independent values confirming one derived one
-    d = _clean_invoice()
-    d["items"][0]["total"] = 999.0
-    r = V.verify(d, "invoice")
-    assert r["auto_corrections"]["items[0].total"] == 200.0
+def test_no_rule_produces_an_auto_correction_any_more():
+    """
+    The provenance principle removed them one by one: subtotal and
+    total_amount in P0-4, item totals in P0-7. What is left is the honest end
+    state -- there is no value we can compute that we are entitled to write
+    over what the document prints.
+
+    The mechanism survives for FORMAT NORMALISATION, which is safe: turning
+    '15/03/2026' into '2026-03-15' changes representation, not meaning. It must
+    never again carry a DERIVED VALUE. If this test starts failing, that is the
+    question to answer before making it pass.
+    """
+    for doc_type, d in (
+        ("invoice", {**_clean_invoice(), "items": [{"quantity": 2,
+                                                    "unit_price": 100.0,
+                                                    "total": 999.0}],
+                     "subtotal": 111.0, "total_amount": 222.0}),
+        ("po", {"po_number": "PO-1", "date": "2026-03-15", "supplier_name": "S",
+                "items": [{"quantity": 2, "unit_price": 10.0, "total": 999.0}],
+                "total_amount": 777.0}),
+        ("receipt", {"receipt_number": "R-1", "date": "2026-03-15",
+                     "store_name": "M",
+                     "items": [{"quantity": 1, "unit_price": 10.0,
+                                "total": 999.0}],
+                     "subtotal": 111.0, "tax_amount": 1.8,
+                     "total_amount": 222.0}),
+    ):
+        r = V.verify(d, doc_type)
+        assert r["auto_corrections"] == {}, (
+            f"{doc_type} produced {r['auto_corrections']} -- is it a format "
+            f"normalisation, or a derived value?"
+        )
+        assert r["valid"] is False, f"{doc_type} must still flag the mismatch"
 
 
 def test_receipt_subtotal_mismatch_flags_but_does_not_autocorrect():

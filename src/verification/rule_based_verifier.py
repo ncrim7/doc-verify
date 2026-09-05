@@ -212,7 +212,12 @@ class RuleBasedVerifier:
                         "expected": expected,
                         "actual": total,
                     })
-                    corrections[f"items[{i}].total"] = expected
+                    # No auto-correction. quantity x unit_price is inference;
+                    # the printed line total is evidence. On a real e-arsiv
+                    # invoice a 70% discount sits between them, and writing the
+                    # product back replaced 20,83 with 69,42. The mismatch is
+                    # already critical, so the document reaches a human --
+                    # which is the whole point. P0-7.
 
         # Subtotal = sum of item totals
         subtotal = self._to_float(extracted.get("subtotal"))
@@ -273,7 +278,12 @@ class RuleBasedVerifier:
                         "expected": expected,
                         "actual": total,
                     })
-                    corrections[f"items[{i}].total"] = expected
+                    # No auto-correction. quantity x unit_price is inference;
+                    # the printed line total is evidence. On a real e-arsiv
+                    # invoice a 70% discount sits between them, and writing the
+                    # product back replaced 20,83 with 69,42. The mismatch is
+                    # already critical, so the document reaches a human --
+                    # which is the whole point. P0-7.
 
         total = self._to_float(extracted.get("total_amount"))
         if total is not None and items:
@@ -314,7 +324,12 @@ class RuleBasedVerifier:
                         "expected": expected,
                         "actual": total,
                     })
-                    corrections[f"items[{i}].total"] = expected
+                    # No auto-correction. quantity x unit_price is inference;
+                    # the printed line total is evidence. On a real e-arsiv
+                    # invoice a 70% discount sits between them, and writing the
+                    # product back replaced 20,83 with 69,42. The mismatch is
+                    # already critical, so the document reaches a human --
+                    # which is the whole point. P0-7.
 
         # Subtotal = sum of item totals
         subtotal = self._to_float(extracted.get("subtotal"))

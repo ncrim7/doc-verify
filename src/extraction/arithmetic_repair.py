@@ -58,18 +58,35 @@ def repair_arithmetic(data: dict, doc_type: str = None) -> dict:
     items = data.get("items")
     items = items if isinstance(items, list) else []
 
-    # 1) Kalem toplamı = quantity × unit_price (tam türetilmiş alan)
+    # 1) Kalem toplamı: YALNIZCA EKSİKSE doldurulur.
+    #
+    #    Bu, P0-4'te bilerek istisna tutulmuştu: "quantity ve unit_price iki
+    #    bağımsız değerdir, tek bir türetilmiş değeri doğrular". Gerekçe ancak
+    #    aralarında hiçbir şey yoksa geçerli. Gerçek bir e-arşiv faturasında
+    #    %70 iskontolu bir satır bunu çürüttü:
+    #
+    #        1 Adet × 69,4167 TL, %70 iskonto -> Mal Hizmet Tutarı 20,83 TL
+    #
+    #    Onarım sayfada yazan 20,83'ü 69,42 ile ezdi — 3,3 kat. Sonra da
+    #    uydurulmuş kalem toplamı, sayfada DOĞRU yazan ara toplamı yanlış
+    #    gösterip subtotal_mismatch ürettirdi.
+    #
+    #    Şemada iskonto alanı yok, yani bu fark ifade edilemiyor. Ezmek yerine
+    #    bırakılıyor: uyuşmazlığı kural doğrulayıcı zaten critical olarak
+    #    işaretliyor ve belge insana gidiyor.
+    #
+    #    Kaybedilen: basamak düşmesi kurtarması (53 × 3267.94 = 173200.82 iken
+    #    modelin 17320.82 yazması). Ölçülen faydası sıfırdı — run 6 ve run 7
+    #    ikisi de "delta from repair + correction: +0.00 pp" bildirdi. Kanıtsız
+    #    bir kazanç için kanıtlı bir uydurma riski taşınmaz.
     for it in items:
         if not isinstance(it, dict):
             continue
         q = _num(it.get("quantity"))
         u = _num(it.get("unit_price"))
-        t = _num(it.get("total"))
-        if q is not None and u is not None:
-            calc = round(q * u, 2)
-            if t is None or abs(t - calc) > _TOL:
-                it["total"] = calc
-                repairs += 1
+        if q is not None and u is not None and _num(it.get("total")) is None:
+            it["total"] = round(q * u, 2)
+            repairs += 1
 
     # Onarılmış kalem toplamlarının toplamı
     line_sum = round(sum((_num(it.get("total")) or 0.0)
