@@ -1,0 +1,6376 @@
+{
+  "timestamp": "20260906_011904",
+  "config": {
+    "provider": "openai",
+    "model": "gpt-5-nano",
+    "strategy": "direct",
+    "split": "measure",
+    "correction_enabled": false,
+    "reasoning_effort": "low",
+    "temperature": null
+  },
+  "aggregate": {
+    "documents": 60,
+    "verdicts": {
+      "OK": 58,
+      "REVIEW": 2
+    },
+    "no_data": 0,
+    "overall": {
+      "documents": 60,
+      "exact_match_avg": 0.9783,
+      "semantic_similarity_avg": 0.9953,
+      "token_f1_avg": 0.9842
+    },
+    "ok_only": {
+      "documents": 58,
+      "exact_match_avg": 0.9796,
+      "semantic_similarity_avg": 0.9956,
+      "token_f1_avg": 0.9854
+    },
+    "per_doc_type": {
+      "invoice": {
+        "documents": 20,
+        "exact_match_avg": 0.9753,
+        "semantic_similarity_avg": 0.9959,
+        "token_f1_avg": 0.9835
+      },
+      "po": {
+        "documents": 20,
+        "exact_match_avg": 0.9847,
+        "semantic_similarity_avg": 0.9979,
+        "token_f1_avg": 0.9863
+      },
+      "receipt": {
+        "documents": 20,
+        "exact_match_avg": 0.9749,
+        "semantic_similarity_avg": 0.992,
+        "token_f1_avg": 0.9826
+      }
+    }
+  },
+  "raw_extraction_em": 0.9783,
+  "per_document": [
+    {
+      "doc_id": "invoice_0001",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9906,
+      "f1": 0.9487,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-13278",
+        "date": "2026-04-19",
+        "due_date": "2026-05-19",
+        "vendor_name": "Migros",
+        "vendor_tax_id": "3218196007",
+        "vendor_address": "32181 Türk Burgs Apt. 338, New Korkmazalpside, MT 29394",
+        "buyer_name": "Zengin Aslan A.Ş.",
+        "buyer_tax_id": "1338908380",
+        "buyer_address": "654 Melihcan Track, Değmeerland, MS 13177",
+        "items": [
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 15,
+            "unit_price": 2251.55,
+            "total": 33773.25
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 1,
+            "unit_price": 3796.45,
+            "total": 3796.45
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 45,
+            "unit_price": 2118.85,
+            "total": 95348.25
+          },
+          {
+            "description": "Çalışma Masası 120x60",
+            "quantity": 10,
+            "unit_price": 1084.42,
+            "total": 10844.2
+          },
+          {
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 7,
+            "unit_price": 472.8,
+            "total": 3309.6
+          },
+          {
+            "description": "Filtre Kahve (1 kg)",
+            "quantity": 23,
+            "unit_price": 4239,
+            "total": 97497
+          }
+        ],
+        "subtotal": 244568.75,
+        "tax_rate": 0.18,
+        "tax_amount": 44022.38,
+        "total_amount": 288591.13,
+        "amount_payable": 288591.13,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-13278",
+        "date": "2026-04-19",
+        "due_date": "2026-05-19",
+        "vendor_name": "Migros",
+        "vendor_tax_id": "3218196007",
+        "vendor_address": "32181 Türk Burgs Apt. 338, New Korkmazalpside, MT 29394",
+        "buyer_name": "Zengin Aslan A.Ş.",
+        "buyer_tax_id": "1338908380",
+        "buyer_address": "654 Melihcan Track, Değmeerland, MS 13177",
+        "items": [
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 15,
+            "unit_price": 2251.55,
+            "total": 33773.25
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 1,
+            "unit_price": 3796.45,
+            "total": 3796.45
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 45,
+            "unit_price": 2118.85,
+            "total": 95348.25
+          },
+          {
+            "description": "Çalışma Masası 120x60",
+            "quantity": 10,
+            "unit_price": 1084.42,
+            "total": 10844.2
+          },
+          {
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 7,
+            "unit_price": 472.8,
+            "total": 3309.6
+          },
+          {
+            "description": "Filtre Kahve (1 kg)",
+            "quantity": 23,
+            "unit_price": 4239,
+            "total": 97497
+          }
+        ],
+        "subtotal": 244568.75,
+        "tax_rate": 0.18,
+        "tax_amount": 44022.38,
+        "total_amount": 288591.13,
+        "amount_payable": 288591.13,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0002",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9787,
+      "sim": 0.999,
+      "f1": 0.9947,
+      "raw_em": 0.9787,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[7].description",
+          "gt": "Maskeleme Bandı 48 mm",
+          "pred": "Maskeleme Bandi 48 mm"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-70217",
+        "date": "2025-12-06",
+        "due_date": "2025-12-21",
+        "vendor_name": "Abbott-Munoz",
+        "vendor_tax_id": "6184959312",
+        "vendor_address": "161 Calderon River Suite 931, Lake Jeremyport, CO 31013",
+        "buyer_name": "James Group",
+        "buyer_tax_id": "0341316474",
+        "buyer_address": "55341 Amanda Gardens Apt. 764, Lake Mark, WI 07832",
+        "items": [
+          {
+            "description": "Kilitli Dolap (Metal, 4 Raflı)",
+            "quantity": 24,
+            "unit_price": 821.64,
+            "total": 19719.36
+          },
+          {
+            "description": "Maskeleme Bandi 48 mm",
+            "quantity": 14,
+            "unit_price": 3354.17,
+            "total": 46958.38
+          },
+          {
+            "description": "Filtre Kahve (1 kg)",
+            "quantity": 44,
+            "unit_price": 3243.7,
+            "total": 142722.8
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 41,
+            "unit_price": 863.98,
+            "total": 35423.18
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 11,
+            "unit_price": 2316.68,
+            "total": 25483.48
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 41,
+            "unit_price": 3443.93,
+            "total": 141201.13
+          },
+          {
+            "description": "Dosya Klasörü (Geniş, A4)",
+            "quantity": 44,
+            "unit_price": 1628.17,
+            "total": 71639.48
+          },
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 15,
+            "unit_price": 4110.79,
+            "total": 61661.85
+          }
+        ],
+        "subtotal": 544809.66,
+        "tax_rate": 0.18,
+        "tax_amount": 98065.74,
+        "total_amount": 642875.4,
+        "amount_payable": 642875.4,
+        "currency": "TRY",
+        "payment_terms": "Immediate",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-70217",
+        "date": "2025-12-06",
+        "due_date": "2025-12-21",
+        "vendor_name": "Abbott-Munoz",
+        "vendor_tax_id": "6184959312",
+        "vendor_address": "161 Calderon River Suite 931, Lake Jeremyport, CO 31013",
+        "buyer_name": "James Group",
+        "buyer_tax_id": "0341316474",
+        "buyer_address": "55341 Amanda Gardens Apt. 764, Lake Mark, WI 07832",
+        "items": [
+          {
+            "description": "Kilitli Dolap (Metal, 4 Raflı)",
+            "quantity": 24,
+            "unit_price": 821.64,
+            "total": 19719.36
+          },
+          {
+            "description": "Maskeleme Bandi 48 mm",
+            "quantity": 14,
+            "unit_price": 3354.17,
+            "total": 46958.38
+          },
+          {
+            "description": "Filtre Kahve (1 kg)",
+            "quantity": 44,
+            "unit_price": 3243.7,
+            "total": 142722.8
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 41,
+            "unit_price": 863.98,
+            "total": 35423.18
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 11,
+            "unit_price": 2316.68,
+            "total": 25483.48
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 41,
+            "unit_price": 3443.93,
+            "total": 141201.13
+          },
+          {
+            "description": "Dosya Klasörü (Geniş, A4)",
+            "quantity": 44,
+            "unit_price": 1628.17,
+            "total": 71639.48
+          },
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 15,
+            "unit_price": 4110.79,
+            "total": 61661.85
+          }
+        ],
+        "subtotal": 544809.66,
+        "tax_rate": 0.18,
+        "tax_amount": 98065.74,
+        "total_amount": 642875.4,
+        "amount_payable": 642875.4,
+        "currency": "TRY",
+        "payment_terms": "Immediate",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0003",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.963,
+      "sim": 0.9983,
+      "f1": 0.9835,
+      "raw_em": 0.963,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "buyer_name",
+          "gt": "Er-Bakır Elektrolitik Bakır",
+          "pred": "Er-Bakir Elektrolitik Bakır"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-60019",
+        "date": "2025-11-05",
+        "due_date": "2026-01-04",
+        "vendor_name": "Alemdar A.Ş.",
+        "vendor_tax_id": "8480184518",
+        "vendor_address": "1395 Sevcan Parks Suite 724, East Kefser, ND 34939",
+        "buyer_name": "Er-Bakir Elektrolitik Bakır",
+        "buyer_tax_id": "4627048282",
+        "buyer_address": "3287 Ayktalp Wall Apt. 226, South Çokanmouth, NC 33454",
+        "items": [
+          {
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 41,
+            "unit_price": 1499.24,
+            "total": 61468.84
+          },
+          {
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 33,
+            "unit_price": 3048.76,
+            "total": 100609.08
+          },
+          {
+            "description": "Kargo ve Nakliye Bedeli",
+            "quantity": 24,
+            "unit_price": 3814.93,
+            "total": 91558.32
+          }
+        ],
+        "subtotal": 253636.24,
+        "tax_rate": 0.18,
+        "tax_amount": 45654.52,
+        "total_amount": 299290.76,
+        "amount_payable": 299290.76,
+        "currency": "TRY",
+        "payment_terms": "Net 30",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-60019",
+        "date": "2025-11-05",
+        "due_date": "2026-01-04",
+        "vendor_name": "Alemdar A.Ş.",
+        "vendor_tax_id": "8480184518",
+        "vendor_address": "1395 Sevcan Parks Suite 724, East Kefser, ND 34939",
+        "buyer_name": "Er-Bakir Elektrolitik Bakır",
+        "buyer_tax_id": "4627048282",
+        "buyer_address": "3287 Ayktalp Wall Apt. 226, South Çokanmouth, NC 33454",
+        "items": [
+          {
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 41,
+            "unit_price": 1499.24,
+            "total": 61468.84
+          },
+          {
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 33,
+            "unit_price": 3048.76,
+            "total": 100609.08
+          },
+          {
+            "description": "Kargo ve Nakliye Bedeli",
+            "quantity": 24,
+            "unit_price": 3814.93,
+            "total": 91558.32
+          }
+        ],
+        "subtotal": 253636.24,
+        "tax_rate": 0.18,
+        "tax_amount": 45654.52,
+        "total_amount": 299290.76,
+        "amount_payable": 299290.76,
+        "currency": "TRY",
+        "payment_terms": "Net 30",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0004",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9535,
+      "sim": 0.9756,
+      "f1": 0.9676,
+      "raw_em": 0.9535,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "payment_terms",
+          "gt": "Net 30",
+          "pred": ""
+        },
+        {
+          "field": "items[6].description",
+          "gt": "El Dezenfektanı 1 L",
+          "pred": "El Dezenefektanı 1 L"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-74042",
+        "date": "2026-08-28",
+        "due_date": "2026-09-12",
+        "vendor_name": "Türk Hava Yolları",
+        "vendor_tax_id": "5430391179",
+        "vendor_address": "845 Soydaner Mews, South Abdurrahman, VA 94830",
+        "buyer_name": "Zorlu İnönü Ltd.",
+        "buyer_tax_id": "1822782482",
+        "buyer_address": "489 Göksel Landing, New Gülsevil, PW 00575",
+        "items": [
+          {
+            "description": "Kargo ve Nakliye Bedeli",
+            "quantity": 28,
+            "unit_price": 4822.17,
+            "total": 135020.76
+          },
+          {
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 49,
+            "unit_price": 3652.36,
+            "total": 178965.64
+          },
+          {
+            "description": "El Dezenefektanı 1 L",
+            "quantity": 46,
+            "unit_price": 1565.46,
+            "total": 72011.16
+          },
+          {
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 42,
+            "unit_price": 1873.37,
+            "total": 78681.54
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 29,
+            "unit_price": 613.81,
+            "total": 17800.49
+          },
+          {
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 5,
+            "unit_price": 1697.05,
+            "total": 8485.25
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 36,
+            "unit_price": 1158.27,
+            "total": 41697.72
+          }
+        ],
+        "subtotal": 532662.56,
+        "tax_rate": 0.18,
+        "tax_amount": 95879.26,
+        "total_amount": 628541.82,
+        "amount_payable": 628541.82,
+        "currency": "TRY",
+        "payment_terms": null,
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-74042",
+        "date": "2026-08-28",
+        "due_date": "2026-09-12",
+        "vendor_name": "Türk Hava Yolları",
+        "vendor_tax_id": "5430391179",
+        "vendor_address": "845 Soydaner Mews, South Abdurrahman, VA 94830",
+        "buyer_name": "Zorlu İnönü Ltd.",
+        "buyer_tax_id": "1822782482",
+        "buyer_address": "489 Göksel Landing, New Gülsevil, PW 00575",
+        "items": [
+          {
+            "description": "Kargo ve Nakliye Bedeli",
+            "quantity": 28,
+            "unit_price": 4822.17,
+            "total": 135020.76
+          },
+          {
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 49,
+            "unit_price": 3652.36,
+            "total": 178965.64
+          },
+          {
+            "description": "El Dezenefektanı 1 L",
+            "quantity": 46,
+            "unit_price": 1565.46,
+            "total": 72011.16
+          },
+          {
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 42,
+            "unit_price": 1873.37,
+            "total": 78681.54
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 29,
+            "unit_price": 613.81,
+            "total": 17800.49
+          },
+          {
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 5,
+            "unit_price": 1697.05,
+            "total": 8485.25
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 36,
+            "unit_price": 1158.27,
+            "total": 41697.72
+          }
+        ],
+        "subtotal": 532662.56,
+        "tax_rate": 0.18,
+        "tax_amount": 95879.26,
+        "total_amount": 628541.82,
+        "amount_payable": 628541.82,
+        "currency": "TRY",
+        "payment_terms": null,
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0005",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-17944",
+        "date": "2026-02-12",
+        "due_date": "2026-03-29",
+        "vendor_name": "Limak İnşaat",
+        "vendor_tax_id": "1333872629",
+        "vendor_address": "4303 Canal Street, Alemdarland, WV 70323",
+        "buyer_name": "Yaman San.",
+        "buyer_tax_id": "4731781087",
+        "buyer_address": "USNS Eraslan, FPO AP 80008",
+        "items": [
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 6,
+            "unit_price": 4632.57,
+            "total": 27795.42
+          },
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 11,
+            "unit_price": 2038.01,
+            "total": 22418.11
+          },
+          {
+            "description": "Dosya Klasörü (Geniş, A4)",
+            "quantity": 14,
+            "unit_price": 4324.61,
+            "total": 60544.54
+          }
+        ],
+        "subtotal": 110758.07,
+        "tax_rate": 0.18,
+        "tax_amount": 19936.45,
+        "total_amount": 130694.52,
+        "amount_payable": 130694.52,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-17944",
+        "date": "2026-02-12",
+        "due_date": "2026-03-29",
+        "vendor_name": "Limak İnşaat",
+        "vendor_tax_id": "1333872629",
+        "vendor_address": "4303 Canal Street, Alemdarland, WV 70323",
+        "buyer_name": "Yaman San.",
+        "buyer_tax_id": "4731781087",
+        "buyer_address": "USNS Eraslan, FPO AP 80008",
+        "items": [
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 6,
+            "unit_price": 4632.57,
+            "total": 27795.42
+          },
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 11,
+            "unit_price": 2038.01,
+            "total": 22418.11
+          },
+          {
+            "description": "Dosya Klasörü (Geniş, A4)",
+            "quantity": 14,
+            "unit_price": 4324.61,
+            "total": 60544.54
+          }
+        ],
+        "subtotal": 110758.07,
+        "tax_rate": 0.18,
+        "tax_amount": 19936.45,
+        "total_amount": 130694.52,
+        "amount_payable": 130694.52,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0006",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9535,
+      "sim": 0.9976,
+      "f1": 0.9864,
+      "raw_em": 0.9535,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "vendor_name",
+          "gt": "Bilir İhsanoğlu Şti.",
+          "pred": "Bilir Ihsanoğlu Şti."
+        },
+        {
+          "field": "items[6].description",
+          "gt": "El Dezenfektanı 1 L",
+          "pred": "El Dezenefaktanı 1 L"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-61173",
+        "date": "2026-04-24",
+        "due_date": "2026-06-23",
+        "vendor_name": "Bilir Ihsanoğlu Şti.",
+        "vendor_tax_id": "4687234305",
+        "vendor_address": "465 Akçay Path, Demirbury, IN 08893",
+        "buyer_name": "Yıldırım Zengin Şti.",
+        "buyer_tax_id": "9805009784",
+        "buyer_address": "10310 Erdoğan Passage, West Sümerya, NM 28581",
+        "items": [
+          {
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 11,
+            "unit_price": 293.83,
+            "total": 3232.13
+          },
+          {
+            "description": "Post-it Not Bloğu 76x76",
+            "quantity": 6,
+            "unit_price": 4258.2,
+            "total": 25549.2
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 39,
+            "unit_price": 349.12,
+            "total": 13615.68
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 26,
+            "unit_price": 608.23,
+            "total": 15813.98
+          },
+          {
+            "description": "Dolmakalem Seti",
+            "quantity": 16,
+            "unit_price": 2898.81,
+            "total": 46380.96
+          },
+          {
+            "description": "El Dezenefaktanı 1 L",
+            "quantity": 40,
+            "unit_price": 419.1,
+            "total": 16764.0
+          },
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 38,
+            "unit_price": 2830.48,
+            "total": 107558.24
+          }
+        ],
+        "subtotal": 228914.19,
+        "tax_rate": 0.18,
+        "tax_amount": 41204.55,
+        "total_amount": 270118.74,
+        "amount_payable": 270118.74,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-61173",
+        "date": "2026-04-24",
+        "due_date": "2026-06-23",
+        "vendor_name": "Bilir Ihsanoğlu Şti.",
+        "vendor_tax_id": "4687234305",
+        "vendor_address": "465 Akçay Path, Demirbury, IN 08893",
+        "buyer_name": "Yıldırım Zengin Şti.",
+        "buyer_tax_id": "9805009784",
+        "buyer_address": "10310 Erdoğan Passage, West Sümerya, NM 28581",
+        "items": [
+          {
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 11,
+            "unit_price": 293.83,
+            "total": 3232.13
+          },
+          {
+            "description": "Post-it Not Bloğu 76x76",
+            "quantity": 6,
+            "unit_price": 4258.2,
+            "total": 25549.2
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 39,
+            "unit_price": 349.12,
+            "total": 13615.68
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 26,
+            "unit_price": 608.23,
+            "total": 15813.98
+          },
+          {
+            "description": "Dolmakalem Seti",
+            "quantity": 16,
+            "unit_price": 2898.81,
+            "total": 46380.96
+          },
+          {
+            "description": "El Dezenefaktanı 1 L",
+            "quantity": 40,
+            "unit_price": 419.1,
+            "total": 16764.0
+          },
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 38,
+            "unit_price": 2830.48,
+            "total": 107558.24
+          }
+        ],
+        "subtotal": 228914.19,
+        "tax_rate": 0.18,
+        "tax_amount": 41204.55,
+        "total_amount": 270118.74,
+        "amount_payable": 270118.74,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0007",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.998,
+      "f1": 0.9894,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-97538",
+        "date": "2025-11-27",
+        "due_date": "2026-01-11",
+        "vendor_name": "Doğuş Otomotiv",
+        "vendor_tax_id": "1241182442",
+        "vendor_address": "76311 Ergül Manors Suite 701, South Şamihamouth, AS 14823",
+        "buyer_name": "Akar Ltd.",
+        "buyer_tax_id": "9353487400",
+        "buyer_address": "2473 Aslıve Valley, North Semrinsde, MP 02435",
+        "items": [
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 41,
+            "unit_price": 2123.64,
+            "total": 87069.24
+          },
+          {
+            "description": "Kraft Zarf (C4)",
+            "quantity": 3,
+            "unit_price": 27.69,
+            "total": 83.07
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 41,
+            "unit_price": 4899.19,
+            "total": 200866.79
+          }
+        ],
+        "subtotal": 288019.1,
+        "tax_rate": 0.18,
+        "tax_amount": 51843.44,
+        "total_amount": 339862.54,
+        "amount_payable": 339862.54,
+        "currency": "TRY",
+        "payment_terms": "Hemen Ödeme",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-97538",
+        "date": "2025-11-27",
+        "due_date": "2026-01-11",
+        "vendor_name": "Doğuş Otomotiv",
+        "vendor_tax_id": "1241182442",
+        "vendor_address": "76311 Ergül Manors Suite 701, South Şamihamouth, AS 14823",
+        "buyer_name": "Akar Ltd.",
+        "buyer_tax_id": "9353487400",
+        "buyer_address": "2473 Aslıve Valley, North Semrinsde, MP 02435",
+        "items": [
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 41,
+            "unit_price": 2123.64,
+            "total": 87069.24
+          },
+          {
+            "description": "Kraft Zarf (C4)",
+            "quantity": 3,
+            "unit_price": 27.69,
+            "total": 83.07
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 41,
+            "unit_price": 4899.19,
+            "total": 200866.79
+          }
+        ],
+        "subtotal": 288019.1,
+        "tax_rate": 0.18,
+        "tax_amount": 51843.44,
+        "total_amount": 339862.54,
+        "amount_payable": 339862.54,
+        "currency": "TRY",
+        "payment_terms": "Hemen Ödeme",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0008",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9992,
+      "f1": 0.9953,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-66057",
+        "date": "2025-11-23",
+        "due_date": "2025-12-08",
+        "vendor_name": "İhsanoğlu Ltd.",
+        "vendor_tax_id": "1128059829",
+        "vendor_address": "3602 Yılmaz Loaf Suite 746, Mançoborough, LA 29035",
+        "buyer_name": "Zengin Şti.",
+        "buyer_tax_id": "6204505339",
+        "buyer_address": "09788 Baris Pass Apt. 219, Lake Nazlrmfurt, DE 75169",
+        "items": [
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 7,
+            "unit_price": 1774.86,
+            "total": 12424.02
+          },
+          {
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 27,
+            "unit_price": 4869.45,
+            "total": 131475.15
+          },
+          {
+            "description": "LED Monitör 24\" IPS",
+            "quantity": 16,
+            "unit_price": 4324.38,
+            "total": 69190.08
+          },
+          {
+            "description": "Çalışma Masası 120x60",
+            "quantity": 27,
+            "unit_price": 133.68,
+            "total": 3609.36
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 27,
+            "unit_price": 4013.15,
+            "total": 108355.05
+          },
+          {
+            "description": "Maskeleme Bandı 48 mm",
+            "quantity": 18,
+            "unit_price": 804.4,
+            "total": 14479.2
+          },
+          {
+            "description": "Dolmakalem Seti",
+            "quantity": 7,
+            "unit_price": 1918.88,
+            "total": 13432.16
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 31,
+            "unit_price": 1119.94,
+            "total": 34718.14
+          }
+        ],
+        "subtotal": 387683.16,
+        "tax_rate": 0.18,
+        "tax_amount": 69782.97,
+        "total_amount": 457466.13,
+        "amount_payable": 457466.13,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-66057",
+        "date": "2025-11-23",
+        "due_date": "2025-12-08",
+        "vendor_name": "İhsanoğlu Ltd.",
+        "vendor_tax_id": "1128059829",
+        "vendor_address": "3602 Yılmaz Loaf Suite 746, Mançoborough, LA 29035",
+        "buyer_name": "Zengin Şti.",
+        "buyer_tax_id": "6204505339",
+        "buyer_address": "09788 Baris Pass Apt. 219, Lake Nazlrmfurt, DE 75169",
+        "items": [
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 7,
+            "unit_price": 1774.86,
+            "total": 12424.02
+          },
+          {
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 27,
+            "unit_price": 4869.45,
+            "total": 131475.15
+          },
+          {
+            "description": "LED Monitör 24\" IPS",
+            "quantity": 16,
+            "unit_price": 4324.38,
+            "total": 69190.08
+          },
+          {
+            "description": "Çalışma Masası 120x60",
+            "quantity": 27,
+            "unit_price": 133.68,
+            "total": 3609.36
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 27,
+            "unit_price": 4013.15,
+            "total": 108355.05
+          },
+          {
+            "description": "Maskeleme Bandı 48 mm",
+            "quantity": 18,
+            "unit_price": 804.4,
+            "total": 14479.2
+          },
+          {
+            "description": "Dolmakalem Seti",
+            "quantity": 7,
+            "unit_price": 1918.88,
+            "total": 13432.16
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 31,
+            "unit_price": 1119.94,
+            "total": 34718.14
+          }
+        ],
+        "subtotal": 387683.16,
+        "tax_rate": 0.18,
+        "tax_amount": 69782.97,
+        "total_amount": 457466.13,
+        "amount_payable": 457466.13,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0009",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9991,
+      "f1": 0.9938,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-39831",
+        "date": "2026-05-15",
+        "due_date": "2026-05-30",
+        "vendor_name": "Zengin Şti.",
+        "vendor_tax_id": "3654145861",
+        "vendor_address": "9985 Bilir Skyway, Nevsvlview, MO 17655",
+        "buyer_name": "Eti Gıda",
+        "buyer_tax_id": "8501429403",
+        "buyer_address": "07991 Gürcüye Forest Suite 251, West Serda, GA 57934",
+        "items": [
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 39,
+            "unit_price": 2178.47,
+            "total": 84960.33
+          },
+          {
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 28,
+            "unit_price": 3034.98,
+            "total": 84979.44
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 8,
+            "unit_price": 1932.13,
+            "total": 15457.04
+          }
+        ],
+        "subtotal": 185396.81,
+        "tax_rate": 0.18,
+        "tax_amount": 33371.43,
+        "total_amount": 218768.24,
+        "amount_payable": 218768.24,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-39831",
+        "date": "2026-05-15",
+        "due_date": "2026-05-30",
+        "vendor_name": "Zengin Şti.",
+        "vendor_tax_id": "3654145861",
+        "vendor_address": "9985 Bilir Skyway, Nevsvlview, MO 17655",
+        "buyer_name": "Eti Gıda",
+        "buyer_tax_id": "8501429403",
+        "buyer_address": "07991 Gürcüye Forest Suite 251, West Serda, GA 57934",
+        "items": [
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 39,
+            "unit_price": 2178.47,
+            "total": 84960.33
+          },
+          {
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 28,
+            "unit_price": 3034.98,
+            "total": 84979.44
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 8,
+            "unit_price": 1932.13,
+            "total": 15457.04
+          }
+        ],
+        "subtotal": 185396.81,
+        "tax_rate": 0.18,
+        "tax_amount": 33371.43,
+        "total_amount": 218768.24,
+        "amount_payable": 218768.24,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0010",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9992,
+      "f1": 0.9947,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-37549",
+        "date": "2026-01-29",
+        "due_date": "2026-03-15",
+        "vendor_name": "Bizim Toptan Satış Mağazaları",
+        "vendor_tax_id": "7773872147",
+        "vendor_address": "841 Risalet Crescent, Lake Hurşideberg, KY 37431",
+        "buyer_name": "Selçuk Ecza",
+        "buyer_tax_id": "8951343329",
+        "buyer_address": "487 Akcay Vista, North Risaletchester, MP 36766",
+        "items": [
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 3,
+            "unit_price": 1231.76,
+            "total": 3695.28
+          },
+          {
+            "description": "Post-it Not Bloğu 76x76",
+            "quantity": 40,
+            "unit_price": 4250.19,
+            "total": 170007.6
+          },
+          {
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 30,
+            "unit_price": 2078.06,
+            "total": 62341.8
+          }
+        ],
+        "subtotal": 236044.68,
+        "tax_rate": 0.18,
+        "tax_amount": 42488.04,
+        "total_amount": 278532.72,
+        "amount_payable": 278532.72,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-37549",
+        "date": "2026-01-29",
+        "due_date": "2026-03-15",
+        "vendor_name": "Bizim Toptan Satış Mağazaları",
+        "vendor_tax_id": "7773872147",
+        "vendor_address": "841 Risalet Crescent, Lake Hurşideberg, KY 37431",
+        "buyer_name": "Selçuk Ecza",
+        "buyer_tax_id": "8951343329",
+        "buyer_address": "487 Akcay Vista, North Risaletchester, MP 36766",
+        "items": [
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 3,
+            "unit_price": 1231.76,
+            "total": 3695.28
+          },
+          {
+            "description": "Post-it Not Bloğu 76x76",
+            "quantity": 40,
+            "unit_price": 4250.19,
+            "total": 170007.6
+          },
+          {
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 30,
+            "unit_price": 2078.06,
+            "total": 62341.8
+          }
+        ],
+        "subtotal": 236044.68,
+        "tax_rate": 0.18,
+        "tax_amount": 42488.04,
+        "total_amount": 278532.72,
+        "amount_payable": 278532.72,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0011",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-60328",
+        "date": "2025-12-27",
+        "due_date": "2026-02-25",
+        "vendor_name": "Smith and Sons",
+        "vendor_tax_id": "3201632871",
+        "vendor_address": "78680 Charles Spurs Apt. 805, South David, ME 48296",
+        "buyer_name": "Nolan and Sons",
+        "buyer_tax_id": "0831727882",
+        "buyer_address": "8692 Michelle Union, South Angel, WA 44041",
+        "items": [
+          {
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 21,
+            "unit_price": 4750.7,
+            "total": 99764.7
+          },
+          {
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 40,
+            "unit_price": 4076.88,
+            "total": 163075.2
+          },
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 28,
+            "unit_price": 4154.54,
+            "total": 116327.12
+          },
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 29,
+            "unit_price": 4487.07,
+            "total": 130125.03
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 29,
+            "unit_price": 1303.37,
+            "total": 37797.73
+          },
+          {
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 41,
+            "unit_price": 1393.78,
+            "total": 57144.98
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 32,
+            "unit_price": 3137.47,
+            "total": 100399.04
+          }
+        ],
+        "subtotal": 704633.8,
+        "tax_rate": 0.18,
+        "tax_amount": 126834.08,
+        "total_amount": 831467.88,
+        "amount_payable": 831467.88,
+        "currency": "TRY",
+        "payment_terms": "Immediate",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-60328",
+        "date": "2025-12-27",
+        "due_date": "2026-02-25",
+        "vendor_name": "Smith and Sons",
+        "vendor_tax_id": "3201632871",
+        "vendor_address": "78680 Charles Spurs Apt. 805, South David, ME 48296",
+        "buyer_name": "Nolan and Sons",
+        "buyer_tax_id": "0831727882",
+        "buyer_address": "8692 Michelle Union, South Angel, WA 44041",
+        "items": [
+          {
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 21,
+            "unit_price": 4750.7,
+            "total": 99764.7
+          },
+          {
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 40,
+            "unit_price": 4076.88,
+            "total": 163075.2
+          },
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 28,
+            "unit_price": 4154.54,
+            "total": 116327.12
+          },
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 29,
+            "unit_price": 4487.07,
+            "total": 130125.03
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 29,
+            "unit_price": 1303.37,
+            "total": 37797.73
+          },
+          {
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 41,
+            "unit_price": 1393.78,
+            "total": 57144.98
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 32,
+            "unit_price": 3137.47,
+            "total": 100399.04
+          }
+        ],
+        "subtotal": 704633.8,
+        "tax_rate": 0.18,
+        "tax_amount": 126834.08,
+        "total_amount": 831467.88,
+        "amount_payable": 831467.88,
+        "currency": "TRY",
+        "payment_terms": "Immediate",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0012",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9535,
+      "sim": 0.998,
+      "f1": 0.9876,
+      "raw_em": 0.9535,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "vendor_name",
+          "gt": "Sezgin Ülker Ltd.",
+          "pred": "Sezgin Ülger Ltd."
+        },
+        {
+          "field": "items[6].description",
+          "gt": "Yazılım Lisansı (Yıllık, 1 Kullanıcı)",
+          "pred": "Yazılım Lisansi (Yıllık, 1 Kullanıcı)"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-10772",
+        "date": "2026-03-10",
+        "due_date": "2026-04-24",
+        "vendor_name": "Sezgin Ülger Ltd.",
+        "vendor_tax_id": "6688937345",
+        "vendor_address": "0733 Ergül Inlet, East Alcan, TN 25814",
+        "buyer_name": "Şama Aslan A.Ş.",
+        "buyer_tax_id": "6706562728",
+        "buyer_address": "Unit 4586 Box 8501, DPO AA 23906",
+        "items": [
+          {
+            "description": "Yazılım Lisansi (Yıllık, 1 Kullanıcı)",
+            "quantity": 35,
+            "unit_price": 144.56,
+            "total": 5059.6
+          },
+          {
+            "description": "Toner Kartuş (HP 26A)",
+            "quantity": 38,
+            "unit_price": 2826.32,
+            "total": 107400.16
+          },
+          {
+            "description": "Kraft Zarf (C4)",
+            "quantity": 6,
+            "unit_price": 3217.32,
+            "total": 19303.92
+          },
+          {
+            "description": "Wi-Fi Erişim Noktası",
+            "quantity": 30,
+            "unit_price": 916.83,
+            "total": 27504.9
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 25,
+            "unit_price": 1643.49,
+            "total": 41087.25
+          },
+          {
+            "description": "Aydınlatma Armatürü LED Panel",
+            "quantity": 21,
+            "unit_price": 1694.13,
+            "total": 35576.73
+          },
+          {
+            "description": "Bulut Yedekleme Hizmeti (Aylık)",
+            "quantity": 18,
+            "unit_price": 3762.53,
+            "total": 67725.54
+          }
+        ],
+        "subtotal": 303658.1,
+        "tax_rate": 0.18,
+        "tax_amount": 54658.46,
+        "total_amount": 358316.56,
+        "amount_payable": 358316.56,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-10772",
+        "date": "2026-03-10",
+        "due_date": "2026-04-24",
+        "vendor_name": "Sezgin Ülger Ltd.",
+        "vendor_tax_id": "6688937345",
+        "vendor_address": "0733 Ergül Inlet, East Alcan, TN 25814",
+        "buyer_name": "Şama Aslan A.Ş.",
+        "buyer_tax_id": "6706562728",
+        "buyer_address": "Unit 4586 Box 8501, DPO AA 23906",
+        "items": [
+          {
+            "description": "Yazılım Lisansi (Yıllık, 1 Kullanıcı)",
+            "quantity": 35,
+            "unit_price": 144.56,
+            "total": 5059.6
+          },
+          {
+            "description": "Toner Kartuş (HP 26A)",
+            "quantity": 38,
+            "unit_price": 2826.32,
+            "total": 107400.16
+          },
+          {
+            "description": "Kraft Zarf (C4)",
+            "quantity": 6,
+            "unit_price": 3217.32,
+            "total": 19303.92
+          },
+          {
+            "description": "Wi-Fi Erişim Noktası",
+            "quantity": 30,
+            "unit_price": 916.83,
+            "total": 27504.9
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 25,
+            "unit_price": 1643.49,
+            "total": 41087.25
+          },
+          {
+            "description": "Aydınlatma Armatürü LED Panel",
+            "quantity": 21,
+            "unit_price": 1694.13,
+            "total": 35576.73
+          },
+          {
+            "description": "Bulut Yedekleme Hizmeti (Aylık)",
+            "quantity": 18,
+            "unit_price": 3762.53,
+            "total": 67725.54
+          }
+        ],
+        "subtotal": 303658.1,
+        "tax_rate": 0.18,
+        "tax_amount": 54658.46,
+        "total_amount": 358316.56,
+        "amount_payable": 358316.56,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0013",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9143,
+      "sim": 0.9958,
+      "f1": 0.9738,
+      "raw_em": 0.9143,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[2].description",
+          "gt": "Aydınlatma Armatürü LED Panel",
+          "pred": "Aydinlatma Armatürü LED Panel"
+        },
+        {
+          "field": "items[3].description",
+          "gt": "Web Kamerası 1080p",
+          "pred": "Web Kamerasi 1080p"
+        },
+        {
+          "field": "items[4].description",
+          "gt": "Web Kamerası 1080p",
+          "pred": "Web Kamerasi 1080p"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-71644",
+        "date": "2026-08-28",
+        "due_date": "2026-09-12",
+        "vendor_name": "Estes, Baker and Rodriguez",
+        "vendor_tax_id": "5310033096",
+        "vendor_address": "9816 Jonathan Station Suite 088, West Ryan, TN 43780",
+        "buyer_name": "Edwards, Charles and Cortez",
+        "buyer_tax_id": "2327193747",
+        "buyer_address": "656 Spencer Fields Suite 629, Richardtown, ME 38107",
+        "items": [
+          {
+            "description": "Laminasyon Filmi A4 (100'lü)",
+            "quantity": 11,
+            "unit_price": 3033.4,
+            "total": 33367.4
+          },
+          {
+            "description": "Web Kamerasi 1080p",
+            "quantity": 50,
+            "unit_price": 4098.31,
+            "total": 204915.5
+          },
+          {
+            "description": "Web Kamerasi 1080p",
+            "quantity": 7,
+            "unit_price": 2897.64,
+            "total": 20283.48
+          },
+          {
+            "description": "Aydinlatma Armatürü LED Panel",
+            "quantity": 37,
+            "unit_price": 3389.96,
+            "total": 125428.52
+          },
+          {
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 26,
+            "unit_price": 4707.94,
+            "total": 122406.44
+          }
+        ],
+        "subtotal": 506401.34,
+        "tax_rate": 0.18,
+        "tax_amount": 91152.24,
+        "total_amount": 597553.58,
+        "amount_payable": 597553.58,
+        "currency": "TRY",
+        "payment_terms": "Net 30",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-71644",
+        "date": "2026-08-28",
+        "due_date": "2026-09-12",
+        "vendor_name": "Estes, Baker and Rodriguez",
+        "vendor_tax_id": "5310033096",
+        "vendor_address": "9816 Jonathan Station Suite 088, West Ryan, TN 43780",
+        "buyer_name": "Edwards, Charles and Cortez",
+        "buyer_tax_id": "2327193747",
+        "buyer_address": "656 Spencer Fields Suite 629, Richardtown, ME 38107",
+        "items": [
+          {
+            "description": "Laminasyon Filmi A4 (100'lü)",
+            "quantity": 11,
+            "unit_price": 3033.4,
+            "total": 33367.4
+          },
+          {
+            "description": "Web Kamerasi 1080p",
+            "quantity": 50,
+            "unit_price": 4098.31,
+            "total": 204915.5
+          },
+          {
+            "description": "Web Kamerasi 1080p",
+            "quantity": 7,
+            "unit_price": 2897.64,
+            "total": 20283.48
+          },
+          {
+            "description": "Aydinlatma Armatürü LED Panel",
+            "quantity": 37,
+            "unit_price": 3389.96,
+            "total": 125428.52
+          },
+          {
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 26,
+            "unit_price": 4707.94,
+            "total": 122406.44
+          }
+        ],
+        "subtotal": 506401.34,
+        "tax_rate": 0.18,
+        "tax_amount": 91152.24,
+        "total_amount": 597553.58,
+        "amount_payable": 597553.58,
+        "currency": "TRY",
+        "payment_terms": "Net 30",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0014",
+      "doc_type": "invoice",
+      "verdict": "REVIEW",
+      "has_data": true,
+      "em": 0.9362,
+      "sim": 0.9761,
+      "f1": 0.9521,
+      "raw_em": 0.9362,
+      "reasons": [
+        "subtotal_mismatch: subtotal"
+      ],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[6].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        },
+        {
+          "field": "items[7].quantity",
+          "gt": "18",
+          "pred": "8"
+        },
+        {
+          "field": "items[7].total",
+          "gt": "79368.12",
+          "pred": "35274.72"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-92213",
+        "date": "2026-05-05",
+        "due_date": "2026-05-20",
+        "vendor_name": "Şafak Şti.",
+        "vendor_tax_id": "4919058659",
+        "vendor_address": "7738 Çetin Underpass Apt. 148, Cindorukbury, TX 41188",
+        "buyer_name": "SezgIn Ltd.",
+        "buyer_tax_id": "1850671659",
+        "buyer_address": "79176 İhsan Square, Soylufurt, IA 19843",
+        "items": [
+          {
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 30,
+            "unit_price": 3539.47,
+            "total": 106184.1
+          },
+          {
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 12,
+            "unit_price": 3671.64,
+            "total": 44059.68
+          },
+          {
+            "description": "Kargo ve Nakliye Bedeli",
+            "quantity": 18,
+            "unit_price": 3083.4,
+            "total": 55501.2
+          },
+          {
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 50,
+            "unit_price": 2422.65,
+            "total": 121132.5
+          },
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 47,
+            "unit_price": 2966.45,
+            "total": 139423.15
+          },
+          {
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 16,
+            "unit_price": 4155.35,
+            "total": 66485.6
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 8,
+            "unit_price": 4409.34,
+            "total": 35274.72
+          },
+          {
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 49,
+            "unit_price": 2328.9,
+            "total": 114116.1
+          }
+        ],
+        "subtotal": 726270.45,
+        "tax_rate": 0.18,
+        "tax_amount": 130728.68,
+        "total_amount": 856999.13,
+        "amount_payable": 856999.13,
+        "currency": "TRY",
+        "payment_terms": "Hemen Ödeme",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-92213",
+        "date": "2026-05-05",
+        "due_date": "2026-05-20",
+        "vendor_name": "Şafak Şti.",
+        "vendor_tax_id": "4919058659",
+        "vendor_address": "7738 Çetin Underpass Apt. 148, Cindorukbury, TX 41188",
+        "buyer_name": "SezgIn Ltd.",
+        "buyer_tax_id": "1850671659",
+        "buyer_address": "79176 İhsan Square, Soylufurt, IA 19843",
+        "items": [
+          {
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 30,
+            "unit_price": 3539.47,
+            "total": 106184.1
+          },
+          {
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 12,
+            "unit_price": 3671.64,
+            "total": 44059.68
+          },
+          {
+            "description": "Kargo ve Nakliye Bedeli",
+            "quantity": 18,
+            "unit_price": 3083.4,
+            "total": 55501.2
+          },
+          {
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 50,
+            "unit_price": 2422.65,
+            "total": 121132.5
+          },
+          {
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 47,
+            "unit_price": 2966.45,
+            "total": 139423.15
+          },
+          {
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 16,
+            "unit_price": 4155.35,
+            "total": 66485.6
+          },
+          {
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 8,
+            "unit_price": 4409.34,
+            "total": 35274.72
+          },
+          {
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 49,
+            "unit_price": 2328.9,
+            "total": 114116.1
+          }
+        ],
+        "subtotal": 726270.45,
+        "tax_rate": 0.18,
+        "tax_amount": 130728.68,
+        "total_amount": 856999.13,
+        "amount_payable": 856999.13,
+        "currency": "TRY",
+        "payment_terms": "Hemen Ödeme",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0015",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9787,
+      "sim": 0.9987,
+      "f1": 0.9916,
+      "raw_em": 0.9787,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[7].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-74789",
+        "date": "2026-03-24",
+        "due_date": "2026-04-23",
+        "vendor_name": "Honda Türkiye",
+        "vendor_tax_id": "7354549485",
+        "vendor_address": "3287 Işın Gateway, South Ertuncaymouth, TN 70117",
+        "buyer_name": "Kroman Çelik",
+        "buyer_tax_id": "0831367836",
+        "buyer_address": "868 Akçay Estate Suite 743, Gülderfort, SC 31859",
+        "items": [
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 31,
+            "unit_price": 3233.06,
+            "total": 100224.86
+          },
+          {
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 29,
+            "unit_price": 3966.74,
+            "total": 115035.46
+          },
+          {
+            "description": "Maskeleme Bandı 48 mm",
+            "quantity": 19,
+            "unit_price": 1115.77,
+            "total": 21199.63
+          },
+          {
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 16,
+            "unit_price": 1537.97,
+            "total": 24607.52
+          },
+          {
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 24,
+            "unit_price": 2371.57,
+            "total": 56917.68
+          },
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 23,
+            "unit_price": 2133.26,
+            "total": 49064.98
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 22,
+            "unit_price": 1765.53,
+            "total": 38841.66
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 18,
+            "unit_price": 1540.05,
+            "total": 27720.9
+          }
+        ],
+        "subtotal": 433612.69,
+        "tax_rate": 0.18,
+        "tax_amount": 78050.28,
+        "total_amount": 511662.97,
+        "amount_payable": 511662.97,
+        "currency": "TRY",
+        "payment_terms": "Net 30",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-74789",
+        "date": "2026-03-24",
+        "due_date": "2026-04-23",
+        "vendor_name": "Honda Türkiye",
+        "vendor_tax_id": "7354549485",
+        "vendor_address": "3287 Işın Gateway, South Ertuncaymouth, TN 70117",
+        "buyer_name": "Kroman Çelik",
+        "buyer_tax_id": "0831367836",
+        "buyer_address": "868 Akçay Estate Suite 743, Gülderfort, SC 31859",
+        "items": [
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 31,
+            "unit_price": 3233.06,
+            "total": 100224.86
+          },
+          {
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 29,
+            "unit_price": 3966.74,
+            "total": 115035.46
+          },
+          {
+            "description": "Maskeleme Bandı 48 mm",
+            "quantity": 19,
+            "unit_price": 1115.77,
+            "total": 21199.63
+          },
+          {
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 16,
+            "unit_price": 1537.97,
+            "total": 24607.52
+          },
+          {
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 24,
+            "unit_price": 2371.57,
+            "total": 56917.68
+          },
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 23,
+            "unit_price": 2133.26,
+            "total": 49064.98
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 22,
+            "unit_price": 1765.53,
+            "total": 38841.66
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 18,
+            "unit_price": 1540.05,
+            "total": 27720.9
+          }
+        ],
+        "subtotal": 433612.69,
+        "tax_rate": 0.18,
+        "tax_amount": 78050.28,
+        "total_amount": 511662.97,
+        "amount_payable": 511662.97,
+        "currency": "TRY",
+        "payment_terms": "Net 30",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0016",
+      "doc_type": "invoice",
+      "verdict": "REVIEW",
+      "has_data": true,
+      "em": 0.9429,
+      "sim": 0.9973,
+      "f1": 0.9429,
+      "raw_em": 0.9429,
+      "reasons": [
+        "tax_id_checksum_invalid: vendor_tax_id",
+        "tax_id_checksum_invalid: buyer_tax_id"
+      ],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "vendor_tax_id",
+          "gt": "3374989417",
+          "pred": "33749894117"
+        },
+        {
+          "field": "buyer_tax_id",
+          "gt": "3435240822",
+          "pred": "34352408222"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-51359",
+        "date": "2026-07-07",
+        "due_date": "2026-08-06",
+        "vendor_name": "Gonzales-Reeves",
+        "vendor_tax_id": "33749894117",
+        "vendor_address": "8122 Patrick Drives Apt. 166, Amychester, AR 27611",
+        "buyer_name": "Price-Carrillo",
+        "buyer_tax_id": "34352408222",
+        "buyer_address": "USS Gates, FPO AP 50358",
+        "items": [
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 3,
+            "unit_price": 4871.73,
+            "total": 14615.19
+          },
+          {
+            "description": "Kraft Zarf (C4)",
+            "quantity": 19,
+            "unit_price": 3490.11,
+            "total": 66312.09
+          },
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 41,
+            "unit_price": 4343.62,
+            "total": 178088.42
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 7,
+            "unit_price": 4364.87,
+            "total": 30554.09
+          },
+          {
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 19,
+            "unit_price": 2352.29,
+            "total": 44693.51
+          }
+        ],
+        "subtotal": 334263.3,
+        "tax_rate": 0.18,
+        "tax_amount": 60167.39,
+        "total_amount": 394430.69,
+        "amount_payable": 394430.69,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-51359",
+        "date": "2026-07-07",
+        "due_date": "2026-08-06",
+        "vendor_name": "Gonzales-Reeves",
+        "vendor_tax_id": "33749894117",
+        "vendor_address": "8122 Patrick Drives Apt. 166, Amychester, AR 27611",
+        "buyer_name": "Price-Carrillo",
+        "buyer_tax_id": "34352408222",
+        "buyer_address": "USS Gates, FPO AP 50358",
+        "items": [
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 3,
+            "unit_price": 4871.73,
+            "total": 14615.19
+          },
+          {
+            "description": "Kraft Zarf (C4)",
+            "quantity": 19,
+            "unit_price": 3490.11,
+            "total": 66312.09
+          },
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 41,
+            "unit_price": 4343.62,
+            "total": 178088.42
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 7,
+            "unit_price": 4364.87,
+            "total": 30554.09
+          },
+          {
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 19,
+            "unit_price": 2352.29,
+            "total": 44693.51
+          }
+        ],
+        "subtotal": 334263.3,
+        "tax_rate": 0.18,
+        "tax_amount": 60167.39,
+        "total_amount": 394430.69,
+        "amount_payable": 394430.69,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0017",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9996,
+      "f1": 0.9973,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-37235",
+        "date": "2025-10-21",
+        "due_date": "2025-11-20",
+        "vendor_name": "Yılmaz Akça Tic.",
+        "vendor_tax_id": "4123281200",
+        "vendor_address": "8893 Bilgin Groves Suite 706, Süleylafurt, VA 22133",
+        "buyer_name": "Çamurcuoğlu Yaman Şti.",
+        "buyer_tax_id": "6797403448",
+        "buyer_address": "901 Yaman Way Suite 204, Hayriogluborough, NH 43341",
+        "items": [
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 30,
+            "unit_price": 365.19,
+            "total": 10955.7
+          },
+          {
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 17,
+            "unit_price": 3941.26,
+            "total": 67001.42
+          },
+          {
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 38,
+            "unit_price": 3309.3,
+            "total": 125753.4
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 28,
+            "unit_price": 582.73,
+            "total": 16316.44
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 42,
+            "unit_price": 753.46,
+            "total": 31645.32
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 10,
+            "unit_price": 366.34,
+            "total": 3663.4
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 20,
+            "unit_price": 2979.27,
+            "total": 59585.4
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 19,
+            "unit_price": 2201.38,
+            "total": 41826.22
+          }
+        ],
+        "subtotal": 356747.3,
+        "tax_rate": 0.18,
+        "tax_amount": 64214.51,
+        "total_amount": 420961.81,
+        "amount_payable": 420961.81,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-37235",
+        "date": "2025-10-21",
+        "due_date": "2025-11-20",
+        "vendor_name": "Yılmaz Akça Tic.",
+        "vendor_tax_id": "4123281200",
+        "vendor_address": "8893 Bilgin Groves Suite 706, Süleylafurt, VA 22133",
+        "buyer_name": "Çamurcuoğlu Yaman Şti.",
+        "buyer_tax_id": "6797403448",
+        "buyer_address": "901 Yaman Way Suite 204, Hayriogluborough, NH 43341",
+        "items": [
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 30,
+            "unit_price": 365.19,
+            "total": 10955.7
+          },
+          {
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 17,
+            "unit_price": 3941.26,
+            "total": 67001.42
+          },
+          {
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 38,
+            "unit_price": 3309.3,
+            "total": 125753.4
+          },
+          {
+            "description": "Harici SSD 1 TB",
+            "quantity": 28,
+            "unit_price": 582.73,
+            "total": 16316.44
+          },
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 42,
+            "unit_price": 753.46,
+            "total": 31645.32
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 10,
+            "unit_price": 366.34,
+            "total": 3663.4
+          },
+          {
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 20,
+            "unit_price": 2979.27,
+            "total": 59585.4
+          },
+          {
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 19,
+            "unit_price": 2201.38,
+            "total": 41826.22
+          }
+        ],
+        "subtotal": 356747.3,
+        "tax_rate": 0.18,
+        "tax_amount": 64214.51,
+        "total_amount": 420961.81,
+        "amount_payable": 420961.81,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0018",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9744,
+      "sim": 0.999,
+      "f1": 0.9936,
+      "raw_em": 0.9744,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[5].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-45683",
+        "date": "2025-12-24",
+        "due_date": "2026-02-22",
+        "vendor_name": "Juarez-Gray",
+        "vendor_tax_id": "7190659400",
+        "vendor_address": "1708 Zoe Keys Apt. 100, East Mary, RI 20474",
+        "buyer_name": "Martinez Ltd",
+        "buyer_tax_id": "1399049028",
+        "buyer_address": "4529 Kimberly Estates, Danieltown, ME 75971",
+        "items": [
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 34,
+            "unit_price": 3261.03,
+            "total": 110875.02
+          },
+          {
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 12,
+            "unit_price": 4984.76,
+            "total": 59817.12
+          },
+          {
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 41,
+            "unit_price": 4073.08,
+            "total": 166996.28
+          },
+          {
+            "description": "Çalışma Masası 120x60",
+            "quantity": 31,
+            "unit_price": 1746.33,
+            "total": 54136.23
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 21,
+            "unit_price": 3353.97,
+            "total": 70433.37
+          },
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 22,
+            "unit_price": 2064.11,
+            "total": 45410.42
+          }
+        ],
+        "subtotal": 507668.44,
+        "tax_rate": 0.18,
+        "tax_amount": 91380.32,
+        "total_amount": 599048.76,
+        "amount_payable": 599048.76,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-45683",
+        "date": "2025-12-24",
+        "due_date": "2026-02-22",
+        "vendor_name": "Juarez-Gray",
+        "vendor_tax_id": "7190659400",
+        "vendor_address": "1708 Zoe Keys Apt. 100, East Mary, RI 20474",
+        "buyer_name": "Martinez Ltd",
+        "buyer_tax_id": "1399049028",
+        "buyer_address": "4529 Kimberly Estates, Danieltown, ME 75971",
+        "items": [
+          {
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 34,
+            "unit_price": 3261.03,
+            "total": 110875.02
+          },
+          {
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 12,
+            "unit_price": 4984.76,
+            "total": 59817.12
+          },
+          {
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 41,
+            "unit_price": 4073.08,
+            "total": 166996.28
+          },
+          {
+            "description": "Çalışma Masası 120x60",
+            "quantity": 31,
+            "unit_price": 1746.33,
+            "total": 54136.23
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 21,
+            "unit_price": 3353.97,
+            "total": 70433.37
+          },
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 22,
+            "unit_price": 2064.11,
+            "total": 45410.42
+          }
+        ],
+        "subtotal": 507668.44,
+        "tax_rate": 0.18,
+        "tax_amount": 91380.32,
+        "total_amount": 599048.76,
+        "amount_payable": 599048.76,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0019",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9574,
+      "sim": 0.9987,
+      "f1": 0.9876,
+      "raw_em": 0.9574,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[6].description",
+          "gt": "Sunucu Kiralama (Aylık)",
+          "pred": "Sunucu Kiralama (Ayık)"
+        },
+        {
+          "field": "items[7].description",
+          "gt": "Islak Mendil (Kova, 100'lü)",
+          "pred": "Islak Mendil (Kova, 100’lü)"
+        }
+      ],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-62488",
+        "date": "2025-11-29",
+        "due_date": "2025-12-14",
+        "vendor_name": "Odonnell, Brooks and David",
+        "vendor_tax_id": "7154516805",
+        "vendor_address": "49190 Patel Shore, Caseymouth, AL 55558",
+        "buyer_name": "Garcia-Yu",
+        "buyer_tax_id": "8760385973",
+        "buyer_address": "262 Gilbert Plain Suite 769, Marcusbury, MP 11860",
+        "items": [
+          {
+            "description": "USB Bellek 64 GB",
+            "quantity": 29,
+            "unit_price": 3802.35,
+            "total": 110268.15
+          },
+          {
+            "description": "HDMI Kablo 2 m",
+            "quantity": 18,
+            "unit_price": 2750.61,
+            "total": 49510.98
+          },
+          {
+            "description": "Sunucu Kiralama (Ayık)",
+            "quantity": 29,
+            "unit_price": 4405.42,
+            "total": 127757.18
+          },
+          {
+            "description": "Islak Mendil (Kova, 100’lü)",
+            "quantity": 8,
+            "unit_price": 154.06,
+            "total": 1232.48
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 39,
+            "unit_price": 3998.58,
+            "total": 155944.62
+          },
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 20,
+            "unit_price": 2758.69,
+            "total": 55173.8
+          },
+          {
+            "description": "Laminasyon Filmi A4 (100'lü)",
+            "quantity": 27,
+            "unit_price": 475.11,
+            "total": 12827.97
+          },
+          {
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 30,
+            "unit_price": 4735.83,
+            "total": 142074.9
+          }
+        ],
+        "subtotal": 654790.08,
+        "tax_rate": 0.18,
+        "tax_amount": 117862.21,
+        "total_amount": 772652.29,
+        "amount_payable": 772652.29,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-62488",
+        "date": "2025-11-29",
+        "due_date": "2025-12-14",
+        "vendor_name": "Odonnell, Brooks and David",
+        "vendor_tax_id": "7154516805",
+        "vendor_address": "49190 Patel Shore, Caseymouth, AL 55558",
+        "buyer_name": "Garcia-Yu",
+        "buyer_tax_id": "8760385973",
+        "buyer_address": "262 Gilbert Plain Suite 769, Marcusbury, MP 11860",
+        "items": [
+          {
+            "description": "USB Bellek 64 GB",
+            "quantity": 29,
+            "unit_price": 3802.35,
+            "total": 110268.15
+          },
+          {
+            "description": "HDMI Kablo 2 m",
+            "quantity": 18,
+            "unit_price": 2750.61,
+            "total": 49510.98
+          },
+          {
+            "description": "Sunucu Kiralama (Ayık)",
+            "quantity": 29,
+            "unit_price": 4405.42,
+            "total": 127757.18
+          },
+          {
+            "description": "Islak Mendil (Kova, 100’lü)",
+            "quantity": 8,
+            "unit_price": 154.06,
+            "total": 1232.48
+          },
+          {
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 39,
+            "unit_price": 3998.58,
+            "total": 155944.62
+          },
+          {
+            "description": "Montaj ve Kurulum Hizmeti",
+            "quantity": 20,
+            "unit_price": 2758.69,
+            "total": 55173.8
+          },
+          {
+            "description": "Laminasyon Filmi A4 (100'lü)",
+            "quantity": 27,
+            "unit_price": 475.11,
+            "total": 12827.97
+          },
+          {
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 30,
+            "unit_price": 4735.83,
+            "total": 142074.9
+          }
+        ],
+        "subtotal": 654790.08,
+        "tax_rate": 0.18,
+        "tax_amount": 117862.21,
+        "total_amount": 772652.29,
+        "amount_payable": 772652.29,
+        "currency": "TRY",
+        "payment_terms": "Net 15",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "invoice_0020",
+      "doc_type": "invoice",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9988,
+      "f1": 0.9901,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-48254",
+        "date": "2025-12-20",
+        "due_date": "2026-02-03",
+        "vendor_name": "Akgündüz Dumanlı Ltd.",
+        "vendor_tax_id": "6773782634",
+        "vendor_address": "0752 Bilir Knoll Suite 549, Hüsnühåltown, NC 25543",
+        "buyer_name": "Yüksel San.",
+        "buyer_tax_id": "9821465846",
+        "buyer_address": "777 Cihandide Hill, South Yepelk, IA 40636",
+        "items": [
+          {
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 19,
+            "unit_price": 3632.99,
+            "total": 69026.81
+          },
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 38,
+            "unit_price": 4994.52,
+            "total": 189791.76
+          },
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 10,
+            "unit_price": 2238.27,
+            "total": 22382.7
+          }
+        ],
+        "subtotal": 281201.27,
+        "tax_rate": 0.18,
+        "tax_amount": 50616.23,
+        "total_amount": 331817.5,
+        "amount_payable": 331817.5,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "invoice",
+        "invoice_number": "INV-48254",
+        "date": "2025-12-20",
+        "due_date": "2026-02-03",
+        "vendor_name": "Akgündüz Dumanlı Ltd.",
+        "vendor_tax_id": "6773782634",
+        "vendor_address": "0752 Bilir Knoll Suite 549, Hüsnühåltown, NC 25543",
+        "buyer_name": "Yüksel San.",
+        "buyer_tax_id": "9821465846",
+        "buyer_address": "777 Cihandide Hill, South Yepelk, IA 40636",
+        "items": [
+          {
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 19,
+            "unit_price": 3632.99,
+            "total": 69026.81
+          },
+          {
+            "description": "Sunucu Kiralama (Aylık)",
+            "quantity": 38,
+            "unit_price": 4994.52,
+            "total": 189791.76
+          },
+          {
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 10,
+            "unit_price": 2238.27,
+            "total": 22382.7
+          }
+        ],
+        "subtotal": 281201.27,
+        "tax_rate": 0.18,
+        "tax_amount": 50616.23,
+        "total_amount": 331817.5,
+        "amount_payable": 331817.5,
+        "currency": "TRY",
+        "payment_terms": "Net 60",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0001",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9655,
+      "sim": 0.9974,
+      "f1": 0.9617,
+      "raw_em": 0.9655,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "po_number",
+          "gt": "PO-81228",
+          "pred": "PO-812228"
+        }
+      ],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-812228",
+        "date": "2026-02-25",
+        "delivery_date": "2026-03-18",
+        "supplier_name": "Er-Bakır Elektrolitik Bakır",
+        "supplier_address": "8557 Hançer Glen Apt. 135, Lake Günebakamburgh, ID 28862",
+        "buyer_name": "Trakya Cam",
+        "buyer_address": "34352 Yılmaz Station Apt. 400, Zemzemberg, SC 99170",
+        "items": [
+          {
+            "sku": "SKU-8213",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 13,
+            "unit_price": 4372.21,
+            "total": 56838.73
+          },
+          {
+            "sku": "SKU-1251",
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 68,
+            "unit_price": 4553.1,
+            "total": 309610.8
+          },
+          {
+            "sku": "SKU-3529",
+            "description": "Post-it Not Bloğu 76x76",
+            "quantity": 53,
+            "unit_price": 4355.96,
+            "total": 230865.88
+          },
+          {
+            "sku": "SKU-5342",
+            "description": "Çalışma Masası 120x60",
+            "quantity": 61,
+            "unit_price": 3909.81,
+            "total": 238498.41
+          }
+        ],
+        "total_amount": 835813.82,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-812228",
+        "date": "2026-02-25",
+        "delivery_date": "2026-03-18",
+        "supplier_name": "Er-Bakır Elektrolitik Bakır",
+        "supplier_address": "8557 Hançer Glen Apt. 135, Lake Günebakamburgh, ID 28862",
+        "buyer_name": "Trakya Cam",
+        "buyer_address": "34352 Yılmaz Station Apt. 400, Zemzemberg, SC 99170",
+        "items": [
+          {
+            "sku": "SKU-8213",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 13,
+            "unit_price": 4372.21,
+            "total": 56838.73
+          },
+          {
+            "sku": "SKU-1251",
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 68,
+            "unit_price": 4553.1,
+            "total": 309610.8
+          },
+          {
+            "sku": "SKU-3529",
+            "description": "Post-it Not Bloğu 76x76",
+            "quantity": 53,
+            "unit_price": 4355.96,
+            "total": 230865.88
+          },
+          {
+            "sku": "SKU-5342",
+            "description": "Çalışma Masası 120x60",
+            "quantity": 61,
+            "unit_price": 3909.81,
+            "total": 238498.41
+          }
+        ],
+        "total_amount": 835813.82,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0002",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-62098",
+        "date": "2025-10-09",
+        "delivery_date": "2025-10-18",
+        "supplier_name": "Sakarya Bilge A.Ş.",
+        "supplier_address": "7520 Akça Wall Suite 116, Erdoğanshire, SC 90475",
+        "buyer_name": "Manço Ltd.",
+        "buyer_address": "31869 Güler Light Suite 749, Hançershire, RI 08395",
+        "items": [
+          {
+            "sku": "SKU-1919",
+            "description": "HDMI Kablo 2 m",
+            "quantity": 4,
+            "unit_price": 239.49,
+            "total": 957.96
+          },
+          {
+            "sku": "SKU-3385",
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 46,
+            "unit_price": 1880.46,
+            "total": 86501.16
+          },
+          {
+            "sku": "SKU-3950",
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 68,
+            "unit_price": 2066.14,
+            "total": 140497.52
+          },
+          {
+            "sku": "SKU-7267",
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 23,
+            "unit_price": 404.05,
+            "total": 9293.15
+          }
+        ],
+        "total_amount": 237249.79,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-62098",
+        "date": "2025-10-09",
+        "delivery_date": "2025-10-18",
+        "supplier_name": "Sakarya Bilge A.Ş.",
+        "supplier_address": "7520 Akça Wall Suite 116, Erdoğanshire, SC 90475",
+        "buyer_name": "Manço Ltd.",
+        "buyer_address": "31869 Güler Light Suite 749, Hançershire, RI 08395",
+        "items": [
+          {
+            "sku": "SKU-1919",
+            "description": "HDMI Kablo 2 m",
+            "quantity": 4,
+            "unit_price": 239.49,
+            "total": 957.96
+          },
+          {
+            "sku": "SKU-3385",
+            "description": "Ağ Anahtarı (Switch) 8 Port",
+            "quantity": 46,
+            "unit_price": 1880.46,
+            "total": 86501.16
+          },
+          {
+            "sku": "SKU-3950",
+            "description": "Dizüstü Bilgisayar 14\" i5",
+            "quantity": 68,
+            "unit_price": 2066.14,
+            "total": 140497.52
+          },
+          {
+            "sku": "SKU-7267",
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 23,
+            "unit_price": 404.05,
+            "total": 9293.15
+          }
+        ],
+        "total_amount": 237249.79,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0003",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-75230",
+        "date": "2025-11-12",
+        "delivery_date": "2025-11-23",
+        "supplier_name": "Choi, Garcia and Farmer",
+        "supplier_address": "123 Andrea Estate Apt. 679, Carterbury, LA 93163",
+        "buyer_name": "Warner-Gibson",
+        "buyer_address": "936 Amy Rue Apt. 421, East Laurashire, PW 38329",
+        "items": [
+          {
+            "sku": "SKU-8916",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 26,
+            "unit_price": 4996.87,
+            "total": 129918.62
+          },
+          {
+            "sku": "SKU-6881",
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 31,
+            "unit_price": 1913.01,
+            "total": 59303.31
+          },
+          {
+            "sku": "SKU-5837",
+            "description": "Toner Kartuş (HP 26A)",
+            "quantity": 38,
+            "unit_price": 4963.53,
+            "total": 188614.14
+          },
+          {
+            "sku": "SKU-1132",
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 85,
+            "unit_price": 1985.07,
+            "total": 168730.95
+          }
+        ],
+        "total_amount": 546567.02,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-75230",
+        "date": "2025-11-12",
+        "delivery_date": "2025-11-23",
+        "supplier_name": "Choi, Garcia and Farmer",
+        "supplier_address": "123 Andrea Estate Apt. 679, Carterbury, LA 93163",
+        "buyer_name": "Warner-Gibson",
+        "buyer_address": "936 Amy Rue Apt. 421, East Laurashire, PW 38329",
+        "items": [
+          {
+            "sku": "SKU-8916",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 26,
+            "unit_price": 4996.87,
+            "total": 129918.62
+          },
+          {
+            "sku": "SKU-6881",
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 31,
+            "unit_price": 1913.01,
+            "total": 59303.31
+          },
+          {
+            "sku": "SKU-5837",
+            "description": "Toner Kartuş (HP 26A)",
+            "quantity": 38,
+            "unit_price": 4963.53,
+            "total": 188614.14
+          },
+          {
+            "sku": "SKU-1132",
+            "description": "Temizlik Hizmeti (Aylık)",
+            "quantity": 85,
+            "unit_price": 1985.07,
+            "total": 168730.95
+          }
+        ],
+        "total_amount": 546567.02,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0004",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9474,
+      "sim": 0.9968,
+      "f1": 0.981,
+      "raw_em": 0.9474,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "LED Monitör 24\" IPS",
+          "pred": "LED Monitor 24\" IPS"
+        }
+      ],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-16428",
+        "date": "2025-10-31",
+        "delivery_date": "2025-11-30",
+        "supplier_name": "Martinez-Barker",
+        "supplier_address": "877 Carly Meadows Suite 940, East Suzzanneshire, OR 03220",
+        "buyer_name": "Underwood, Johnston and Hines",
+        "buyer_address": "2967 Theodore Lodge Suite 512, Robertfort, LA 87347",
+        "items": [
+          {
+            "sku": "SKU-7807",
+            "description": "LED Monitor 24\" IPS",
+            "quantity": 38,
+            "unit_price": 1640.33,
+            "total": 62332.54
+          },
+          {
+            "sku": "SKU-9837",
+            "description": "Toplantı Masası 6 Kişilik",
+            "quantity": 26,
+            "unit_price": 669.48,
+            "total": 17406.48
+          }
+        ],
+        "total_amount": 79739.02,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-16428",
+        "date": "2025-10-31",
+        "delivery_date": "2025-11-30",
+        "supplier_name": "Martinez-Barker",
+        "supplier_address": "877 Carly Meadows Suite 940, East Suzzanneshire, OR 03220",
+        "buyer_name": "Underwood, Johnston and Hines",
+        "buyer_address": "2967 Theodore Lodge Suite 512, Robertfort, LA 87347",
+        "items": [
+          {
+            "sku": "SKU-7807",
+            "description": "LED Monitor 24\" IPS",
+            "quantity": 38,
+            "unit_price": 1640.33,
+            "total": 62332.54
+          },
+          {
+            "sku": "SKU-9837",
+            "description": "Toplantı Masası 6 Kişilik",
+            "quantity": 26,
+            "unit_price": 669.48,
+            "total": 17406.48
+          }
+        ],
+        "total_amount": 79739.02,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0005",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9992,
+      "f1": 0.9951,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-45720",
+        "date": "2026-06-14",
+        "delivery_date": "2026-06-29",
+        "supplier_name": "Alemdar İnönü Şti.",
+        "supplier_address": "4516 Sevican Ways, Seventon, ID 68453",
+        "buyer_name": "Mansız İnönü San.",
+        "buyer_address": "48247 Demir Burgs, Lake Gülegen, ME 72700",
+        "items": [
+          {
+            "sku": "SKU-5295",
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 87,
+            "unit_price": 3747.57,
+            "total": 326038.59
+          },
+          {
+            "sku": "SKU-7086",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 49,
+            "unit_price": 4113.86,
+            "total": 201579.14
+          },
+          {
+            "sku": "SKU-1410",
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 87,
+            "unit_price": 1176.77,
+            "total": 102378.99
+          },
+          {
+            "sku": "SKU-4626",
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 72,
+            "unit_price": 1646.75,
+            "total": 118566.0
+          }
+        ],
+        "total_amount": 748562.72,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-45720",
+        "date": "2026-06-14",
+        "delivery_date": "2026-06-29",
+        "supplier_name": "Alemdar İnönü Şti.",
+        "supplier_address": "4516 Sevican Ways, Seventon, ID 68453",
+        "buyer_name": "Mansız İnönü San.",
+        "buyer_address": "48247 Demir Burgs, Lake Gülegen, ME 72700",
+        "items": [
+          {
+            "sku": "SKU-5295",
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 87,
+            "unit_price": 3747.57,
+            "total": 326038.59
+          },
+          {
+            "sku": "SKU-7086",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 49,
+            "unit_price": 4113.86,
+            "total": 201579.14
+          },
+          {
+            "sku": "SKU-1410",
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 87,
+            "unit_price": 1176.77,
+            "total": 102378.99
+          },
+          {
+            "sku": "SKU-4626",
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 72,
+            "unit_price": 1646.75,
+            "total": 118566.0
+          }
+        ],
+        "total_amount": 748562.72,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0006",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9583,
+      "sim": 0.9976,
+      "f1": 0.9826,
+      "raw_em": 0.9583,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[2].description",
+          "gt": "Post-it Not Bloğu 76x76",
+          "pred": "Post-it Not Blogu 76x76"
+        }
+      ],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-38477",
+        "date": "2026-01-22",
+        "delivery_date": "2026-02-12",
+        "supplier_name": "Durmuş San.",
+        "supplier_address": "1274 Seven Village, Güçlübur, NH 72756",
+        "buyer_name": "Kısakürek Ltd.",
+        "buyer_address": "PSC 8214, Box 6584, APO AE 37573",
+        "items": [
+          {
+            "sku": "SKU-4362",
+            "description": "Post-it Not Blogu 76x76",
+            "quantity": 17,
+            "unit_price": 3937.02,
+            "total": 66929.34
+          },
+          {
+            "sku": "SKU-4538",
+            "description": "Harici SSD 1 TB",
+            "quantity": 98,
+            "unit_price": 2775.5,
+            "total": 271999.0
+          },
+          {
+            "sku": "SKU-1046",
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 43,
+            "unit_price": 3874.1,
+            "total": 166586.3
+          }
+        ],
+        "total_amount": 505514.64,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-38477",
+        "date": "2026-01-22",
+        "delivery_date": "2026-02-12",
+        "supplier_name": "Durmuş San.",
+        "supplier_address": "1274 Seven Village, Güçlübur, NH 72756",
+        "buyer_name": "Kısakürek Ltd.",
+        "buyer_address": "PSC 8214, Box 6584, APO AE 37573",
+        "items": [
+          {
+            "sku": "SKU-4362",
+            "description": "Post-it Not Blogu 76x76",
+            "quantity": 17,
+            "unit_price": 3937.02,
+            "total": 66929.34
+          },
+          {
+            "sku": "SKU-4538",
+            "description": "Harici SSD 1 TB",
+            "quantity": 98,
+            "unit_price": 2775.5,
+            "total": 271999.0
+          },
+          {
+            "sku": "SKU-1046",
+            "description": "UPS Kesintisiz Güç Kaynağı 850VA",
+            "quantity": 43,
+            "unit_price": 3874.1,
+            "total": 166586.3
+          }
+        ],
+        "total_amount": 505514.64,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0007",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-28964",
+        "date": "2026-07-02",
+        "delivery_date": "2026-07-26",
+        "supplier_name": "Evans, Matthews and Duarte",
+        "supplier_address": "8755 Gibson Islands, Lake John, MS 31114",
+        "buyer_name": "Williams-Garner",
+        "buyer_address": "2702 Kane Well Suite 187, Lake Douglasberg, CA 62038",
+        "items": [
+          {
+            "sku": "SKU-6931",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 61,
+            "unit_price": 2246.89,
+            "total": 137060.29
+          },
+          {
+            "sku": "SKU-9254",
+            "description": "Harici SSD 1 TB",
+            "quantity": 76,
+            "unit_price": 554.18,
+            "total": 42117.68
+          }
+        ],
+        "total_amount": 179177.97,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-28964",
+        "date": "2026-07-02",
+        "delivery_date": "2026-07-26",
+        "supplier_name": "Evans, Matthews and Duarte",
+        "supplier_address": "8755 Gibson Islands, Lake John, MS 31114",
+        "buyer_name": "Williams-Garner",
+        "buyer_address": "2702 Kane Well Suite 187, Lake Douglasberg, CA 62038",
+        "items": [
+          {
+            "sku": "SKU-6931",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 61,
+            "unit_price": 2246.89,
+            "total": 137060.29
+          },
+          {
+            "sku": "SKU-9254",
+            "description": "Harici SSD 1 TB",
+            "quantity": 76,
+            "unit_price": 554.18,
+            "total": 42117.68
+          }
+        ],
+        "total_amount": 179177.97,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0008",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-15683",
+        "date": "2025-10-04",
+        "delivery_date": "2025-10-27",
+        "supplier_name": "Morgan-Schwartz",
+        "supplier_address": "865 Brennan Camp Apt. 343, South Tiffanyville, NV 22306",
+        "buyer_name": "Evans, Johnson and Nguyen",
+        "buyer_address": "6238 Knight Turnpike Apt. 221, Harveybury, NM 76936",
+        "items": [
+          {
+            "sku": "SKU-6327",
+            "description": "Aydınlatma Armatürü LED Panel",
+            "quantity": 82,
+            "unit_price": 2930.97,
+            "total": 240339.54
+          },
+          {
+            "sku": "SKU-8433",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 77,
+            "unit_price": 2657.48,
+            "total": 204625.96
+          },
+          {
+            "sku": "SKU-2874",
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 78,
+            "unit_price": 2156.69,
+            "total": 168221.82
+          },
+          {
+            "sku": "SKU-4522",
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 84,
+            "unit_price": 4389.75,
+            "total": 368739.0
+          },
+          {
+            "sku": "SKU-7779",
+            "description": "Çalışma Masası 120x60",
+            "quantity": 58,
+            "unit_price": 4441.57,
+            "total": 257611.06
+          },
+          {
+            "sku": "SKU-2557",
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 59,
+            "unit_price": 1999.66,
+            "total": 117979.94
+          }
+        ],
+        "total_amount": 1357517.32,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-15683",
+        "date": "2025-10-04",
+        "delivery_date": "2025-10-27",
+        "supplier_name": "Morgan-Schwartz",
+        "supplier_address": "865 Brennan Camp Apt. 343, South Tiffanyville, NV 22306",
+        "buyer_name": "Evans, Johnson and Nguyen",
+        "buyer_address": "6238 Knight Turnpike Apt. 221, Harveybury, NM 76936",
+        "items": [
+          {
+            "sku": "SKU-6327",
+            "description": "Aydınlatma Armatürü LED Panel",
+            "quantity": 82,
+            "unit_price": 2930.97,
+            "total": 240339.54
+          },
+          {
+            "sku": "SKU-8433",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 77,
+            "unit_price": 2657.48,
+            "total": 204625.96
+          },
+          {
+            "sku": "SKU-2874",
+            "description": "Çöp Poşeti (Jumbo, 10 Rulo)",
+            "quantity": 78,
+            "unit_price": 2156.69,
+            "total": 168221.82
+          },
+          {
+            "sku": "SKU-4522",
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 84,
+            "unit_price": 4389.75,
+            "total": 368739.0
+          },
+          {
+            "sku": "SKU-7779",
+            "description": "Çalışma Masası 120x60",
+            "quantity": 58,
+            "unit_price": 4441.57,
+            "total": 257611.06
+          },
+          {
+            "sku": "SKU-2557",
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 59,
+            "unit_price": 1999.66,
+            "total": 117979.94
+          }
+        ],
+        "total_amount": 1357517.32,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0009",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9986,
+      "f1": 0.9919,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-97177",
+        "date": "2026-04-29",
+        "delivery_date": "2026-05-17",
+        "supplier_name": "Bilgin San.",
+        "supplier_address": "0748 Bilgen Mills Suite 946, Açlıayport, ID 50923",
+        "buyer_name": "Sakarya Yüksel San.",
+        "buyer_address": "406 Yilmaz Port Apt. 974, New Yalazabay, IN 83943",
+        "items": [
+          {
+            "sku": "SKU-7929",
+            "description": "Dosya Klasörü (Geniş, A4)",
+            "quantity": 86,
+            "unit_price": 4706.24,
+            "total": 404736.64
+          },
+          {
+            "sku": "SKU-6761",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 37,
+            "unit_price": 3006.05,
+            "total": 111223.85
+          },
+          {
+            "sku": "SKU-3535",
+            "description": "El Dezenfektanı 1 L",
+            "quantity": 74,
+            "unit_price": 2541.99,
+            "total": 188107.26
+          },
+          {
+            "sku": "SKU-2773",
+            "description": "Kilitli Dolap (Metal, 4 Raflı)",
+            "quantity": 62,
+            "unit_price": 1128.98,
+            "total": 69996.76
+          }
+        ],
+        "total_amount": 774064.51,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-97177",
+        "date": "2026-04-29",
+        "delivery_date": "2026-05-17",
+        "supplier_name": "Bilgin San.",
+        "supplier_address": "0748 Bilgen Mills Suite 946, Açlıayport, ID 50923",
+        "buyer_name": "Sakarya Yüksel San.",
+        "buyer_address": "406 Yilmaz Port Apt. 974, New Yalazabay, IN 83943",
+        "items": [
+          {
+            "sku": "SKU-7929",
+            "description": "Dosya Klasörü (Geniş, A4)",
+            "quantity": 86,
+            "unit_price": 4706.24,
+            "total": 404736.64
+          },
+          {
+            "sku": "SKU-6761",
+            "description": "Beyaz Tahta Kalemi (4'lü)",
+            "quantity": 37,
+            "unit_price": 3006.05,
+            "total": 111223.85
+          },
+          {
+            "sku": "SKU-3535",
+            "description": "El Dezenfektanı 1 L",
+            "quantity": 74,
+            "unit_price": 2541.99,
+            "total": 188107.26
+          },
+          {
+            "sku": "SKU-2773",
+            "description": "Kilitli Dolap (Metal, 4 Raflı)",
+            "quantity": 62,
+            "unit_price": 1128.98,
+            "total": 69996.76
+          }
+        ],
+        "total_amount": 774064.51,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0010",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9167,
+      "sim": 0.9956,
+      "f1": 0.9729,
+      "raw_em": 0.9167,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Bulut Yedekleme Hizmeti (Aylık)",
+          "pred": "Bulut Yedekleme Hizmeti (Aylik)"
+        },
+        {
+          "field": "items[2].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zim b a Teli No:10 (1000'li)"
+        }
+      ],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-58176",
+        "date": "2026-07-10",
+        "delivery_date": "2026-07-25",
+        "supplier_name": "Oliver Ltd",
+        "supplier_address": "104 Johnson Lakes, North Renee, MD 98474",
+        "buyer_name": "Thompson-Anderson",
+        "buyer_address": "842 Sloan Orchard Suite 517, East Karenbury, VI 89148",
+        "items": [
+          {
+            "sku": "SKU-2140",
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 73,
+            "unit_price": 3290.15,
+            "total": 240180.95
+          },
+          {
+            "sku": "SKU-1502",
+            "description": "Zim b a Teli No:10 (1000'li)",
+            "quantity": 95,
+            "unit_price": 3169.53,
+            "total": 301105.35
+          },
+          {
+            "sku": "SKU-7163",
+            "description": "Bulut Yedekleme Hizmeti (Aylik)",
+            "quantity": 96,
+            "unit_price": 2657.11,
+            "total": 255082.56
+          }
+        ],
+        "total_amount": 796368.86,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-58176",
+        "date": "2026-07-10",
+        "delivery_date": "2026-07-25",
+        "supplier_name": "Oliver Ltd",
+        "supplier_address": "104 Johnson Lakes, North Renee, MD 98474",
+        "buyer_name": "Thompson-Anderson",
+        "buyer_address": "842 Sloan Orchard Suite 517, East Karenbury, VI 89148",
+        "items": [
+          {
+            "sku": "SKU-2140",
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 73,
+            "unit_price": 3290.15,
+            "total": 240180.95
+          },
+          {
+            "sku": "SKU-1502",
+            "description": "Zim b a Teli No:10 (1000'li)",
+            "quantity": 95,
+            "unit_price": 3169.53,
+            "total": 301105.35
+          },
+          {
+            "sku": "SKU-7163",
+            "description": "Bulut Yedekleme Hizmeti (Aylik)",
+            "quantity": 96,
+            "unit_price": 2657.11,
+            "total": 255082.56
+          }
+        ],
+        "total_amount": 796368.86,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0011",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-30631",
+        "date": "2026-03-01",
+        "delivery_date": "2026-03-17",
+        "supplier_name": "Assan Alüminyum",
+        "supplier_address": "Unit 8516 Box 0481, DPO AA 48812",
+        "buyer_name": "Sepaş Enerji Sakarya Elektrik",
+        "buyer_address": "513 Yıldırım River Suite 931, Çamurcuoğluport, SD 54017",
+        "items": [
+          {
+            "sku": "SKU-6655",
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 97,
+            "unit_price": 2566.61,
+            "total": 248961.17
+          },
+          {
+            "sku": "SKU-8972",
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 15,
+            "unit_price": 1423.4,
+            "total": 21351.0
+          },
+          {
+            "sku": "SKU-4612",
+            "description": "Yazılım Lisansı (Yıllık, 1 Kullanıcı)",
+            "quantity": 86,
+            "unit_price": 1549.01,
+            "total": 133214.86
+          }
+        ],
+        "total_amount": 403527.03,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-30631",
+        "date": "2026-03-01",
+        "delivery_date": "2026-03-17",
+        "supplier_name": "Assan Alüminyum",
+        "supplier_address": "Unit 8516 Box 0481, DPO AA 48812",
+        "buyer_name": "Sepaş Enerji Sakarya Elektrik",
+        "buyer_address": "513 Yıldırım River Suite 931, Çamurcuoğluport, SD 54017",
+        "items": [
+          {
+            "sku": "SKU-6655",
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 97,
+            "unit_price": 2566.61,
+            "total": 248961.17
+          },
+          {
+            "sku": "SKU-8972",
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 15,
+            "unit_price": 1423.4,
+            "total": 21351.0
+          },
+          {
+            "sku": "SKU-4612",
+            "description": "Yazılım Lisansı (Yıllık, 1 Kullanıcı)",
+            "quantity": 86,
+            "unit_price": 1549.01,
+            "total": 133214.86
+          }
+        ],
+        "total_amount": 403527.03,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0012",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-17180",
+        "date": "2026-09-03",
+        "delivery_date": "2026-09-16",
+        "supplier_name": "Taylor Inc",
+        "supplier_address": "13826 Watson Summit Suite 926, Port Tracychester, KY 04789",
+        "buyer_name": "Wood, Ramos and Sampson",
+        "buyer_address": "585 Raymond Field, Port Madisonland, TN 28302",
+        "items": [
+          {
+            "sku": "SKU-1693",
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 51,
+            "unit_price": 4310.2,
+            "total": 219820.2
+          },
+          {
+            "sku": "SKU-2275",
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 3,
+            "unit_price": 2304.17,
+            "total": 6912.51
+          }
+        ],
+        "total_amount": 226732.71,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-17180",
+        "date": "2026-09-03",
+        "delivery_date": "2026-09-16",
+        "supplier_name": "Taylor Inc",
+        "supplier_address": "13826 Watson Summit Suite 926, Port Tracychester, KY 04789",
+        "buyer_name": "Wood, Ramos and Sampson",
+        "buyer_address": "585 Raymond Field, Port Madisonland, TN 28302",
+        "items": [
+          {
+            "sku": "SKU-1693",
+            "description": "Web Sitesi Bakım Hizmeti (Aylık)",
+            "quantity": 51,
+            "unit_price": 4310.2,
+            "total": 219820.2
+          },
+          {
+            "sku": "SKU-2275",
+            "description": "Ofis Sandalyesi (Ergonomik)",
+            "quantity": 3,
+            "unit_price": 2304.17,
+            "total": 6912.51
+          }
+        ],
+        "total_amount": 226732.71,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0013",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-85156",
+        "date": "2026-02-11",
+        "delivery_date": "2026-03-12",
+        "supplier_name": "Baştuğ Metalurji",
+        "supplier_address": "53293 Hümeyra Fords, Port Nakip, MA 19841",
+        "buyer_name": "Tüpraş",
+        "buyer_address": "84210 Akdora Knolls, New Torhan, AK 23339",
+        "items": [
+          {
+            "sku": "SKU-6562",
+            "description": "Harici SSD 1 TB",
+            "quantity": 51,
+            "unit_price": 4353.92,
+            "total": 222049.92
+          },
+          {
+            "sku": "SKU-2251",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 43,
+            "unit_price": 3897.8,
+            "total": 167605.4
+          }
+        ],
+        "total_amount": 389655.32,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-85156",
+        "date": "2026-02-11",
+        "delivery_date": "2026-03-12",
+        "supplier_name": "Baştuğ Metalurji",
+        "supplier_address": "53293 Hümeyra Fords, Port Nakip, MA 19841",
+        "buyer_name": "Tüpraş",
+        "buyer_address": "84210 Akdora Knolls, New Torhan, AK 23339",
+        "items": [
+          {
+            "sku": "SKU-6562",
+            "description": "Harici SSD 1 TB",
+            "quantity": 51,
+            "unit_price": 4353.92,
+            "total": 222049.92
+          },
+          {
+            "sku": "SKU-2251",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 43,
+            "unit_price": 3897.8,
+            "total": 167605.4
+          }
+        ],
+        "total_amount": 389655.32,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0014",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-79547",
+        "date": "2025-12-19",
+        "delivery_date": "2026-01-01",
+        "supplier_name": "Yorulmaz Yaman San.",
+        "supplier_address": "7589 Aysuna Parkway, New Atnan, VA 86864",
+        "buyer_name": "Otokoç",
+        "buyer_address": "76617 Erdoğan Common, Nevginberg, CA 17041",
+        "items": [
+          {
+            "sku": "SKU-6295",
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 83,
+            "unit_price": 3180.14,
+            "total": 263951.62
+          },
+          {
+            "sku": "SKU-2118",
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 41,
+            "unit_price": 763.28,
+            "total": 31294.48
+          },
+          {
+            "sku": "SKU-5500",
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 57,
+            "unit_price": 3160.61,
+            "total": 180154.77
+          },
+          {
+            "sku": "SKU-2215",
+            "description": "Web Kamerası 1080p",
+            "quantity": 8,
+            "unit_price": 1766.19,
+            "total": 14129.52
+          },
+          {
+            "sku": "SKU-1932",
+            "description": "Toplantı Masası 6 Kişilik",
+            "quantity": 60,
+            "unit_price": 2265.05,
+            "total": 135903.0
+          },
+          {
+            "sku": "SKU-2479",
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 37,
+            "unit_price": 392.89,
+            "total": 14536.93
+          }
+        ],
+        "total_amount": 639970.32,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-79547",
+        "date": "2025-12-19",
+        "delivery_date": "2026-01-01",
+        "supplier_name": "Yorulmaz Yaman San.",
+        "supplier_address": "7589 Aysuna Parkway, New Atnan, VA 86864",
+        "buyer_name": "Otokoç",
+        "buyer_address": "76617 Erdoğan Common, Nevginberg, CA 17041",
+        "items": [
+          {
+            "sku": "SKU-6295",
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 83,
+            "unit_price": 3180.14,
+            "total": 263951.62
+          },
+          {
+            "sku": "SKU-2118",
+            "description": "SEO Danışmanlığı (Aylık)",
+            "quantity": 41,
+            "unit_price": 763.28,
+            "total": 31294.48
+          },
+          {
+            "sku": "SKU-5500",
+            "description": "Su Sebili Damacana (19 L)",
+            "quantity": 57,
+            "unit_price": 3160.61,
+            "total": 180154.77
+          },
+          {
+            "sku": "SKU-2215",
+            "description": "Web Kamerası 1080p",
+            "quantity": 8,
+            "unit_price": 1766.19,
+            "total": 14129.52
+          },
+          {
+            "sku": "SKU-1932",
+            "description": "Toplantı Masası 6 Kişilik",
+            "quantity": 60,
+            "unit_price": 2265.05,
+            "total": 135903.0
+          },
+          {
+            "sku": "SKU-2479",
+            "description": "Çay (Poşet, 500'lü)",
+            "quantity": 37,
+            "unit_price": 392.89,
+            "total": 14536.93
+          }
+        ],
+        "total_amount": 639970.32,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0015",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9987,
+      "f1": 0.9948,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-60394",
+        "date": "2026-01-13",
+        "delivery_date": "2026-02-07",
+        "supplier_name": "Mansız Şener Şti.",
+        "supplier_address": "9847 Sakarya Underpass Apt. 836, Akgündüzbury, MT 44925",
+        "buyer_name": "Gülen Seven A.Ş.",
+        "buyer_address": "452 Erdoğan Course Apt. 161, Erkilçside, AR 77370",
+        "items": [
+          {
+            "sku": "SKU-8199",
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 91,
+            "unit_price": 2194.41,
+            "total": 199691.31
+          },
+          {
+            "sku": "SKU-6962",
+            "description": "Toplantı Masası 6 Kişilik",
+            "quantity": 67,
+            "unit_price": 3052.93,
+            "total": 204546.31
+          },
+          {
+            "sku": "SKU-6543",
+            "description": "Kağıt Havlu (Z Katlı, 12'li)",
+            "quantity": 37,
+            "unit_price": 1943.21,
+            "total": 71898.77
+          }
+        ],
+        "total_amount": 476136.39,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-60394",
+        "date": "2026-01-13",
+        "delivery_date": "2026-02-07",
+        "supplier_name": "Mansız Şener Şti.",
+        "supplier_address": "9847 Sakarya Underpass Apt. 836, Akgündüzbury, MT 44925",
+        "buyer_name": "Gülen Seven A.Ş.",
+        "buyer_address": "452 Erdoğan Course Apt. 161, Erkilçside, AR 77370",
+        "items": [
+          {
+            "sku": "SKU-8199",
+            "description": "Kurumsal E-posta Paketi (Yıllık)",
+            "quantity": 91,
+            "unit_price": 2194.41,
+            "total": 199691.31
+          },
+          {
+            "sku": "SKU-6962",
+            "description": "Toplantı Masası 6 Kişilik",
+            "quantity": 67,
+            "unit_price": 3052.93,
+            "total": 204546.31
+          },
+          {
+            "sku": "SKU-6543",
+            "description": "Kağıt Havlu (Z Katlı, 12'li)",
+            "quantity": 37,
+            "unit_price": 1943.21,
+            "total": 71898.77
+          }
+        ],
+        "total_amount": 476136.39,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0016",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9474,
+      "sim": 0.998,
+      "f1": 0.9868,
+      "raw_em": 0.9474,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Zımba Teli No:10 (1000'li)",
+          "pred": "Zimba Teli No:10 (1000'li)"
+        }
+      ],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-92691",
+        "date": "2025-10-10",
+        "delivery_date": "2025-10-27",
+        "supplier_name": "Gübre Fabrikaları",
+        "supplier_address": "5604 Ergül Cove, East Sevgen, NJ 29893",
+        "buyer_name": "Ergül Şti.",
+        "buyer_address": "368 Nevsale Shoals Suite 024, Umutcanstad, AL 24278",
+        "items": [
+          {
+            "sku": "SKU-6381",
+            "description": "Kraft Zarf (C4)",
+            "quantity": 40,
+            "unit_price": 2799.02,
+            "total": 111960.8
+          },
+          {
+            "sku": "SKU-9624",
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 86,
+            "unit_price": 3517.13,
+            "total": 302473.18
+          }
+        ],
+        "total_amount": 414433.98,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-92691",
+        "date": "2025-10-10",
+        "delivery_date": "2025-10-27",
+        "supplier_name": "Gübre Fabrikaları",
+        "supplier_address": "5604 Ergül Cove, East Sevgen, NJ 29893",
+        "buyer_name": "Ergül Şti.",
+        "buyer_address": "368 Nevsale Shoals Suite 024, Umutcanstad, AL 24278",
+        "items": [
+          {
+            "sku": "SKU-6381",
+            "description": "Kraft Zarf (C4)",
+            "quantity": 40,
+            "unit_price": 2799.02,
+            "total": 111960.8
+          },
+          {
+            "sku": "SKU-9624",
+            "description": "Zimba Teli No:10 (1000'li)",
+            "quantity": 86,
+            "unit_price": 3517.13,
+            "total": 302473.18
+          }
+        ],
+        "total_amount": 414433.98,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0017",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9995,
+      "f1": 0.9943,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-65496",
+        "date": "2025-12-20",
+        "delivery_date": "2026-01-07",
+        "supplier_name": "Durdu San.",
+        "supplier_address": "83667 Aksu Land, Imgemouth, WI 74896",
+        "buyer_name": "Toyota Otomotiv",
+        "buyer_address": "90147 Soylu Rest, Sevenview, IL 99452",
+        "items": [
+          {
+            "sku": "SKU-7172",
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 99,
+            "unit_price": 3093.98,
+            "total": 306304.02
+          },
+          {
+            "sku": "SKU-3712",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 21,
+            "unit_price": 912.42,
+            "total": 19160.82
+          },
+          {
+            "sku": "SKU-4891",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 6,
+            "unit_price": 2060.18,
+            "total": 12361.08
+          },
+          {
+            "sku": "SKU-8355",
+            "description": "Harici SSD 1 TB",
+            "quantity": 79,
+            "unit_price": 1431.79,
+            "total": 113111.41
+          }
+        ],
+        "total_amount": 450937.33,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-65496",
+        "date": "2025-12-20",
+        "delivery_date": "2026-01-07",
+        "supplier_name": "Durdu San.",
+        "supplier_address": "83667 Aksu Land, Imgemouth, WI 74896",
+        "buyer_name": "Toyota Otomotiv",
+        "buyer_address": "90147 Soylu Rest, Sevenview, IL 99452",
+        "items": [
+          {
+            "sku": "SKU-7172",
+            "description": "Termal Etiket Rulosu 40x30",
+            "quantity": 99,
+            "unit_price": 3093.98,
+            "total": 306304.02
+          },
+          {
+            "sku": "SKU-3712",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 21,
+            "unit_price": 912.42,
+            "total": 19160.82
+          },
+          {
+            "sku": "SKU-4891",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 6,
+            "unit_price": 2060.18,
+            "total": 12361.08
+          },
+          {
+            "sku": "SKU-8355",
+            "description": "Harici SSD 1 TB",
+            "quantity": 79,
+            "unit_price": 1431.79,
+            "total": 113111.41
+          }
+        ],
+        "total_amount": 450937.33,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0018",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9795,
+      "f1": 0.8755,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-50562",
+        "date": "2026-01-09",
+        "delivery_date": "2026-01-22",
+        "supplier_name": "Migros",
+        "supplier_address": "9784 Mihn Locks, North Kösemenport, IL 18488",
+        "buyer_name": "Arslan Hayrioğlu A.Ş.",
+        "buyer_address": "26838 Erdoğan Locks Apt. 607., Port Tecimership, NE 75657",
+        "items": [
+          {
+            "sku": "SKU-3042",
+            "description": "HDMI Kablo 2 m",
+            "quantity": 92,
+            "unit_price": 4231,
+            "total": 389252
+          },
+          {
+            "sku": "SKU-5469",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 11,
+            "unit_price": 3817.95,
+            "total": 41997.45
+          }
+        ],
+        "total_amount": 431249.45,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-50562",
+        "date": "2026-01-09",
+        "delivery_date": "2026-01-22",
+        "supplier_name": "Migros",
+        "supplier_address": "9784 Mihn Locks, North Kösemenport, IL 18488",
+        "buyer_name": "Arslan Hayrioğlu A.Ş.",
+        "buyer_address": "26838 Erdoğan Locks Apt. 607., Port Tecimership, NE 75657",
+        "items": [
+          {
+            "sku": "SKU-3042",
+            "description": "HDMI Kablo 2 m",
+            "quantity": 92,
+            "unit_price": 4231,
+            "total": 389252
+          },
+          {
+            "sku": "SKU-5469",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 11,
+            "unit_price": 3817.95,
+            "total": 41997.45
+          }
+        ],
+        "total_amount": 431249.45,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0019",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9583,
+      "sim": 0.998,
+      "f1": 0.9896,
+      "raw_em": 0.9583,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[2].description",
+          "gt": "Maskeleme Bandı 48 mm",
+          "pred": "Maskeleme Bandi 48 mm"
+        }
+      ],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-29313",
+        "date": "2026-01-26",
+        "delivery_date": "2026-02-04",
+        "supplier_name": "Mckinney-Butler",
+        "supplier_address": "2975 Samuel Coves, South Brianna, NC 10809",
+        "buyer_name": "Harrell-Reese",
+        "buyer_address": "81883 Bell Viaduct, East Curtis, KS 26357",
+        "items": [
+          {
+            "sku": "SKU-8740",
+            "description": "Maskeleme Bandi 48 mm",
+            "quantity": 18,
+            "unit_price": 201.13,
+            "total": 3620.34
+          },
+          {
+            "sku": "SKU-8685",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 18,
+            "unit_price": 3796.62,
+            "total": 68339.16
+          },
+          {
+            "sku": "SKU-2298",
+            "description": "Toner Kartuş (HP 26A)",
+            "quantity": 79,
+            "unit_price": 36.2,
+            "total": 2859.8
+          }
+        ],
+        "total_amount": 74819.3,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-29313",
+        "date": "2026-01-26",
+        "delivery_date": "2026-02-04",
+        "supplier_name": "Mckinney-Butler",
+        "supplier_address": "2975 Samuel Coves, South Brianna, NC 10809",
+        "buyer_name": "Harrell-Reese",
+        "buyer_address": "81883 Bell Viaduct, East Curtis, KS 26357",
+        "items": [
+          {
+            "sku": "SKU-8740",
+            "description": "Maskeleme Bandi 48 mm",
+            "quantity": 18,
+            "unit_price": 201.13,
+            "total": 3620.34
+          },
+          {
+            "sku": "SKU-8685",
+            "description": "Muhasebe Danışmanlık Hizmeti (Saat)",
+            "quantity": 18,
+            "unit_price": 3796.62,
+            "total": 68339.16
+          },
+          {
+            "sku": "SKU-2298",
+            "description": "Toner Kartuş (HP 26A)",
+            "quantity": 79,
+            "unit_price": 36.2,
+            "total": 2859.8
+          }
+        ],
+        "total_amount": 74819.3,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "po_0020",
+      "doc_type": "po",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "po",
+        "po_number": "PO-78614",
+        "date": "2026-03-06",
+        "delivery_date": "2026-03-15",
+        "supplier_name": "Tevetoğlu Ltd.",
+        "supplier_address": "77997 Bilge Road, Gökaymouth, CA 61963",
+        "buyer_name": "Şener Hançer Tic.",
+        "buyer_address": "147 Türk Centers Suite 411, Ertaşshire, OH 97352",
+        "items": [
+          {
+            "sku": "SKU-3185",
+            "description": "Dolmakalem Seti",
+            "quantity": 95,
+            "unit_price": 3785.83,
+            "total": 359653.85
+          },
+          {
+            "sku": "SKU-3868",
+            "description": "Kağıt Havlu (Z Katlı, 12'li)",
+            "quantity": 46,
+            "unit_price": 2734.61,
+            "total": 125792.06
+          },
+          {
+            "sku": "SKU-8840",
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 60,
+            "unit_price": 4904.29,
+            "total": 294257.4
+          },
+          {
+            "sku": "SKU-2033",
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 24,
+            "unit_price": 4059.37,
+            "total": 97424.88
+          },
+          {
+            "sku": "SKU-1717",
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 5,
+            "unit_price": 1474.28,
+            "total": 7371.4
+          },
+          {
+            "sku": "SKU-6080",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 6,
+            "unit_price": 1584.82,
+            "total": 9508.92
+          }
+        ],
+        "total_amount": 894008.51,
+        "currency": "TRY",
+        "notes": null
+      },
+      "raw": {
+        "doc_type": "po",
+        "po_number": "PO-78614",
+        "date": "2026-03-06",
+        "delivery_date": "2026-03-15",
+        "supplier_name": "Tevetoğlu Ltd.",
+        "supplier_address": "77997 Bilge Road, Gökaymouth, CA 61963",
+        "buyer_name": "Şener Hançer Tic.",
+        "buyer_address": "147 Türk Centers Suite 411, Ertaşshire, OH 97352",
+        "items": [
+          {
+            "sku": "SKU-3185",
+            "description": "Dolmakalem Seti",
+            "quantity": 95,
+            "unit_price": 3785.83,
+            "total": 359653.85
+          },
+          {
+            "sku": "SKU-3868",
+            "description": "Kağıt Havlu (Z Katlı, 12'li)",
+            "quantity": 46,
+            "unit_price": 2734.61,
+            "total": 125792.06
+          },
+          {
+            "sku": "SKU-8840",
+            "description": "Islak Mendil (Kova, 100'lü)",
+            "quantity": 60,
+            "unit_price": 4904.29,
+            "total": 294257.4
+          },
+          {
+            "sku": "SKU-2033",
+            "description": "Grafik Tasarım Hizmeti (Proje)",
+            "quantity": 24,
+            "unit_price": 4059.37,
+            "total": 97424.88
+          },
+          {
+            "sku": "SKU-1717",
+            "description": "Kablosuz Klavye-Mouse Set",
+            "quantity": 5,
+            "unit_price": 1474.28,
+            "total": 7371.4
+          },
+          {
+            "sku": "SKU-6080",
+            "description": "Alan Adı Tescili (Yıllık)",
+            "quantity": 6,
+            "unit_price": 1584.82,
+            "total": 9508.92
+          }
+        ],
+        "total_amount": 894008.51,
+        "currency": "TRY",
+        "notes": null
+      }
+    },
+    {
+      "doc_id": "receipt_0001",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9992,
+      "f1": 0.9956,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-81176",
+        "date": "2026-01-07",
+        "store_name": "Dumanlı Şti.",
+        "store_address": "782 Aynemah Cove Suite 182, East Öncelmouth, NV 69191",
+        "cashier": "Güler",
+        "items": [
+          {
+            "description": "Kola (2.5 L)",
+            "quantity": 4,
+            "unit_price": 445.3,
+            "total": 1781.2
+          },
+          {
+            "description": "Spagetti Makarna (500 g)",
+            "quantity": 4,
+            "unit_price": 447.85,
+            "total": 1791.4
+          },
+          {
+            "description": "Siyah Çay (1 kg)",
+            "quantity": 3,
+            "unit_price": 486.99,
+            "total": 1460.97
+          },
+          {
+            "description": "Çikolata (Bar)",
+            "quantity": 4,
+            "unit_price": 186.84,
+            "total": 747.36
+          }
+        ],
+        "subtotal": 5780.93,
+        "tax_rate": 0.18,
+        "tax_amount": 1040.57,
+        "total_amount": 6821.5,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-81176",
+        "date": "2026-01-07",
+        "store_name": "Dumanlı Şti.",
+        "store_address": "782 Aynemah Cove Suite 182, East Öncelmouth, NV 69191",
+        "cashier": "Güler",
+        "items": [
+          {
+            "description": "Kola (2.5 L)",
+            "quantity": 4,
+            "unit_price": 445.3,
+            "total": 1781.2
+          },
+          {
+            "description": "Spagetti Makarna (500 g)",
+            "quantity": 4,
+            "unit_price": 447.85,
+            "total": 1791.4
+          },
+          {
+            "description": "Siyah Çay (1 kg)",
+            "quantity": 3,
+            "unit_price": 486.99,
+            "total": 1460.97
+          },
+          {
+            "description": "Çikolata (Bar)",
+            "quantity": 4,
+            "unit_price": 186.84,
+            "total": 747.36
+          }
+        ],
+        "subtotal": 5780.93,
+        "tax_rate": 0.18,
+        "tax_amount": 1040.57,
+        "total_amount": 6821.5,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0002",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-20828",
+        "date": "2026-02-01",
+        "store_name": "Vodafone",
+        "store_address": "6590 Erdoğan Isle Apt. 864, İslimeberg, MA 11183",
+        "cashier": "Mevlüdiye",
+        "items": [
+          {
+            "description": "Tuvalet Kağıdı (16'lı)",
+            "quantity": 3,
+            "unit_price": 156.72,
+            "total": 470.16
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 4,
+            "unit_price": 87.49,
+            "total": 349.96
+          },
+          {
+            "description": "Kola (2.5 L)",
+            "quantity": 3,
+            "unit_price": 226.33,
+            "total": 678.99
+          },
+          {
+            "description": "Ayçiçek Yağı (1 L)",
+            "quantity": 3,
+            "unit_price": 309.35,
+            "total": 928.05
+          }
+        ],
+        "subtotal": 2427.16,
+        "tax_rate": 0.18,
+        "tax_amount": 436.89,
+        "total_amount": 2864.05,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-20828",
+        "date": "2026-02-01",
+        "store_name": "Vodafone",
+        "store_address": "6590 Erdoğan Isle Apt. 864, İslimeberg, MA 11183",
+        "cashier": "Mevlüdiye",
+        "items": [
+          {
+            "description": "Tuvalet Kağıdı (16'lı)",
+            "quantity": 3,
+            "unit_price": 156.72,
+            "total": 470.16
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 4,
+            "unit_price": 87.49,
+            "total": 349.96
+          },
+          {
+            "description": "Kola (2.5 L)",
+            "quantity": 3,
+            "unit_price": 226.33,
+            "total": 678.99
+          },
+          {
+            "description": "Ayçiçek Yağı (1 L)",
+            "quantity": 3,
+            "unit_price": 309.35,
+            "total": 928.05
+          }
+        ],
+        "subtotal": 2427.16,
+        "tax_rate": 0.18,
+        "tax_amount": 436.89,
+        "total_amount": 2864.05,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0003",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9412,
+      "sim": 0.9412,
+      "f1": 0.9412,
+      "raw_em": 0.9412,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "store_address",
+          "gt": "PSC 4629, Box 1486, APO AP 43555",
+          "pred": ""
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-51207",
+        "date": "2025-10-09",
+        "store_name": "LC Waikiki Mağazacılık",
+        "store_address": null,
+        "cashier": "Erik",
+        "items": [
+          {
+            "description": "Su (5 L)",
+            "quantity": 3,
+            "unit_price": 388.61,
+            "total": 1165.83
+          },
+          {
+            "description": "Tuvalet Kağıdı (16'lı)",
+            "quantity": 4,
+            "unit_price": 111.21,
+            "total": 444.84
+          }
+        ],
+        "subtotal": 1610.67,
+        "tax_rate": 0.18,
+        "tax_amount": 289.92,
+        "total_amount": 1900.59,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-51207",
+        "date": "2025-10-09",
+        "store_name": "LC Waikiki Mağazacılık",
+        "store_address": null,
+        "cashier": "Erik",
+        "items": [
+          {
+            "description": "Su (5 L)",
+            "quantity": 3,
+            "unit_price": 388.61,
+            "total": 1165.83
+          },
+          {
+            "description": "Tuvalet Kağıdı (16'lı)",
+            "quantity": 4,
+            "unit_price": 111.21,
+            "total": 444.84
+          }
+        ],
+        "subtotal": 1610.67,
+        "tax_rate": 0.18,
+        "tax_amount": 289.92,
+        "total_amount": 1900.59,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0004",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-82616",
+        "date": "2025-11-17",
+        "store_name": "Koton",
+        "store_address": "685 Yolal Inlet, East Ushan, WI 64237",
+        "cashier": "Kayıt",
+        "items": [
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 4,
+            "unit_price": 265.22,
+            "total": 1060.88
+          },
+          {
+            "description": "Yumurta (15'li)",
+            "quantity": 4,
+            "unit_price": 412.55,
+            "total": 1650.2
+          },
+          {
+            "description": "Diş Macunu (75 ml)",
+            "quantity": 2,
+            "unit_price": 486.33,
+            "total": 972.66
+          },
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 1,
+            "unit_price": 227.74,
+            "total": 227.74
+          },
+          {
+            "description": "Ağrı Kesici (20 Tablet)",
+            "quantity": 5,
+            "unit_price": 175.53,
+            "total": 877.65
+          },
+          {
+            "description": "Domates (kg)",
+            "quantity": 5,
+            "unit_price": 321.7,
+            "total": 1608.5
+          },
+          {
+            "description": "C Vitamini (Efervesan)",
+            "quantity": 2,
+            "unit_price": 219.15,
+            "total": 438.3
+          }
+        ],
+        "subtotal": 6835.93,
+        "tax_rate": 0.18,
+        "tax_amount": 1230.47,
+        "total_amount": 8066.4,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-82616",
+        "date": "2025-11-17",
+        "store_name": "Koton",
+        "store_address": "685 Yolal Inlet, East Ushan, WI 64237",
+        "cashier": "Kayıt",
+        "items": [
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 4,
+            "unit_price": 265.22,
+            "total": 1060.88
+          },
+          {
+            "description": "Yumurta (15'li)",
+            "quantity": 4,
+            "unit_price": 412.55,
+            "total": 1650.2
+          },
+          {
+            "description": "Diş Macunu (75 ml)",
+            "quantity": 2,
+            "unit_price": 486.33,
+            "total": 972.66
+          },
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 1,
+            "unit_price": 227.74,
+            "total": 227.74
+          },
+          {
+            "description": "Ağrı Kesici (20 Tablet)",
+            "quantity": 5,
+            "unit_price": 175.53,
+            "total": 877.65
+          },
+          {
+            "description": "Domates (kg)",
+            "quantity": 5,
+            "unit_price": 321.7,
+            "total": 1608.5
+          },
+          {
+            "description": "C Vitamini (Efervesan)",
+            "quantity": 2,
+            "unit_price": 219.15,
+            "total": 438.3
+          }
+        ],
+        "subtotal": 6835.93,
+        "tax_rate": 0.18,
+        "tax_amount": 1230.47,
+        "total_amount": 8066.4,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0005",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9412,
+      "sim": 0.9961,
+      "f1": 0.9882,
+      "raw_em": 0.9412,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Sıvı Çamaşır Deterjanı (2.5 L)",
+          "pred": "Sivi Çamaşır Deterjanı (2.5 L)"
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-26274",
+        "date": "2025-12-15",
+        "store_name": "Cooke and Sons",
+        "store_address": "880 Walter River, New Nicholas, GA 24204",
+        "cashier": "Marie",
+        "items": [
+          {
+            "description": "Sivi Çamaşır Deterjanı (2.5 L)",
+            "quantity": 3,
+            "unit_price": 102.17,
+            "total": 306.51
+          },
+          {
+            "description": "Tavuk Göğsü (kg)",
+            "quantity": 3,
+            "unit_price": 66.96,
+            "total": 200.88
+          }
+        ],
+        "subtotal": 507.39,
+        "tax_rate": 0.18,
+        "tax_amount": 91.33,
+        "total_amount": 598.72,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-26274",
+        "date": "2025-12-15",
+        "store_name": "Cooke and Sons",
+        "store_address": "880 Walter River, New Nicholas, GA 24204",
+        "cashier": "Marie",
+        "items": [
+          {
+            "description": "Sivi Çamaşır Deterjanı (2.5 L)",
+            "quantity": 3,
+            "unit_price": 102.17,
+            "total": 306.51
+          },
+          {
+            "description": "Tavuk Göğsü (kg)",
+            "quantity": 3,
+            "unit_price": 66.96,
+            "total": 200.88
+          }
+        ],
+        "subtotal": 507.39,
+        "tax_rate": 0.18,
+        "tax_amount": 91.33,
+        "total_amount": 598.72,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0006",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9412,
+      "sim": 0.996,
+      "f1": 0.9755,
+      "raw_em": 0.9412,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Diş Macunu (75 ml)",
+          "pred": "Dış Macunu (75 ml)"
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-22245",
+        "date": "2025-12-23",
+        "store_name": "Vestel Elektronik",
+        "store_address": "5379 İnönü Summit, Bilgiside, IA 41063",
+        "cashier": "Bidayet",
+        "items": [
+          {
+            "description": "Dış Macunu (75 ml)",
+            "quantity": 1,
+            "unit_price": 45.21,
+            "total": 45.21
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 5,
+            "unit_price": 136.0,
+            "total": 680.0
+          }
+        ],
+        "subtotal": 725.21,
+        "tax_rate": 0.18,
+        "tax_amount": 130.54,
+        "total_amount": 855.75,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-22245",
+        "date": "2025-12-23",
+        "store_name": "Vestel Elektronik",
+        "store_address": "5379 İnönü Summit, Bilgiside, IA 41063",
+        "cashier": "Bidayet",
+        "items": [
+          {
+            "description": "Dış Macunu (75 ml)",
+            "quantity": 1,
+            "unit_price": 45.21,
+            "total": 45.21
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 5,
+            "unit_price": 136.0,
+            "total": 680.0
+          }
+        ],
+        "subtotal": 725.21,
+        "tax_rate": 0.18,
+        "tax_amount": 130.54,
+        "total_amount": 855.75,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0007",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-64602",
+        "date": "2025-10-25",
+        "store_name": "Richardson PLC",
+        "store_address": "Unit 7468 Box 8623, DPO AP 18641",
+        "cashier": "Monique",
+        "items": [
+          {
+            "description": "Domates (kg)",
+            "quantity": 1,
+            "unit_price": 345.86,
+            "total": 345.86
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 4,
+            "unit_price": 210.73,
+            "total": 842.92
+          },
+          {
+            "description": "Siyah Zeytin (400 g)",
+            "quantity": 2,
+            "unit_price": 173.4,
+            "total": 346.8
+          },
+          {
+            "description": "Dana Kıyma (kg)",
+            "quantity": 3,
+            "unit_price": 431.44,
+            "total": 1294.32
+          },
+          {
+            "description": "Siyah Zeytin (400 g)",
+            "quantity": 3,
+            "unit_price": 487.81,
+            "total": 1463.43
+          }
+        ],
+        "subtotal": 4293.33,
+        "tax_rate": 0.18,
+        "tax_amount": 772.8,
+        "total_amount": 5066.13,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-64602",
+        "date": "2025-10-25",
+        "store_name": "Richardson PLC",
+        "store_address": "Unit 7468 Box 8623, DPO AP 18641",
+        "cashier": "Monique",
+        "items": [
+          {
+            "description": "Domates (kg)",
+            "quantity": 1,
+            "unit_price": 345.86,
+            "total": 345.86
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 4,
+            "unit_price": 210.73,
+            "total": 842.92
+          },
+          {
+            "description": "Siyah Zeytin (400 g)",
+            "quantity": 2,
+            "unit_price": 173.4,
+            "total": 346.8
+          },
+          {
+            "description": "Dana Kıyma (kg)",
+            "quantity": 3,
+            "unit_price": 431.44,
+            "total": 1294.32
+          },
+          {
+            "description": "Siyah Zeytin (400 g)",
+            "quantity": 3,
+            "unit_price": 487.81,
+            "total": 1463.43
+          }
+        ],
+        "subtotal": 4293.33,
+        "tax_rate": 0.18,
+        "tax_amount": 772.8,
+        "total_amount": 5066.13,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0008",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9412,
+      "sim": 0.9871,
+      "f1": 0.9608,
+      "raw_em": 0.9412,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "items[1].description",
+          "gt": "Spagetti Makarna (500 g)",
+          "pred": "Spaghetti Makarna"
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-77499",
+        "date": "2025-11-23",
+        "store_name": "Davidson LLC",
+        "store_address": "814 Kathryn Groves, Whiteheadberg, MP 57841",
+        "cashier": "Christopher",
+        "items": [
+          {
+            "description": "Spaghetti Makarna",
+            "quantity": 1,
+            "unit_price": 148.65,
+            "total": 148.65
+          },
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 5,
+            "unit_price": 211.98,
+            "total": 1059.9
+          }
+        ],
+        "subtotal": 1208.55,
+        "tax_rate": 0.18,
+        "tax_amount": 217.54,
+        "total_amount": 1426.09,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-77499",
+        "date": "2025-11-23",
+        "store_name": "Davidson LLC",
+        "store_address": "814 Kathryn Groves, Whiteheadberg, MP 57841",
+        "cashier": "Christopher",
+        "items": [
+          {
+            "description": "Spaghetti Makarna",
+            "quantity": 1,
+            "unit_price": 148.65,
+            "total": 148.65
+          },
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 5,
+            "unit_price": 211.98,
+            "total": 1059.9
+          }
+        ],
+        "subtotal": 1208.55,
+        "tax_rate": 0.18,
+        "tax_amount": 217.54,
+        "total_amount": 1426.09,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0009",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9412,
+      "sim": 0.9412,
+      "f1": 0.9412,
+      "raw_em": 0.9412,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "store_address",
+          "gt": "USCGC Brown, FPO AP 49516",
+          "pred": ""
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-52917",
+        "date": "2025-11-15",
+        "store_name": "Velasquez LLC",
+        "store_address": null,
+        "cashier": "Joe",
+        "items": [
+          {
+            "description": "Türk Kahvesi (250 g)",
+            "quantity": 1,
+            "unit_price": 472.89,
+            "total": 472.89
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 4,
+            "unit_price": 483.51,
+            "total": 1934.04
+          }
+        ],
+        "subtotal": 2406.93,
+        "tax_rate": 0.18,
+        "tax_amount": 433.25,
+        "total_amount": 2840.18,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-52917",
+        "date": "2025-11-15",
+        "store_name": "Velasquez LLC",
+        "store_address": null,
+        "cashier": "Joe",
+        "items": [
+          {
+            "description": "Türk Kahvesi (250 g)",
+            "quantity": 1,
+            "unit_price": 472.89,
+            "total": 472.89
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 4,
+            "unit_price": 483.51,
+            "total": 1934.04
+          }
+        ],
+        "subtotal": 2406.93,
+        "tax_rate": 0.18,
+        "tax_amount": 433.25,
+        "total_amount": 2840.18,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0010",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-16377",
+        "date": "2026-08-12",
+        "store_name": "Arsoy Ltd.",
+        "store_address": "522 Server Village, Sezerberg, WV 92977",
+        "cashier": "Bidayet",
+        "items": [
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 3,
+            "unit_price": 365.12,
+            "total": 1095.36
+          },
+          {
+            "description": "Spagetti Makarna (500 g)",
+            "quantity": 4,
+            "unit_price": 186.14,
+            "total": 744.56
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 1,
+            "unit_price": 287.29,
+            "total": 287.29
+          }
+        ],
+        "subtotal": 2127.21,
+        "tax_rate": 0.18,
+        "tax_amount": 382.9,
+        "total_amount": 2510.11,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-16377",
+        "date": "2026-08-12",
+        "store_name": "Arsoy Ltd.",
+        "store_address": "522 Server Village, Sezerberg, WV 92977",
+        "cashier": "Bidayet",
+        "items": [
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 3,
+            "unit_price": 365.12,
+            "total": 1095.36
+          },
+          {
+            "description": "Spagetti Makarna (500 g)",
+            "quantity": 4,
+            "unit_price": 186.14,
+            "total": 744.56
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 1,
+            "unit_price": 287.29,
+            "total": 287.29
+          }
+        ],
+        "subtotal": 2127.21,
+        "tax_rate": 0.18,
+        "tax_amount": 382.9,
+        "total_amount": 2510.11,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0011",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9412,
+      "sim": 0.9917,
+      "f1": 0.9412,
+      "raw_em": 0.9412,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "store_name",
+          "gt": "Mansız Yılmaz A.Ş.",
+          "pred": "Mansiz Yilmaz A.Ş."
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-47827",
+        "date": "2026-07-31",
+        "store_name": "Mansiz Yilmaz A.Ş.",
+        "store_address": "89861 Yuksel Hollow, North Nevsa lchester, SC 82134",
+        "cashier": "Ağbegim",
+        "items": [
+          {
+            "description": "Dana Kıyma (kg)",
+            "quantity": 4,
+            "unit_price": 189.73,
+            "total": 758.92
+          },
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 5,
+            "unit_price": 469.78,
+            "total": 2348.9
+          }
+        ],
+        "subtotal": 3107.82,
+        "tax_rate": 0.18,
+        "tax_amount": 559.41,
+        "total_amount": 3667.23,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-47827",
+        "date": "2026-07-31",
+        "store_name": "Mansiz Yilmaz A.Ş.",
+        "store_address": "89861 Yuksel Hollow, North Nevsa lchester, SC 82134",
+        "cashier": "Ağbegim",
+        "items": [
+          {
+            "description": "Dana Kıyma (kg)",
+            "quantity": 4,
+            "unit_price": 189.73,
+            "total": 758.92
+          },
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 5,
+            "unit_price": 469.78,
+            "total": 2348.9
+          }
+        ],
+        "subtotal": 3107.82,
+        "tax_rate": 0.18,
+        "tax_amount": 559.41,
+        "total_amount": 3667.23,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0012",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 0.9989,
+      "f1": 0.9932,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-92478",
+        "date": "2026-08-24",
+        "store_name": "Demir San.",
+        "store_address": "893 Sidki Meadow, New Yalginbury, OK 55101",
+        "cashier": "Karakucak",
+        "items": [
+          {
+            "description": "Tuvalet Kağıdı (16'lı)",
+            "quantity": 5,
+            "unit_price": 316.37,
+            "total": 1581.85
+          },
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 4,
+            "unit_price": 78.15,
+            "total": 312.6
+          },
+          {
+            "description": "Su (5 L)",
+            "quantity": 2,
+            "unit_price": 20.63,
+            "total": 41.26
+          }
+        ],
+        "subtotal": 1935.71,
+        "tax_rate": 0.18,
+        "tax_amount": 348.43,
+        "total_amount": 2284.14,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-92478",
+        "date": "2026-08-24",
+        "store_name": "Demir San.",
+        "store_address": "893 Sidki Meadow, New Yalginbury, OK 55101",
+        "cashier": "Karakucak",
+        "items": [
+          {
+            "description": "Tuvalet Kağıdı (16'lı)",
+            "quantity": 5,
+            "unit_price": 316.37,
+            "total": 1581.85
+          },
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 4,
+            "unit_price": 78.15,
+            "total": 312.6
+          },
+          {
+            "description": "Su (5 L)",
+            "quantity": 2,
+            "unit_price": 20.63,
+            "total": 41.26
+          }
+        ],
+        "subtotal": 1935.71,
+        "tax_rate": 0.18,
+        "tax_amount": 348.43,
+        "total_amount": 2284.14,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0013",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9459,
+      "sim": 0.9979,
+      "f1": 0.9809,
+      "raw_em": 0.9459,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "store_name",
+          "gt": "İzmir Demir Çelik",
+          "pred": "Izmir Demir Çelik"
+        },
+        {
+          "field": "items[6].description",
+          "gt": "Bulaşık Deterjanı (750 ml)",
+          "pred": "Bulaşık Deterjani (750 ml)"
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-83149",
+        "date": "2026-04-07",
+        "store_name": "Izmir Demir Çelik",
+        "store_address": "88888 Özasan Well Suite 065, Akifstad, WY 09356",
+        "cashier": "Uğan",
+        "items": [
+          {
+            "description": "Bulaşık Deterjani (750 ml)",
+            "quantity": 3,
+            "unit_price": 147.46,
+            "total": 442.38
+          },
+          {
+            "description": "Spagetti Makarna (500 g)",
+            "quantity": 5,
+            "unit_price": 192.95,
+            "total": 964.75
+          },
+          {
+            "description": "Çikolata (Bar)",
+            "quantity": 3,
+            "unit_price": 477.53,
+            "total": 1432.59
+          },
+          {
+            "description": "Tavuk Göğsü (kg)",
+            "quantity": 2,
+            "unit_price": 148.77,
+            "total": 297.54
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 176.45,
+            "total": 176.45
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 3,
+            "unit_price": 374.93,
+            "total": 1124.79
+          },
+          {
+            "description": "Muz (kg)",
+            "quantity": 2,
+            "unit_price": 414.84,
+            "total": 829.68
+          }
+        ],
+        "subtotal": 5268.18,
+        "tax_rate": 0.18,
+        "tax_amount": 948.27,
+        "total_amount": 6216.45,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-83149",
+        "date": "2026-04-07",
+        "store_name": "Izmir Demir Çelik",
+        "store_address": "88888 Özasan Well Suite 065, Akifstad, WY 09356",
+        "cashier": "Uğan",
+        "items": [
+          {
+            "description": "Bulaşık Deterjani (750 ml)",
+            "quantity": 3,
+            "unit_price": 147.46,
+            "total": 442.38
+          },
+          {
+            "description": "Spagetti Makarna (500 g)",
+            "quantity": 5,
+            "unit_price": 192.95,
+            "total": 964.75
+          },
+          {
+            "description": "Çikolata (Bar)",
+            "quantity": 3,
+            "unit_price": 477.53,
+            "total": 1432.59
+          },
+          {
+            "description": "Tavuk Göğsü (kg)",
+            "quantity": 2,
+            "unit_price": 148.77,
+            "total": 297.54
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 176.45,
+            "total": 176.45
+          },
+          {
+            "description": "Salatalık (kg)",
+            "quantity": 3,
+            "unit_price": 374.93,
+            "total": 1124.79
+          },
+          {
+            "description": "Muz (kg)",
+            "quantity": 2,
+            "unit_price": 414.84,
+            "total": 829.68
+          }
+        ],
+        "subtotal": 5268.18,
+        "tax_rate": 0.18,
+        "tax_amount": 948.27,
+        "total_amount": 6216.45,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0014",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-45601",
+        "date": "2026-06-28",
+        "store_name": "Quinn Ltd",
+        "store_address": "05852 Pollard Neck Apt. 217, West Jamesborough, FM 05993",
+        "cashier": "Leslie",
+        "items": [
+          {
+            "description": "Su (5 L)",
+            "quantity": 1,
+            "unit_price": 209.58,
+            "total": 209.58
+          },
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 4,
+            "unit_price": 54.77,
+            "total": 219.08
+          }
+        ],
+        "subtotal": 428.66,
+        "tax_rate": 0.18,
+        "tax_amount": 77.16,
+        "total_amount": 505.82,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-45601",
+        "date": "2026-06-28",
+        "store_name": "Quinn Ltd",
+        "store_address": "05852 Pollard Neck Apt. 217, West Jamesborough, FM 05993",
+        "cashier": "Leslie",
+        "items": [
+          {
+            "description": "Su (5 L)",
+            "quantity": 1,
+            "unit_price": 209.58,
+            "total": 209.58
+          },
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 4,
+            "unit_price": 54.77,
+            "total": 219.08
+          }
+        ],
+        "subtotal": 428.66,
+        "tax_rate": 0.18,
+        "tax_amount": 77.16,
+        "total_amount": 505.82,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0015",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-47298",
+        "date": "2026-01-17",
+        "store_name": "Zorlu Gülen Şti.",
+        "store_address": "345 Sevcan Isle, Erdursunstad, NE 52932",
+        "cashier": "Anargül",
+        "items": [
+          {
+            "description": "Diş Macunu (75 ml)",
+            "quantity": 2,
+            "unit_price": 366.9,
+            "total": 733.8
+          },
+          {
+            "description": "Ekmek (Somun)",
+            "quantity": 3,
+            "unit_price": 360.71,
+            "total": 1082.13
+          },
+          {
+            "description": "Bulaşık Deterjanı (750 ml)",
+            "quantity": 3,
+            "unit_price": 396.43,
+            "total": 1189.29
+          },
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 2,
+            "unit_price": 91.87,
+            "total": 183.74
+          }
+        ],
+        "subtotal": 3188.96,
+        "tax_rate": 0.18,
+        "tax_amount": 574.01,
+        "total_amount": 3762.97,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-47298",
+        "date": "2026-01-17",
+        "store_name": "Zorlu Gülen Şti.",
+        "store_address": "345 Sevcan Isle, Erdursunstad, NE 52932",
+        "cashier": "Anargül",
+        "items": [
+          {
+            "description": "Diş Macunu (75 ml)",
+            "quantity": 2,
+            "unit_price": 366.9,
+            "total": 733.8
+          },
+          {
+            "description": "Ekmek (Somun)",
+            "quantity": 3,
+            "unit_price": 360.71,
+            "total": 1082.13
+          },
+          {
+            "description": "Bulaşık Deterjanı (750 ml)",
+            "quantity": 3,
+            "unit_price": 396.43,
+            "total": 1189.29
+          },
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 2,
+            "unit_price": 91.87,
+            "total": 183.74
+          }
+        ],
+        "subtotal": 3188.96,
+        "tax_rate": 0.18,
+        "tax_amount": 574.01,
+        "total_amount": 3762.97,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0016",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 0.9048,
+      "sim": 0.9898,
+      "f1": 0.9352,
+      "raw_em": 0.9048,
+      "reasons": [],
+      "corrected": false,
+      "misses": [
+        {
+          "field": "cashier",
+          "gt": "Nebiha",
+          "pred": "Nebıha"
+        },
+        {
+          "field": "items[2].description",
+          "gt": "Bulaşık Deterjanı (750 ml)",
+          "pred": "Bulaşık Deterjani (750 ml)"
+        }
+      ],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-63148",
+        "date": "2026-01-31",
+        "store_name": "Şama Akçay San.",
+        "store_address": "416 Adviye Rapids Apt. 845, North Turabipot, ME 58948",
+        "cashier": "Nebıha",
+        "items": [
+          {
+            "description": "Elma (kg)",
+            "quantity": 1,
+            "unit_price": 134.09,
+            "total": 134.09
+          },
+          {
+            "description": "Dana Kıyma (kg)",
+            "quantity": 4,
+            "unit_price": 378.11,
+            "total": 1512.44
+          },
+          {
+            "description": "Bulaşık Deterjani (750 ml)",
+            "quantity": 3,
+            "unit_price": 293.32,
+            "total": 879.96
+          }
+        ],
+        "subtotal": 2526.49,
+        "tax_rate": 0.18,
+        "tax_amount": 454.77,
+        "total_amount": 2981.26,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-63148",
+        "date": "2026-01-31",
+        "store_name": "Şama Akçay San.",
+        "store_address": "416 Adviye Rapids Apt. 845, North Turabipot, ME 58948",
+        "cashier": "Nebıha",
+        "items": [
+          {
+            "description": "Elma (kg)",
+            "quantity": 1,
+            "unit_price": 134.09,
+            "total": 134.09
+          },
+          {
+            "description": "Dana Kıyma (kg)",
+            "quantity": 4,
+            "unit_price": 378.11,
+            "total": 1512.44
+          },
+          {
+            "description": "Bulaşık Deterjani (750 ml)",
+            "quantity": 3,
+            "unit_price": 293.32,
+            "total": 879.96
+          }
+        ],
+        "subtotal": 2526.49,
+        "tax_rate": 0.18,
+        "tax_amount": 454.77,
+        "total_amount": 2981.26,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0017",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-79228",
+        "date": "2025-09-11",
+        "store_name": "Çalık Enerji",
+        "store_address": "7059 Aslan Route Apt. 165, North Ferat, PR 80136",
+        "cashier": "Ticen",
+        "items": [
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 2,
+            "unit_price": 86.45,
+            "total": 172.9
+          },
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 5,
+            "unit_price": 223.71,
+            "total": 1118.55
+          },
+          {
+            "description": "Siyah Çay (1 kg)",
+            "quantity": 2,
+            "unit_price": 359.87,
+            "total": 719.74
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 449.95,
+            "total": 449.95
+          },
+          {
+            "description": "Türk Kahvesi (250 g)",
+            "quantity": 1,
+            "unit_price": 229.45,
+            "total": 229.45
+          },
+          {
+            "description": "Süt (1 L, Tam Yağlı)",
+            "quantity": 4,
+            "unit_price": 231.12,
+            "total": 924.48
+          }
+        ],
+        "subtotal": 3615.07,
+        "tax_rate": 0.18,
+        "tax_amount": 650.71,
+        "total_amount": 4265.78,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-79228",
+        "date": "2025-09-11",
+        "store_name": "Çalık Enerji",
+        "store_address": "7059 Aslan Route Apt. 165, North Ferat, PR 80136",
+        "cashier": "Ticen",
+        "items": [
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 2,
+            "unit_price": 86.45,
+            "total": 172.9
+          },
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 5,
+            "unit_price": 223.71,
+            "total": 1118.55
+          },
+          {
+            "description": "Siyah Çay (1 kg)",
+            "quantity": 2,
+            "unit_price": 359.87,
+            "total": 719.74
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 449.95,
+            "total": 449.95
+          },
+          {
+            "description": "Türk Kahvesi (250 g)",
+            "quantity": 1,
+            "unit_price": 229.45,
+            "total": 229.45
+          },
+          {
+            "description": "Süt (1 L, Tam Yağlı)",
+            "quantity": 4,
+            "unit_price": 231.12,
+            "total": 924.48
+          }
+        ],
+        "subtotal": 3615.07,
+        "tax_rate": 0.18,
+        "tax_amount": 650.71,
+        "total_amount": 4265.78,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0018",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-98181",
+        "date": "2026-04-02",
+        "store_name": "Türk Yaman A.Ş.",
+        "store_address": "6909 Tule Mission Suite 571, New Yıldır, MO 41708",
+        "cashier": "Selmin",
+        "items": [
+          {
+            "description": "Süt (1 L, Tam Yağlı)",
+            "quantity": 1,
+            "unit_price": 272.88,
+            "total": 272.88
+          },
+          {
+            "description": "Siyah Çay (1 kg)",
+            "quantity": 1,
+            "unit_price": 493.14,
+            "total": 493.14
+          },
+          {
+            "description": "Domates (kg)",
+            "quantity": 1,
+            "unit_price": 147.11,
+            "total": 147.11
+          },
+          {
+            "description": "Kola (2.5 L)",
+            "quantity": 2,
+            "unit_price": 384.08,
+            "total": 768.16
+          }
+        ],
+        "subtotal": 1681.29,
+        "tax_rate": 0.18,
+        "tax_amount": 302.63,
+        "total_amount": 1983.92,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-98181",
+        "date": "2026-04-02",
+        "store_name": "Türk Yaman A.Ş.",
+        "store_address": "6909 Tule Mission Suite 571, New Yıldır, MO 41708",
+        "cashier": "Selmin",
+        "items": [
+          {
+            "description": "Süt (1 L, Tam Yağlı)",
+            "quantity": 1,
+            "unit_price": 272.88,
+            "total": 272.88
+          },
+          {
+            "description": "Siyah Çay (1 kg)",
+            "quantity": 1,
+            "unit_price": 493.14,
+            "total": 493.14
+          },
+          {
+            "description": "Domates (kg)",
+            "quantity": 1,
+            "unit_price": 147.11,
+            "total": 147.11
+          },
+          {
+            "description": "Kola (2.5 L)",
+            "quantity": 2,
+            "unit_price": 384.08,
+            "total": 768.16
+          }
+        ],
+        "subtotal": 1681.29,
+        "tax_rate": 0.18,
+        "tax_amount": 302.63,
+        "total_amount": 1983.92,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0019",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-65097",
+        "date": "2026-02-27",
+        "store_name": "Yüksel Demir A.Ş.",
+        "store_address": "681 Öcalan Green Suite 394, Akarville, DC 10207",
+        "cashier": "Aysuna",
+        "items": [
+          {
+            "description": "Siyah Zeytin (400 g)",
+            "quantity": 5,
+            "unit_price": 199.56,
+            "total": 997.8
+          },
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 2,
+            "unit_price": 418.24,
+            "total": 836.48
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 489.35,
+            "total": 489.35
+          }
+        ],
+        "subtotal": 2323.63,
+        "tax_rate": 0.18,
+        "tax_amount": 418.25,
+        "total_amount": 2741.88,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-65097",
+        "date": "2026-02-27",
+        "store_name": "Yüksel Demir A.Ş.",
+        "store_address": "681 Öcalan Green Suite 394, Akarville, DC 10207",
+        "cashier": "Aysuna",
+        "items": [
+          {
+            "description": "Siyah Zeytin (400 g)",
+            "quantity": 5,
+            "unit_price": 199.56,
+            "total": 997.8
+          },
+          {
+            "description": "Cips (Büyük Boy)",
+            "quantity": 2,
+            "unit_price": 418.24,
+            "total": 836.48
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 489.35,
+            "total": 489.35
+          }
+        ],
+        "subtotal": 2323.63,
+        "tax_rate": 0.18,
+        "tax_amount": 418.25,
+        "total_amount": 2741.88,
+        "currency": "TRY"
+      }
+    },
+    {
+      "doc_id": "receipt_0020",
+      "doc_type": "receipt",
+      "verdict": "OK",
+      "has_data": true,
+      "em": 1.0,
+      "sim": 1.0,
+      "f1": 1.0,
+      "raw_em": 1.0,
+      "reasons": [],
+      "corrected": false,
+      "misses": [],
+      "data": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-81361",
+        "date": "2026-02-01",
+        "store_name": "Roach Group",
+        "store_address": "Unit 5518 Box 8442, DPO AP 93504",
+        "cashier": "Sara",
+        "items": [
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 1,
+            "unit_price": 20.95,
+            "total": 20.95
+          },
+          {
+            "description": "C Vitamini (Efervesan)",
+            "quantity": 4,
+            "unit_price": 309.39,
+            "total": 1237.56
+          },
+          {
+            "description": "Yumurta (15'li)",
+            "quantity": 1,
+            "unit_price": 124.13,
+            "total": 124.13
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 299.0,
+            "total": 299.0
+          },
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 5,
+            "unit_price": 337.65,
+            "total": 1688.25
+          },
+          {
+            "description": "Süt (1 L, Tam Yağlı)",
+            "quantity": 1,
+            "unit_price": 126.14,
+            "total": 126.14
+          },
+          {
+            "description": "Sıvı Çamaşır Deterjanı (2.5 L)",
+            "quantity": 4,
+            "unit_price": 222.29,
+            "total": 889.16
+          }
+        ],
+        "subtotal": 4385.19,
+        "tax_rate": 0.18,
+        "tax_amount": 789.33,
+        "total_amount": 5174.52,
+        "currency": "TRY"
+      },
+      "raw": {
+        "doc_type": "receipt",
+        "receipt_number": "RCP-81361",
+        "date": "2026-02-01",
+        "store_name": "Roach Group",
+        "store_address": "Unit 5518 Box 8442, DPO AP 93504",
+        "cashier": "Sara",
+        "items": [
+          {
+            "description": "Şampuan (500 ml)",
+            "quantity": 1,
+            "unit_price": 20.95,
+            "total": 20.95
+          },
+          {
+            "description": "C Vitamini (Efervesan)",
+            "quantity": 4,
+            "unit_price": 309.39,
+            "total": 1237.56
+          },
+          {
+            "description": "Yumurta (15'li)",
+            "quantity": 1,
+            "unit_price": 124.13,
+            "total": 124.13
+          },
+          {
+            "description": "Toz Şeker (1 kg)",
+            "quantity": 1,
+            "unit_price": 299.0,
+            "total": 299.0
+          },
+          {
+            "description": "Dondurma (Kutu)",
+            "quantity": 5,
+            "unit_price": 337.65,
+            "total": 1688.25
+          },
+          {
+            "description": "Süt (1 L, Tam Yağlı)",
+            "quantity": 1,
+            "unit_price": 126.14,
+            "total": 126.14
+          },
+          {
+            "description": "Sıvı Çamaşır Deterjanı (2.5 L)",
+            "quantity": 4,
+            "unit_price": 222.29,
+            "total": 889.16
+          }
+        ],
+        "subtotal": 4385.19,
+        "tax_rate": 0.18,
+        "tax_amount": 789.33,
+        "total_amount": 5174.52,
+        "currency": "TRY"
+      }
+    }
+  ]
+}

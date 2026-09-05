@@ -96,29 +96,57 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 
 ## Phase 2 backlog — priority-ordered
 
-**P0-1, P0-2 and P1-4 are closed.** Current figure: **98.23%** field-level EM
-over all 60 documents, 35/60 perfect, corpus verified **0/1624** contaminated,
-**0 silent failures** (`docs/measurements/2026-09-02-reasoning-low.md`).
+**P0-1, P0-2, P0-4, P0-5, P0-6, P1-4, P1-6 and P1-7 are closed.**
 
-The embargo on the number is lifted on P0 grounds, but one qualifier is
-permanent until P1-5: **this is clean synthetic input only**. Real, scanned or
-photographed documents are unmeasured. That sentence travels with the number
-wherever it goes.
+Current figure: **97.67% ± 0.18** field-level EM over 60 documents — the mean of
+three identical runs, not a single number
+(`docs/measurements/2026-09-06-noise-floor-and-clean-corpus.md`). Corpus
+regenerated 2026-09-06; every figure before that measured a different corpus, a
+metric with a 1% relative tolerance on money, and a pipeline whose third agent
+never ran, so **do not compare across that line.**
+
+Three qualifiers travel with the number:
+
+- **quote it as a range, never a point.** σ = 0.178 pp, and only 33 of 60
+  documents score identically across identical runs.
+- **a change under 0.36 pp (2σ) is not evidence.** Single-run deltas below that
+  have been wrong before — see the note above for two of my own.
+- **clean synthetic input only** until P1-5. Real, scanned or photographed
+  documents remain effectively unmeasured: five figures on the same four
+  documents span 57.81% to 74.28%.
 
 ### P0 — must close before the product ships
 
-- **P0-4  `arithmetic_repair` fabricates totals on real documents.**
-  Found by the real-document pilot (`docs/measurements/2026-09-02-real-pilot.md`).
+- [x] **P0-4  `arithmetic_repair` fabricated totals on real documents.**
   On a telecom bill the payable amount is printed twice, once highlighted; the
-  module overwrote it with `subtotal + tax` in one run and `sum(items)` in
-  another, both wrong, `verdict: OK` both times. Its assumptions
-  (`total = subtotal + tax`, `subtotal = Σ items`) hold for a clean commercial
-  invoice and not for a bill carrying discounts, a previous-month balance, a
-  late fee and two tax bases. It also blinds the rule verifier: by forcing
-  internal consistency it guarantees the arithmetic checks pass.
-  Proposed fix: repair only when the document is *already* internally
-  consistent enough to trust the components; when it is not, **flag, do not
-  overwrite**. Never silently replace a value that is printed on the page.
+  module overwrote it with `subtotal + tax`, wrong by ~2x, `verdict: OK`.
+  Fixed by the provenance rule: a printed value is evidence, a computed one is
+  inference, and inference fills gaps but never overwrites evidence. Fixing
+  `arithmetic_repair` alone was not enough — the rule verifier's
+  auto-corrections re-introduced the identical number one layer later.
+  Item-level repair kept: quantity and unit_price are two independent values
+  corroborating one derived value. Measured inert on synthetic input.
+
+- [x] **P0-5  the correction agent fabricated, and rewrote unflagged fields.**
+  `docs/measurements/2026-09-03-correction-agent.md`. It had fired on **0 of
+  60** documents in runs 6 and 7 — the third agent had never actually run. When
+  a new rule started flagging things it fired on 39 of 60, contributed
+  **−0.41 pp**, damaged 8 documents against 2 improved, and destroyed four
+  perfect extractions. Handed "this tax id fails its check digit" it rewrote
+  the check digit until the checksum passed, re-verification accepted it, and
+  the verdict became OK. It also transliterated Turkish characters on fields
+  nobody had flagged. Fixed with four constraints: correction triggers only on
+  critical **and correctable** issues; `UNCORRECTABLE_RULES` keeps check-digit
+  failures away from the agent entirely; the merge is an allowlist; and any
+  field changed but not flagged becomes `unrequested_correction`, a REVIEW
+  reason in its own right — so a fabrication can no longer become OK.
+
+- [x] **P0-6  the generator produced tax ids that could not be valid.**
+  Ten random digits satisfy a VKN check digit one time in ten, so 30 ids across
+  18 documents were flagged the moment P1-6 landed — all false positives, and
+  the trigger for the whole P0-5 cascade. `_tax_id` now computes the check
+  digit. **The corpus was regenerated, breaking comparability with every run
+  before 10.**
 
 - **P0-1  D1: silent extraction failure → generic "broken output = REVIEW".**
   - [x] **(a2) the rule, codified.** `src/pipeline.py` — `DocumentPipeline`
@@ -177,19 +205,55 @@ wherever it goes.
   characters that are not on the page (`Grafik`→`Grafık`, `Diş`→`Dış`). The
   next prompt iteration should be symmetric: preserve what is printed, in both
   directions.
-- **P1-6  tax-id length/checksum check.** The digit-doubling
-  (`9993867749`→`99938667749`) is document-specific, not random, and repeats
-  across runs. Turkish VKN/TCKN are 10 or 11 digits with a checksum — a
-  deterministic check in `rule_based_verifier` catches it with no LLM call.
-  A silently wrong tax id matters for a financial product.
-- **P1-5  real-world validation.** Pilot done at n=4
-  (`docs/measurements/2026-09-02-real-pilot.md`): **57.81% vs 98.23%
-  synthetic**, on the owner's own documents. Four documents is far too few to
-  quote as an accuracy figure — what it established is the defect classes.
-  Next: ground-truth the remaining 11 documents and widen the base.
+- [x] **P1-6  tax-id checksum check.** `src/verification/tax_id.py`. A tax id
+  carries its own check digit, which makes it the only field in the schema that
+  can be verified against itself — no second source, no model call. On the real
+  pilot it separated all four genuine ids from all three model corruptions, and
+  made its first live catch the next run: a buyer tax id one digit off from the
+  printed one, `REVIEW` as the only reason. No auto-correction is ever offered
+  (there is no way to infer which digit was wrong) and lengths Turkey does not
+  use are not judged, so a foreign 9-digit registration raises `info`, not
+  `critical`. It also exposed P0-5 and P0-6.
+- [x] **P1-7  the money metric had a 1% *relative* tolerance.** On a 100,000 TRY
+  invoice that is ±1,000 TRY of free slack, in a product that exists to catch
+  financial discrepancies. Every figure published before 2026-09-03 carried it
+  on `subtotal`, `tax_amount`, `total_amount`, `unit_price` and line totals.
+  Money is now compared exactly, to the kuruş; rates get a small absolute
+  tolerance because a model that derives 94.59/472.97 instead of reading "20%"
+  is not wrong. Measured on unchanged real-pilot output: 74.09% → 71.82%.
+
+- **P1-4b  over-correction.** Still open. The prompt made the model invent
+  Turkish characters that are not on the page (`Grafik`→`Grafık`). The next
+  iteration should be symmetric: preserve what is printed, in both directions.
+- **P1-5  real-world validation.** Still the biggest gap. Three pilot runs at
+  n=4 gave 57.81%, 74.28%, 65.86% — a spread of 8–16 pp on the same four
+  documents, which measures nothing. What the pilot established is the defect
+  classes, and it earned its keep several times over: P0-4, P1-6, P1-7 and the
+  schema gaps all came out of it. Next: ground-truth the remaining 11 documents.
   Ground-truth rules that must carry over: GT never comes from the system under
   test; a field a careful human cannot read from the image is not scored;
-  `available_fields` per document; documents and their GT are never committed.
+  `available_fields` per document; documents and their GT are never committed;
+  and a GT convention that is not stated in the prompt may not be graded.
+- **P1-8  does the correction agent earn its place?** Answered as far as
+  synthetic data can: **it cannot be measured here.** Re-running the verifier
+  offline over the pinned extractions of runs 10–12 shows it would fire on
+  **0, 1 and 1 of 60** documents — its trigger conditions essentially do not
+  occur on clean synthetic input, which is also why runs 6 and 7 recorded it
+  firing zero times. Evaluating it needs documents that genuinely have
+  problems, i.e. real ones, which makes it dependent on P1-5. Measurement runs
+  use `--no-correction` meanwhile.
+- **P1-8b  a flagged tax id should reach a human even after correction.**
+  `tax_id_checksum_invalid` is currently `UNCORRECTABLE`, which is a restraint
+  imposed by observed behaviour rather than by logic: a transposed digit *is*
+  recoverable by looking at the page again, and refusing to try gives up the
+  recovery that made P1-6 worth building. The better shape is to let correction
+  **propose** a value while the issue stays open — the human gets a better
+  candidate and still reviews it. Not done now because it would have been a
+  third variable in an already large change set.
+- **P1-9  schema gaps the real documents exposed.** One `tax_rate` cannot hold
+  KDV %20 and ÖİV %10 on separate bases. Charge-line bills have no quantity or
+  unit price, so the schema forces the model to invent them. `total_amount` vs
+  `amount_payable` is done; these two are not.
 
 ### P2 — data / infra polish, as time allows
 
