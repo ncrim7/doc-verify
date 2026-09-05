@@ -24,6 +24,27 @@ after you have carefully scanned the WHOLE document:
 Only use null when, after carefully scanning the entire document, the value is truly
 not present.
 
+TOTALS — A DOCUMENT CAN PRINT TWO DIFFERENT, BOTH-CORRECT TOTALS. Do not choose
+between them; they are separate fields:
+- total_amount: THIS document's own total including taxes — the sum of its own
+  charge/line items. Labels: 'Vergiler Dahil Toplam Tutar', 'Toplam Fatura
+  Tutarı', 'Genel Toplam', 'Total'.
+- amount_payable: the amount actually due, which may additionally include a
+  carried-over balance from another period, an old debt, or a rounding
+  adjustment. Labels: 'Ödenecek Tutar', 'ÖDENECEK TOPLAM', 'Amount Due'.
+On a utility or telecom bill these differ by lines such as 'Önceki Aydan Devir'
+and 'Gelecek Aya Devir', which belong to the account balance and NOT to this
+document's own total.
+IF THE PAGE PRINTS ONLY ONE TOTAL — which is the normal case — put that same
+value in BOTH fields. Never invent a difference that is not printed.
+
+NEVER COMPUTE A TOTAL THAT IS PRINTED. If a printed subtotal or total disagrees
+with the sum of the line items, report what is PRINTED. A real bill carries
+discounts, late fees and carried-over balances that do not appear as line items,
+so a mismatch is usually information, not an error. Reporting the true printed
+value lets the mismatch be flagged; silently replacing it hides a real problem
+behind an invented number.
+
 TURKISH TEXT — TRANSCRIBE, DO NOT CORRECT. Copy every string exactly as it is
 printed on the page, character for character.
 - Preserve every Turkish letter as-is: ı ğ ş ç ö ü İ Ğ Ş Ç Ö Ü.
@@ -58,6 +79,7 @@ INVOICE_SCHEMA = """{
   "tax_rate": number,
   "tax_amount": number,
   "total_amount": number,
+  "amount_payable": number,
   "currency": "string",
   "payment_terms": "string or null",
   "notes": "string or null"
@@ -213,7 +235,8 @@ RULES:
 - Numbers: plain numeric values only (no currency symbols)
 - Dates: ISO 8601 format (YYYY-MM-DD)
 - Missing fields: use null
-- Verify: quantity × unit_price = line total for each item
+- Totals: report what is printed; never replace a printed figure with a
+  computed one
 
 Return ONLY the JSON object."""
 
@@ -241,15 +264,15 @@ For EACH row in the items table:
   - Read description text exactly as written
   - Read quantity (integer)
   - Read unit price (decimal number)
-  - Calculate: quantity × unit_price = expected total
-  - Read the actual total from the document
-  - If calculated ≠ actual, use the CALCULATED value
+  - Read the total as printed. Report what is printed, even if
+    quantity × unit_price disagrees with it.
 
-STEP 5 — TOTALS VERIFICATION:
-  - Sum all line item totals → this should equal subtotal
-  - Read tax amount
-  - Verify: subtotal + tax = total_amount
-  - If mismatch, use the CALCULATED values
+STEP 5 — TOTALS:
+  - Read the subtotal, tax amount and total as PRINTED
+  - Do not replace a printed figure with one you computed. A bill may carry
+    discounts, a carried-over balance or a late fee that is not a line item,
+    so a mismatch is usually information, not an error — and reporting the
+    printed value is what allows it to be flagged downstream.
 
 STEP 6 — OUTPUT:
 Return the result as JSON matching this schema:
@@ -282,6 +305,7 @@ def _get_few_shot_example(doc_type: str) -> str:
   "subtotal": 97500.00,
   "tax_amount": 17550.00,
   "total_amount": 115050.00,
+  "amount_payable": 115050.00,
   "currency": "TRY",
   "payment_terms": "30 gün",
   "notes": null

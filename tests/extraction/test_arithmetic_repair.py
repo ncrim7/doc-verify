@@ -132,3 +132,23 @@ class TestNeverOverwritesEvidence:
              "subtotal": 990.01, "tax_amount": 141.82, "total_amount": 615.43}
         repair_arithmetic(d, "invoice")
         assert (d["total_amount"], d["subtotal"]) == (615.43, 990.01)
+
+    def test_amount_payable_is_never_invented_from_the_total(self):
+        # They are equal on almost every document, which is exactly why filling
+        # one from the other is tempting and wrong: when the model fails to read
+        # the payable line, that failure is information. Copying total_amount
+        # over it would manufacture agreement and hide the miss.
+        d = {"items": [{"quantity": 1, "unit_price": 100.0, "total": 100.0}],
+             "subtotal": 100.0, "tax_amount": 18.0, "total_amount": 118.0}
+        repair_arithmetic(d, "invoice")
+        assert "amount_payable" not in d
+
+    def test_a_printed_amount_payable_is_left_alone(self):
+        # the real telecom bill: payable exceeds the invoice total by a
+        # carried-over balance, and that gap is the whole point of the field
+        d = {"items": [{"quantity": 1, "unit_price": 990.01, "total": 990.01}],
+             "subtotal": 990.01, "tax_amount": 141.82,
+             "total_amount": 615.43, "amount_payable": 615.50}
+        repair_arithmetic(d, "invoice")
+        assert d["amount_payable"] == 615.50
+        assert d["total_amount"] == 615.43
