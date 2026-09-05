@@ -566,8 +566,30 @@ class DocumentGenerator:
         }
 
     def _tax_id(self) -> str:
-        """Generate a 10-digit Turkish-style tax ID."""
-        return "".join([str(random.randint(0, 9)) for _ in range(10)])
+        """
+        Generate a 10-digit VKN whose check digit is correct.
+
+        Ten random digits are not a VKN — only one in ten of them satisfies the
+        check digit. That mattered the moment the verifier learned to check it:
+        30 of 60 synthetic documents were flagged `tax_id_checksum_invalid`,
+        18 went to REVIEW, and the correction agent was handed a "fix this" it
+        could only satisfy by rewriting the last digit. Four perfect
+        extractions were destroyed that way. See
+        docs/measurements/2026-09-03-correction-agent.md.
+
+        A corpus whose documents cannot pass a rule the product enforces does
+        not measure the product. It measures the generator.
+        """
+        body = [random.randint(0, 9) for _ in range(9)]
+        total = 0
+        for i in range(9):
+            tmp = (body[i] + 9 - i) % 10
+            if tmp == 0:
+                continue
+            p = (tmp * pow(2, 9 - i)) % 9
+            total += 9 if p == 0 else p
+        check = (10 - total % 10) % 10
+        return "".join(map(str, body)) + str(check)
 
     def _random_date(self) -> datetime:
         days_back = random.randint(0, 365)

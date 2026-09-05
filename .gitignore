@@ -14,7 +14,11 @@ build/
 venv/
 
 # --- data & run artifacts (regenerable) ---
-data/raw/
+# raw* rather than raw/ on purpose: a corpus is sometimes set aside under a
+# dated name before regeneration (data/raw_pre_vkn_20260906_010525), and that
+# copy is no more committable than the live one. The narrow pattern let 60
+# files through once.
+data/raw*/
 data/processed/
 data/metadata/
 results/

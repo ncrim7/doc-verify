@@ -21,6 +21,36 @@ def _item_math_ok(items):
         assert round(it["quantity"] * it["unit_price"], 2) == it["total"]
 
 
+class TestGeneratedTaxIdsAreReal:
+    """
+    Ten random digits are not a VKN — only one in ten satisfies the check
+    digit. That was invisible until the verifier learned to check it, and then
+    30 of 60 synthetic documents were flagged, 18 went to REVIEW, and the
+    correction agent was handed a "fix this" it could only satisfy by inventing
+    a digit. Four perfect extractions were destroyed that way.
+
+    A corpus whose documents cannot pass a rule the product enforces does not
+    measure the product; it measures the generator.
+    """
+
+    def test_every_generated_tax_id_passes_the_check_digit(self, gen):
+        from src.verification.tax_id import is_valid_vkn
+        ids = [gen._tax_id() for _ in range(500)]
+        bad = [t for t in ids if not is_valid_vkn(t)]
+        assert not bad, f"{len(bad)} of 500 generated tax ids are not valid VKNs"
+
+    def test_they_are_still_ten_digits_and_varied(self, gen):
+        ids = {gen._tax_id() for _ in range(200)}
+        assert all(TAX_ID.match(t) for t in ids)
+        assert len(ids) > 150, "the check digit must not collapse the range"
+
+    def test_the_documents_themselves_carry_valid_ids(self, gen):
+        from src.verification.tax_id import is_valid_vkn
+        _pdf, gt = gen.generate_invoice(lang="tr")
+        assert is_valid_vkn(gt["vendor_tax_id"])
+        assert is_valid_vkn(gt["buyer_tax_id"])
+
+
 def test_invoice_uses_catalog_descriptions_and_math(gen):
     _pdf, gt = gen.generate_invoice(lang="tr")
     assert gt["items"] and all(it["description"] in REAL_ITEMS for it in gt["items"])
