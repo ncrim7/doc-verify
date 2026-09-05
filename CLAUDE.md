@@ -225,15 +225,41 @@ Three qualifiers travel with the number:
 - **P1-4b  over-correction.** Still open. The prompt made the model invent
   Turkish characters that are not on the page (`Grafik`→`Grafık`). The next
   iteration should be symmetric: preserve what is printed, in both directions.
-- **P1-5  real-world validation.** Still the biggest gap. Three pilot runs at
-  n=4 gave 57.81%, 74.28%, 65.86% — a spread of 8–16 pp on the same four
-  documents, which measures nothing. What the pilot established is the defect
-  classes, and it earned its keep several times over: P0-4, P1-6, P1-7 and the
-  schema gaps all came out of it. Next: ground-truth the remaining 11 documents.
-  Ground-truth rules that must carry over: GT never comes from the system under
-  test; a field a careful human cannot read from the image is not scored;
-  `available_fields` per document; documents and their GT are never committed;
-  and a GT convention that is not stated in the prompt may not be graded.
+- [x] **P1-5  real-world validation.** Done at n=15, 202 scored fields
+  (`docs/measurements/2026-09-06-real-world-n15.md`). The headline, 70.48%, is
+  close to useless; **input condition explains almost everything**:
+
+  | condition | EM | n |
+  |---|---|---|
+  | clean digital PDF | **90.5%** | 8 |
+  | screen capture | 88.9% | 1 |
+  | photo, crisp thermal print | 85.7% | 1 |
+  | PDF, broken/missing text layer | 56.4% | 2 |
+  | **photo, dot-matrix on faded thermal** | **15.1%** | 3 |
+
+  Quote it as two sentences, never one number: 90% on clean digital documents,
+  and photographed utility bills need a different answer — a portal feed or a
+  re-capture prompt, not a better model. Receipts-vs-invoices (94% vs 62%) and
+  English-vs-Turkish (93% vs 62%) look dramatic and are **confounded** by
+  condition; do not quote them.
+
+  It also measured **the safety net's ceiling: 42% of field errors are in
+  principle catchable** (arithmetic or check digits), 58% are not (identifiers,
+  names, addresses, dates). Five errors passed as OK, including `1OSB6CRZ` read
+  as `10SB6CRZ` on two documents of the same format. Catching those needs a
+  second source — e-arşiv XML, a supplier master, or a human — not a better
+  rule.
+
+  Ground-truth rules, now proven in anger: GT never comes from the system under
+  test; a field a careful human cannot read is **excluded, never inferred**
+  (real_012 gives up four fields to this); `available_fields` per document;
+  documents and their GT are never committed; a convention not stated in the
+  prompt may not be graded.
+
+- **P1-5b  the photo class needs a product answer, not a model answer.** Three
+  ASAT water bills, same issuer and layout, photographed seconds apart, score
+  20/10/15%. A crumpled stained till receipt scores 86%. The variable is
+  dot-matrix overprint on faded thermal paper, and no prompt work reaches it.
 - **P1-8  does the correction agent earn its place?** Answered as far as
   synthetic data can: **it cannot be measured here.** Re-running the verifier
   offline over the pinned extractions of runs 10–12 shows it would fire on
@@ -250,10 +276,40 @@ Three qualifiers travel with the number:
   **propose** a value while the issue stays open — the human gets a better
   candidate and still reviews it. Not done now because it would have been a
   third variable in an already large change set.
-- **P1-9  schema gaps the real documents exposed.** One `tax_rate` cannot hold
-  KDV %20 and ÖİV %10 on separate bases. Charge-line bills have no quantity or
-  unit price, so the schema forces the model to invent them. `total_amount` vs
-  `amount_payable` is done; these two are not.
+- **P1-9  schema gaps the real corpus exposed.** `total_amount` vs
+  `amount_payable` is done. These are not, and they are ordinary shapes rather
+  than edge cases — the schema was drawn from clean commercial invoices that do
+  not look like Turkish utility and platform bills:
+
+  | gap | documents |
+  |---|---|
+  | two tax bases on one document | real_004, real_005, real_015 |
+  | charge lines / tiers with no quantity or unit price | real_004, real_005, real_012, real_013, real_014 |
+  | no discount field — `qty × price` cannot reach the line total | real_008 |
+  | `items[].total` undefined as tax-inclusive or exclusive | real_006, real_015 |
+  | a payment receipt's link to the invoice it settles | real_009, real_010 |
+  | a till receipt's fiscal ids (VD no, Z No, EKÜ No, MF serial) | real_013 |
+  | a tax *kind* alongside the rate — BSMV is not KDV | real_011 |
+
+  The cheapest of these is `items[].total`: one line of prompt saying whether a
+  line amount is before or after tax. It is currently ungraded on two documents
+  because the convention is unstated.
+
+- **P0-7  item-level repair fabricated on a discounted line.** CLOSED. The one
+  overwrite P0-4 deliberately kept, on the grounds that quantity and unit_price
+  corroborate the derived total. They only do when nothing sits between them —
+  a real e-arşiv invoice with a 70% discount turned a printed 20,83 into 69,42,
+  and the fabricated line total then made the page's *correct* subtotal look
+  wrong. Now fills only when absent, in both `arithmetic_repair` and the
+  verifier's auto-corrections. The digit-drop recovery is gone with it: its
+  measured benefit was +0.00 pp across two 60-document runs, so an unproven
+  gain was buying a proven fabrication.
+
+  Consequence worth knowing: **no rule produces an auto-correction any more.**
+  The provenance principle removed them one by one — subtotal, total_amount,
+  item totals. `apply_corrections` survives for *format normalisation*, which
+  is safe, and a test pins the emptiness so the next derived value has to
+  argue for itself.
 
 ### P2 — data / infra polish, as time allows
 
