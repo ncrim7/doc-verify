@@ -11,6 +11,10 @@ from itertools import product as iter_product
 
 logger = logging.getLogger(__name__)
 
+# Binary float representation noise only. 615.44 - 615.43 is 0.010000000000048
+# in IEEE 754, not 0.01. This must never be large enough to absorb one kuruş.
+_EPS = 1e-9
+
 
 def normalize_text(text: str) -> str:
     """Lowercase, strip, collapse whitespace."""
@@ -60,8 +64,9 @@ def token_f1(predicted: str, ground_truth: str) -> dict[str, float]:
 
 def numeric_accuracy(predicted: Any, ground_truth: Any, tolerance: float = 0.01) -> float:
     """
-    Compare two numeric values with relative tolerance.
-    Returns 1.0 if within tolerance, else 0.0.
+    Compare two numeric values with RELATIVE tolerance (default 1%).
+
+    Correct for counts and rates, wrong for money — see absolute_accuracy.
     """
     try:
         p = float(str(predicted).replace(",", "").strip())
@@ -73,6 +78,40 @@ def numeric_accuracy(predicted: Any, ground_truth: Any, tolerance: float = 0.01)
     return 1.0 if abs(p - g) / abs(g) <= tolerance else 0.0
 
 
+def absolute_accuracy(predicted: Any, ground_truth: Any, atol: float = 0.0) -> float:
+    """
+    Compare two numeric values with ABSOLUTE tolerance. Returns 1.0 or 0.0.
+
+    Money fields must be scored this way. A relative tolerance scales the
+    allowance with the amount, which is exactly backwards for currency: 1% of
+    a 100,000 TRY invoice is 1,000 TRY of free slack, and this product exists
+    to catch financial discrepancies. It was found on a real telecom bill where
+    the model returned the payable amount 615.50 in the total_amount field
+    instead of the invoice total 615.43 — a 0.07 TRY error, a real one, and it
+    scored as a match under the 1% rule.
+
+    The default is 0: money is compared exactly, to the kuruş. Allowing one
+    kuruş was considered and rejected — ground truth is either transcribed
+    character for character from the page or generated exactly, so a one-kuruş
+    difference has no legitimate source. If the model's figure differs, it read
+    a different digit. `atol` stays a parameter for rates, where a model that
+    derives 94.59/472.97 instead of reading "20%" is not wrong.
+
+    `_EPS` only absorbs binary float representation noise (615.44 - 615.43 is
+    0.010000000000048 in IEEE 754), never a real difference.
+
+    This is a MEASUREMENT tolerance, not a business one: what counts as a
+    discrepancy worth acting on is po_invoice_matcher's decision, not this
+    function's.
+    """
+    try:
+        p = float(str(predicted).replace(",", "").strip())
+        g = float(str(ground_truth).replace(",", "").strip())
+    except (ValueError, TypeError):
+        return 0.0
+    return 1.0 if abs(p - g) <= atol + _EPS else 0.0
+
+
 # ---------------------------------------------------------------------------
 # Aggregate evaluation
 # ---------------------------------------------------------------------------
@@ -80,8 +119,32 @@ def numeric_accuracy(predicted: Any, ground_truth: Any, tolerance: float = 0.01)
 # Fields that should use numeric comparison
 NUMERIC_FIELDS = {
     "quantity", "unit_price", "total", "subtotal", "tax_amount",
-    "total_amount", "change_amount", "amount", "tax_rate",
+    "total_amount", "amount_payable", "change_amount", "amount", "tax_rate",
 }
+
+# Currency amounts. Scored to the kuruş with an absolute tolerance, never a
+# relative one — see absolute_accuracy for why.
+MONEY_FIELDS = {
+    "unit_price", "total", "subtotal", "tax_amount", "total_amount",
+    "amount_payable", "change_amount", "amount",
+}
+
+# A rate is a small decimal fraction (0.20 for 20%), so a relative tolerance is
+# meaningless here too: 1% of 0.20 would accept 0.198. Absolute, and tight.
+RATE_FIELDS = {"tax_rate"}
+
+# Everything else numeric — quantities, counts — keeps the relative rule. They
+# are integers in practice, so the tolerance never actually bites.
+
+
+def _numeric_score(field: str, predicted: Any, ground_truth: Any) -> float:
+    """Pick the right comparison for a numeric field. One place, not three."""
+    base = field.split(".")[-1] if "." in field else field
+    if base in MONEY_FIELDS:
+        return absolute_accuracy(predicted, ground_truth, atol=0.0)
+    if base in RATE_FIELDS:
+        return absolute_accuracy(predicted, ground_truth, atol=0.001)
+    return numeric_accuracy(predicted, ground_truth)
 
 # Fields in nested items[] lists
 ITEM_FIELDS = {"description", "quantity", "unit_price", "total", "sku", "amount"}
@@ -129,7 +192,7 @@ def evaluate_document(predicted: dict, ground_truth: dict, doc_type: str) -> dic
         em = exact_match(pred_str, gt_str)
         sim = semantic_similarity(pred_str, gt_str)
         tf1 = token_f1(pred_str, gt_str)
-        num = numeric_accuracy(pred_val, gt_val) if is_numeric else None
+        num = _numeric_score(field, pred_val, gt_val) if is_numeric else None
 
         # Numeric fields: use tolerance-based EM (±1% relative)
         if is_numeric and em == 0.0 and num is not None:

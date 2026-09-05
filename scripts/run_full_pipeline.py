@@ -62,6 +62,56 @@ def _score(extracted: dict | None, gt: dict, doc_type: str) -> tuple[float, floa
             agg["token_f1_avg"], misses)
 
 
+def _rescore(path: Path, split: str) -> None:
+    """
+    Re-score a pinned run against the current ground truth and metric.
+
+    The whole point is that the model output does not move: whatever changed
+    between the pinned run and now is the only thing that can explain the
+    difference. A run pinned before `data` was recorded cannot be re-scored,
+    and says so rather than silently reporting a wrong number.
+    """
+    pinned = json.loads(path.read_text(encoding="utf-8"))
+    rows_in = pinned["per_document"]
+    if not any("data" in r for r in rows_in):
+        logger.error("%s predates result pinning — it kept only the misses, so "
+                     "a field that passed under the old rule left no trace and "
+                     "this run cannot be re-scored. Re-run it.", path.name)
+        raise SystemExit(2)
+
+    by_id = {e["doc_id"]: e for e in load_manifest(split)}
+    rows = []
+    for r in rows_in:
+        entry = by_id.get(r["doc_id"])
+        if entry is None:
+            logger.warning("  %s not in split '%s' — skipped", r["doc_id"], split)
+            continue
+        gt = load_ground_truth(entry)
+        em, sim, f1, misses = _score(r.get("data"), gt, r["doc_type"])
+        raw_em, _, _, _ = _score(r.get("raw"), gt, r["doc_type"])
+        rows.append({**r, "em": em, "sim": sim, "f1": f1,
+                     "raw_em": raw_em, "misses": misses})
+
+    agg = aggregate_run(rows)
+    old = pinned["aggregate"]["overall"]["exact_match_avg"]
+    new = agg["overall"]["exact_match_avg"]
+    logger.info("=" * 68)
+    logger.info("RE-SCORED %s  (n=%d, no API calls)", path.name, agg["documents"])
+    logger.info("  as pinned : %.2f%% EM", old * 100)
+    logger.info("  as scored now: %.2f%% EM   delta %+.2f pp",
+                new * 100, (new - old) * 100)
+    logger.info("=" * 68)
+    for dtype, blk in agg["per_doc_type"].items():
+        logger.info("  %-9s %6.2f%% EM  (n=%d)",
+                    dtype, blk["exact_match_avg"] * 100, blk["documents"])
+    moved = [r for r, o in zip(rows, rows_in) if r["em"] != o["em"]]
+    logger.info("\n%d of %d documents moved:", len(moved), len(rows))
+    for r in moved:
+        logger.info("  %-16s -> %.2f%%   misses: %s", r["doc_id"],
+                    r["em"] * 100,
+                    ", ".join(m["field"] for m in r["misses"]) or "none")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Run the pipeline over a manifest")
     p.add_argument("--provider", default="openai")
@@ -73,7 +123,16 @@ def main() -> None:
     p.add_argument("--delay", type=float, default=0.0)
     p.add_argument("--checkpoint", action="store_true",
                    help="Save after each document and resume if interrupted")
+    p.add_argument("--score-only", metavar="PATH",
+                   help="Re-score a pinned result file against the CURRENT "
+                        "ground truth and metric. No API calls. Use this to "
+                        "measure a GT or metric change on unchanged model "
+                        "output — one variable per measurement.")
     args = p.parse_args()
+
+    if args.score_only:
+        _rescore(Path(args.score_only), args.split)
+        return
 
     manifest = load_manifest(args.split)
     if args.limit:
@@ -140,6 +199,16 @@ def main() -> None:
                 "reasons": result.reasons,
                 "corrected": result.corrected,
                 "misses": misses,
+                # The extraction itself, so a later change to the ground truth
+                # or to the metric can be re-scored on the SAME model output.
+                # Without it a metric fix and a model change land in one number
+                # and neither can be attributed. Learned the hard way: the
+                # money tolerance was found to be 1% *relative*, and no pinned
+                # synthetic run could be re-scored to measure the damage,
+                # because only the misses were kept and a field that passed
+                # under the loose rule left no trace.
+                "data": result.data,
+                "raw": result.raw,
             }
             rows.append(row)
 

@@ -29,6 +29,84 @@ class TestPrimitives:
         assert M.numeric_accuracy(0, 0) == 1.0
         assert M.numeric_accuracy("abc", 5) == 0.0
 
+    def test_absolute_accuracy_does_not_scale_with_the_amount(self):
+        assert M.absolute_accuracy(615.43, 615.43) == 1.0
+        assert M.absolute_accuracy(615.44, 615.43) == 0.0   # one kuruş IS a miss
+        assert M.absolute_accuracy(615.50, 615.43) == 0.0   # the real bill
+        assert M.absolute_accuracy(100_500, 100_000) == 0.0
+        assert M.absolute_accuracy("abc", 5) == 0.0
+        # the point: a relative rule passes all three failures above
+        assert M.numeric_accuracy(615.44, 615.43) == 1.0
+        assert M.numeric_accuracy(615.50, 615.43) == 1.0
+        assert M.numeric_accuracy(100_500, 100_000) == 1.0
+
+    def test_float_noise_is_absorbed_but_a_kurus_is_not(self):
+        # 615.44 - 615.43 is 0.010000000000048 in IEEE 754. The epsilon must be
+        # small enough that this still reads as a real difference.
+        assert M.absolute_accuracy(0.1 + 0.2, 0.3) == 1.0
+        assert M.absolute_accuracy(615.44, 615.43) == 0.0
+        assert M.absolute_accuracy(1234.56, 1234.56) == 1.0
+        assert M.absolute_accuracy("1,234.56", 1234.56) == 1.0
+
+
+class TestMoneyIsScoredToTheKurus:
+    """
+    A relative tolerance on currency scales the allowance with the amount,
+    which is exactly backwards: 1% of a 100,000 TRY invoice is 1,000 TRY of
+    free slack, in a product whose whole job is catching financial
+    discrepancies. Found when the model returned the payable amount 615.50 in
+    the total_amount field instead of the invoice total 615.43 and scored a
+    perfect match.
+    """
+
+    def _score(self, field, value):
+        gt = {"doc_type": "invoice", "total_amount": 615.43, "subtotal": 500.0,
+              "tax_amount": 115.43, "tax_rate": 0.20, "amount_payable": 615.43}
+        pred = dict(gt)
+        pred[field] = value
+        return M.evaluate_document(pred, gt, "invoice")["fields"][field]["exact_match"]
+
+    def test_seven_kurus_on_the_total_is_a_miss(self):
+        assert self._score("total_amount", 615.50) == 0.0
+
+    def test_one_kurus_is_a_miss(self):
+        # ground truth is transcribed from the page or generated exactly, so a
+        # one-kuruş difference has no legitimate source: the model read a
+        # different digit
+        assert self._score("total_amount", 615.44) == 0.0
+        assert self._score("total_amount", 615.43) == 1.0
+
+    def test_amount_payable_is_money_too(self):
+        assert self._score("amount_payable", 615.50) == 0.0
+
+    def test_subtotal_and_tax_are_money(self):
+        assert self._score("subtotal", 502.0) == 0.0
+        assert self._score("tax_amount", 116.0) == 0.0
+
+    def test_a_rate_is_not_scored_with_a_relative_rule_either(self):
+        # 1% of 0.20 is 0.002, so a relative rule would accept 0.198
+        assert self._score("tax_rate", 0.198) == 0.0
+        assert self._score("tax_rate", 0.20) == 1.0
+
+    def test_item_money_fields_are_covered_by_the_dotted_path(self):
+        gt = {"doc_type": "invoice",
+              "items": [{"description": "x", "quantity": 1,
+                         "unit_price": 1000.0, "total": 1000.0}]}
+        pred = {"doc_type": "invoice",
+                "items": [{"description": "x", "quantity": 1,
+                           "unit_price": 1005.0, "total": 1005.0}]}
+        f = M.evaluate_document(pred, gt, "invoice")["fields"]
+        assert f["items[0].unit_price"]["exact_match"] == 0.0
+        assert f["items[0].total"]["exact_match"] == 0.0
+
+    def test_quantity_keeps_the_relative_rule(self):
+        # counts are integers, so the tolerance never bites — left alone rather
+        # than changed for the sake of symmetry
+        gt = {"doc_type": "invoice",
+              "items": [{"quantity": 100, "unit_price": 1.0, "total": 100.0}]}
+        f = M.evaluate_document(dict(gt), gt, "invoice")["fields"]
+        assert f["items[0].quantity"]["exact_match"] == 1.0
+
 
 class TestEvaluateDocument:
     def _gt(self):
@@ -54,10 +132,26 @@ class TestEvaluateDocument:
         assert "confidence" not in res["fields"]
         assert "language" not in res["fields"]
 
-    def test_numeric_field_uses_tolerance_for_em(self):
+    def test_a_money_field_is_scored_to_the_kurus_not_to_a_percentage(self):
+        # This asserted the old contract: 1179.99 against 1180.00 passed as
+        # "within 1%". It is a kuruş out, and on this invoice the same rule
+        # would have passed anything within 11.80 TRY. See
+        # TestMoneyIsScoredToTheKurus for why that was wrong.
         gt = self._gt()
         pred = dict(gt)
-        pred["total_amount"] = 1179.99      # within 1%
+        pred["total_amount"] = 1179.99
+        res = M.evaluate_document(pred, gt, "invoice")
+        assert res["fields"]["total_amount"]["exact_match"] == 0.0
+
+        pred["total_amount"] = 1180.0
+        res = M.evaluate_document(pred, gt, "invoice")
+        assert res["fields"]["total_amount"]["exact_match"] == 1.0
+
+    def test_a_string_formatted_amount_still_matches(self):
+        # the model returns numbers as strings often enough that this matters
+        gt = self._gt()
+        pred = dict(gt)
+        pred["total_amount"] = "1,180.00"
         res = M.evaluate_document(pred, gt, "invoice")
         assert res["fields"]["total_amount"]["exact_match"] == 1.0
 
