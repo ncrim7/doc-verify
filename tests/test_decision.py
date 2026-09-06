@@ -11,7 +11,7 @@ The line between the three verdicts is WHOSE money:
 import pytest
 
 from src.decision.engine import (
-    Decision, Finding, Verdict, decide, from_po_match, from_verification,
+    Basis, Decision, Finding, Verdict, decide, from_po_match, from_verification,
 )
 from src.reporting.humanizer import humanize_decision
 
@@ -23,8 +23,9 @@ def _f(kind="X", severity="critical", impact=None, fld="f", financial=True,
     the rule that stops one discrepancy being counted from several angles."""
     return Finding(kind=kind, severity=severity, field=fld,
                    source="po_match" if financial else "document",
-                   message="m", amount_try=impact, is_financial=financial,
-                   line=line)
+                   message="m", amount_try=impact, line=line,
+                   basis=Basis.CROSS_SOURCE if financial
+                         else Basis.SINGLE_DOCUMENT)
 
 
 class TestVerdictRule:
@@ -310,7 +311,7 @@ class TestHumanizeDecision:
         d = decide([Finding(kind="PRICE_MISMATCH", severity="critical",
                             field="unit_price", source="po_match",
                             message="m", expected=50.0, actual=53.40,
-                            amount_try=340.0, is_financial=True)])
+                            amount_try=340.0, basis=Basis.CROSS_SOURCE)])
         h = humanize_decision(d)
         assert h["verdict"] == "HOLD"
         assert h["financial_impact_text"] == "340,00 TL"
@@ -328,14 +329,34 @@ class TestHumanizeDecision:
                     _f(kind="PRICE_MISMATCH", impact=340.0)])
         assert humanize_decision(d)["problems"][0]["kind"] == "PRICE_MISMATCH"
 
-    def test_a_clean_document_says_so_without_inventing_certainty(self):
+    def test_a_clean_document_does_not_claim_the_document_is_correct(self):
+        """
+        "ÖDEYEBİLİRSİNİZ" reads as "the system says this invoice is correct",
+        which the system cannot know: 58% of measured field errors sit where no
+        check reaches. The same screen admits that two lines lower, and on a
+        screen someone acts on, the confident line wins. The headline now says
+        what actually happened and leaves the payment decision with the person.
+        """
         d = decide([], {"total_amount": 100.0, "invoice_number": "INV-1"})
         h = humanize_decision(d)
         assert h["verdict"] == "PAY"
-        assert "ÖDEYEBİLİRSİNİZ" in h["text"]
-        # and it still admits what it could not see
+        assert "KONTROLLERDEN GEÇTİ" in h["text"]
+        assert "Ödeme kararı sizde" in h["text"]
+        assert "ÖDEYEBİLİRSİNİZ" not in h["text"]
+        # and it still names what it could not see
         assert "invoice_number" in h["blind_spots"]
         assert "Denetlenemeyen alanlar" in h["text"]
+
+    def test_a_finding_carries_the_claim_it_actually_makes(self):
+        # the same arithmetic supports two different claims, so each finding
+        # says which one it is making
+        cross = humanize_decision(decide([_f(impact=340.0)]))["problems"][0]
+        internal = humanize_decision(
+            decide([_f(impact=-516.57, financial=False)]))["problems"][0]
+        assert cross["basis"] == "cross_source"
+        assert cross["claim"] == "Tedarikçi anlaşılandan fazlasını istiyor."
+        assert internal["basis"] == "single_document"
+        assert internal["claim"] == "Bu belge şüpheli."
 
     def test_blind_spots_are_stated_even_on_a_hold(self):
         d = decide([_f(impact=340.0)], {"vendor_name": "V"})

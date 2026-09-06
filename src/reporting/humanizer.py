@@ -228,10 +228,21 @@ def humanize_match(match_result: dict) -> dict:
 # on real documents sit where no check can reach. Saying so is the difference
 # between a tool a bookkeeper trusts and one they learn to ignore.
 
+# The PAY wording is deliberate and was changed once already.
+#
+# "ÖDEYEBİLİRSİNİZ" reads as "the system says this invoice is correct", which
+# is not what the verdict means and not something the system can know. 58% of
+# measured field errors sit where no check reaches, and the same screen says so
+# two lines further down — the two messages were in tension, and on a screen a
+# person acts on, the confident one wins.
+#
+# "KONTROLLERDEN GEÇTİ" is exactly what happened: checks ran, none fired. The
+# payment decision stays where it belongs, with the person, and the coverage
+# line below it stops contradicting the headline.
 _DECISION_HEAD = {
     "PAY": {
-        "icon": "✅", "title": "ÖDEYEBİLİRSİNİZ",
-        "subtitle": "Belgede ödemeyi durduracak bir bulgu yok.",
+        "icon": "✅", "title": "KONTROLLERDEN GEÇTİ",
+        "subtitle": "Ödemeyi durduracak bir bulgu çıkmadı. Ödeme kararı sizde.",
         "color": "#22c55e",
     },
     "HOLD": {
@@ -307,6 +318,8 @@ def humanize_decision(decision, doc: dict | None = None) -> dict:
             "actual": f["actual"],
             "amount_try": f["amount_try"],
             "is_financial": f["is_financial"],
+            "basis": f["basis"],
+            "claim": f["claim"],
             "amount_text": (_money(f["amount_try"])
                             if f["amount_try"] not in (None, 0) else None),
             "detail": f["message"],

@@ -47,7 +47,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Optional
 
-__all__ = ["Verdict", "Finding", "Decision", "decide",
+__all__ = ["Verdict", "Basis", "Finding", "Decision", "decide",
            "from_verification", "from_po_match"]
 
 
@@ -55,6 +55,32 @@ class Verdict(StrEnum):
     PAY = "PAY"
     HOLD = "HOLD"
     REVIEW = "REVIEW"
+
+
+class Basis(StrEnum):
+    """
+    What a finding is grounded in — its epistemic source.
+
+    This is the distinction that separates a document-understanding pipeline
+    from something that can make a financial decision, and it is not a
+    presentation detail. `615 ≠ 1132` and `PO 50,00 vs fatura 53,40` are the
+    same shape of arithmetic and completely different claims:
+
+        SINGLE_DOCUMENT  the page disagrees with itself.
+                         "This document is suspect."
+                         Could be the issuer's error, could be our misreading,
+                         and one page cannot tell you which.
+
+        CROSS_SOURCE     two records that should agree do not.
+                         "The supplier is asking for more than was agreed."
+                         Attributable, and therefore a reason to stop a
+                         payment.
+
+    Only CROSS_SOURCE is money. Deriving that from the basis rather than
+    carrying a separate boolean means the two can never drift apart.
+    """
+    SINGLE_DOCUMENT = "single_document"
+    CROSS_SOURCE = "cross_source"
 
 
 # Fields nothing in the system can check against anything else. Kept explicit
@@ -72,32 +98,24 @@ class Finding:
     """
     One thing worth telling a person about.
 
-    `amount_try` is the size of the discrepancy in lira. `is_financial` says
-    what that number MEANS, and the two are not the same thing — conflating
-    them was a real bug, caught by running this on a real telecom bill.
+    `amount_try` is the size of the discrepancy in lira. `basis` says what that
+    number MEANS, and the two are not the same thing — conflating them was a
+    real bug, caught by running this on a real telecom bill.
 
-    **Cross-source** (`is_financial=True`): an invoice line says 53,40 where
-    the purchase order says 50,00, over 100 units. That is 340 TL the supplier
-    is asking for beyond what was agreed. Real money, and a reason to stop a
-    payment.
-
-    **Document-internal** (`is_financial=False`): the page's own subtotal and
-    total do not add up. The gap is real, but on one document there is no way
-    to tell whether the supplier billed wrongly or we misread the page — and on
-    the bill that exposed this, it was us. Calling that "financial impact"
-    would tell a bookkeeper their supplier overcharged them when the truth is
-    that our extraction is unreliable on that layout. It is the size of an
-    inconsistency, not money at stake.
+    A finding carries its own provenance because the same arithmetic supports
+    two different claims. See `Basis`: cross-source says *the supplier is
+    asking for more than was agreed*, single-document says *this page is
+    suspect*, and only the first is money.
     """
     kind: str
     severity: str                      # critical | warning | info
     field: str
-    source: str                        # "document" | "po_match"
+    source: str                        # which check produced it
     message: str
+    basis: Basis = Basis.SINGLE_DOCUMENT
     expected: Any = None
     actual: Any = None
     amount_try: Optional[float] = None
-    is_financial: bool = False
     line: Optional[int] = None         # item index; None = document level
 
     @property
@@ -105,14 +123,29 @@ class Finding:
         return self.amount_try is not None and abs(self.amount_try) >= 0.01
 
     @property
+    def is_financial(self) -> bool:
+        """
+        Derived, never stored. A separate boolean could be set to True on a
+        single-document finding and nothing would catch it; this cannot drift.
+        """
+        return self.basis is Basis.CROSS_SOURCE
+
+    @property
     def holds_payment(self) -> bool:
         """Only a priced, cross-source finding is a reason to stop a payment."""
         return self.is_priced and self.is_financial and self.severity == "critical"
 
+    @property
+    def claim(self) -> str:
+        """What this finding actually asserts, in one line."""
+        return ("Tedarikçi anlaşılandan fazlasını istiyor."
+                if self.is_financial else "Bu belge şüpheli.")
+
     def to_dict(self) -> dict:
         return {
             "kind": self.kind, "severity": self.severity, "field": self.field,
-            "source": self.source, "message": self.message,
+            "source": self.source, "basis": self.basis.value,
+            "claim": self.claim, "message": self.message,
             "expected": self.expected, "actual": self.actual,
             "amount_try": (round(self.amount_try, 2)
                            if self.amount_try is not None else None),
@@ -224,9 +257,9 @@ def from_verification(verification: dict) -> list[Finding]:
             source="document",
             message=issue.get("message", ""),
             expected=expected, actual=actual,
-            # NOT financial: on one document there is no way to tell whether
-            # the supplier billed wrongly or we misread the page.
-            amount_try=impact, is_financial=False,
+            # SINGLE_DOCUMENT: on one page there is no way to tell whether the
+            # supplier billed wrongly or we misread it.
+            basis=Basis.SINGLE_DOCUMENT, amount_try=impact,
         ))
     return out
 
@@ -273,8 +306,8 @@ def from_po_match(match_result: dict) -> list[Finding]:
                 field=fld, source="po_match",
                 message=d.get("message", ""),
                 expected=d.get("po_value"), actual=d.get("invoice_value"),
-                # financial: two sources disagree, so the gap is real money
-                amount_try=impact, is_financial=True, line=idx,
+                # CROSS_SOURCE: two records disagree, so the gap is real money
+                basis=Basis.CROSS_SOURCE, amount_try=impact, line=idx,
             ))
 
     for s in (match_result or {}).get("scalar_checks", []) or []:
@@ -288,8 +321,8 @@ def from_po_match(match_result: dict) -> list[Finding]:
             field=fld, source="po_match",
             message=s.get("message", ""),
             expected=s.get("po_value"), actual=s.get("invoice_value"),
+            basis=Basis.CROSS_SOURCE,
             amount_try=_money(iv - pv) if (pv is not None and iv is not None) else None,
-            is_financial=True,
         ))
 
     for item in (match_result or {}).get("unmatched_invoice", []) or []:
@@ -299,7 +332,7 @@ def from_po_match(match_result: dict) -> list[Finding]:
             kind="NOT_IN_PO", severity="critical", field="items",
             source="po_match",
             message=f"Faturada siparişte olmayan kalem: {desc}".rstrip(": "),
-            actual=desc, amount_try=_money(total), is_financial=True,
+            basis=Basis.CROSS_SOURCE, actual=desc, amount_try=_money(total),
         ))
 
     for item in (match_result or {}).get("unmatched_po", []) or []:
@@ -308,7 +341,7 @@ def from_po_match(match_result: dict) -> list[Finding]:
             kind="MISSING_ITEM", severity="warning", field="items",
             source="po_match",
             message=f"Siparişte olup faturada olmayan kalem: {desc}".rstrip(": "),
-            expected=desc,
+            basis=Basis.CROSS_SOURCE, expected=desc,
         ))
 
     return out

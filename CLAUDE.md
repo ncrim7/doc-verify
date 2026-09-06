@@ -156,6 +156,35 @@ fields any check can speak to. Inventing a 0.96 would undo the week spent
 removing invented numbers, and 58% of measured field errors sit where no check
 reaches. `unverifiable_fields` names the silence, and the output says so.
 
+**Every finding carries its own provenance.** `Basis.CROSS_SOURCE` vs
+`Basis.SINGLE_DOCUMENT` is not presentation — `615 ≠ 1132` and `PO 50,00 vs
+fatura 53,40` are the same arithmetic making completely different claims
+(*"this page is suspect"* against *"the supplier wants more than was agreed"*).
+`is_financial` is **derived** from the basis, never stored, so the two cannot
+drift apart.
+
+**The PAY headline says "KONTROLLERDEN GEÇTİ", not "ÖDEYEBİLİRSİNİZ".** The
+second reads as *the system says this invoice is correct*, which it cannot
+know — and the same screen admits two lines lower that 58% of error classes
+have no check at all. On a screen someone acts on, the confident line wins, so
+the confident line had to go. The payment decision stays with the person.
+
+## Sprint B — demo shell (2026-09-06)
+
+`scripts/demo_server.py`, standard library only, `python scripts/demo_server.py`.
+Fatura yükle → opsiyonel sipariş → ANALİZ ET → karar kartı. Nothing else.
+
+Its job is not to sell: it is so that when a bookkeeper asks *"bunu gerçek
+hayatta nasıl kullanacağım?"* the answer is a screen, and the conversation
+stays on their workflow instead of becoming a technology demo. No `pip install`
+before it runs, because a demo that needs one fails on someone else's laptop
+ten minutes before the meeting.
+
+**Freeze here.** The next unknown is not technical. No new LLM verifier, no
+self-consistency, no model swap, no P1-9, no twenty-screen SaaS. None of those
+reduce the uncertainty that matters, which is whether a bookkeeper pays for
+this and for which problem.
+
 ### P0 — must close before the product ships
 
 - [x] **P0-4  `arithmetic_repair` fabricated totals on real documents.**
