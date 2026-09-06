@@ -212,6 +212,158 @@ def humanize_match(match_result: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Decision rendering — the product's actual output
+# ---------------------------------------------------------------------------
+#
+# humanize_match() above turns a PO comparison into text. This turns a
+# Decision into text, which is different in two ways that matter:
+#
+#   - it works with no purchase order, because most real documents arrive
+#     without one
+#   - it leads with the MONEY. "Fatura doğrulaması başarısız" is a log line.
+#     "340,00 TL fazla faturalanmış" is a reason to stop a payment.
+#
+# The decision's coverage is printed too. A verdict of ÖDE means no check
+# fired, never that the document is correct, and 58% of field errors measured
+# on real documents sit where no check can reach. Saying so is the difference
+# between a tool a bookkeeper trusts and one they learn to ignore.
+
+_DECISION_HEAD = {
+    "PAY": {
+        "icon": "✅", "title": "ÖDEYEBİLİRSİNİZ",
+        "subtitle": "Belgede ödemeyi durduracak bir bulgu yok.",
+        "color": "#22c55e",
+    },
+    "HOLD": {
+        "icon": "🚫", "title": "ÖDEMEYİ BEKLETİN",
+        "subtitle": "Fatura, siparişte anlaşılandan fazlasını istiyor.",
+        "color": "#ef4444",
+    },
+    "REVIEW": {
+        "icon": "⚠️", "title": "İNCELEME GEREKLİ",
+        "subtitle": "Tedarikçiye yüklenemeyecek bir sorun var; bir kişi bakmalı.",
+        "color": "#f59e0b",
+    },
+}
+
+_KIND_TEXT: dict[str, dict] = {
+    "PRICE_MISMATCH":        {"label": "Fiyat Farkı",
+                              "action": "Tedarikçiyle fiyat mutabakatı yapın."},
+    "QTY_MISMATCH":          {"label": "Miktar Uyuşmazlığı",
+                              "action": "Teslim alınan miktarı irsaliyeyle karşılaştırın."},
+    "LINE_TOTAL_MISMATCH":   {"label": "Satır Toplamı Tutmuyor",
+                              "action": "Miktar, birim fiyat ve iskontoyu kontrol edin."},
+    "TOTAL_MISMATCH":        {"label": "Genel Toplam Tutmuyor",
+                              "action": "Ara toplam, vergi ve toplamı belge üzerinden doğrulayın."},
+    "SUBTOTAL_MISMATCH":     {"label": "Ara Toplam Tutmuyor",
+                              "action": "Kalem toplamlarını ara toplamla karşılaştırın."},
+    "TAX_ID_INVALID":        {"label": "Vergi Numarası Geçersiz",
+                              "action": "Numarayı belge üzerinden bir kişi doğrulasın; "
+                                        "kontrol hanesi tutmuyor."},
+    "TAX_ID_MALFORMED":      {"label": "Vergi Numarası Bozuk",
+                              "action": "Numaranın yanına etiket karışmış; düzeltin."},
+    "SELLER_TAX_ID_MISSING": {"label": "Satıcı Vergi No Okunamadı",
+                              "action": "e-Arşiv faturasında zorunludur; belgeden alın."},
+    "FIELD_MISSING":         {"label": "Zorunlu Alan Eksik",
+                              "action": "Belgeyi elle tamamlayın."},
+    "NOT_IN_PO":             {"label": "Siparişsiz Kalem",
+                              "action": "Siparişe ekleyin ya da düzeltilmiş fatura isteyin."},
+    "MISSING_ITEM":          {"label": "Eksik Kalem",
+                              "action": "Tedarikçiden revize fatura isteyin."},
+    "CURRENCY_MISMATCH":     {"label": "Para Birimi Farklı",
+                              "action": "Sözleşmedeki para birimini doğrulayın."},
+    "DESC_MISMATCH":         {"label": "Kalem Açıklaması Farklı",
+                              "action": "Kalemin doğru ürün olduğunu teyit edin."},
+    "EXTRACTION_FAILED":     {"label": "Belge Okunamadı",
+                              "action": "Belgeyi yeniden tarayın veya fotoğrafı tekrar çekin."},
+}
+
+
+def _money(v: float) -> str:
+    """Turkish money formatting: 1.234,56 TL."""
+    s = f"{abs(v):,.2f}".replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+    return f"{'-' if v < 0 else ''}{s} TL"
+
+
+def humanize_decision(decision, doc: dict | None = None) -> dict:
+    """
+    Render a ``Decision`` for a person.
+
+    Returns {verdict, headline, impact_try, impact_text, problems[], coverage,
+    blind_spots[], text} where `text` is a ready-to-show plain-text block.
+    """
+    d = decision.to_dict() if hasattr(decision, "to_dict") else dict(decision)
+    head = dict(_DECISION_HEAD.get(d["verdict"], _DECISION_HEAD["REVIEW"]))
+
+    problems = []
+    for f in d["findings"]:
+        info = _KIND_TEXT.get(f["kind"], {"label": f["kind"], "action": ""})
+        problems.append({
+            "kind": f["kind"],
+            "severity": f["severity"],
+            "label": info["label"],
+            "action": info["action"],
+            "expected": f["expected"],
+            "actual": f["actual"],
+            "amount_try": f["amount_try"],
+            "is_financial": f["is_financial"],
+            "amount_text": (_money(f["amount_try"])
+                            if f["amount_try"] not in (None, 0) else None),
+            "detail": f["message"],
+        })
+    # money first, then criticals, then the rest
+    rank = {"critical": 0, "warning": 1, "info": 2}
+    problems.sort(key=lambda p: (not p["is_financial"],
+                                 p["amount_try"] is None,
+                                 -abs(p["amount_try"] or 0),
+                                 rank.get(p["severity"], 3)))
+
+    financial = d["financial_impact_try"]
+    internal = d["internal_discrepancy_try"]
+    lines = [f"{head['icon']} {head['title']}", head["subtitle"], ""]
+    if financial:
+        lines += [f"Fazla faturalanan tutar: {_money(financial)}", ""]
+    if internal:
+        # deliberately NOT called financial impact: on one document we cannot
+        # tell a supplier's error from our own misreading
+        lines += [f"Belge içi tutarsızlık: {_money(internal)}",
+                  "(Bu tedarikçinin fazla istediği para değil — belgenin kendi "
+                  "sayıları kapanmıyor. Yanlış faturalama da olabilir, bizim "
+                  "yanlış okumamız da.)", ""]
+
+    for p in problems:
+        amount = f"  ({p['amount_text']})" if p["amount_text"] else ""
+        lines.append(f"• {p['label']}{amount}")
+        if p["expected"] is not None and p["actual"] is not None:
+            lines.append(f"    Beklenen: {p['expected']}    Faturada: {p['actual']}")
+        elif p["detail"]:
+            lines.append(f"    {p['detail']}")
+        if p["action"]:
+            lines.append(f"    → {p['action']}")
+        lines.append("")
+
+    blind = d["unverifiable_fields"]
+    if blind:
+        lines.append(f"Denetlenemeyen alanlar ({len(blind)}): "
+                     f"{', '.join(blind)}")
+        lines.append("Bu alanları karşılaştıracak ikinci bir kaynak yok; "
+                     "doğruluklarına dair bir iddiada bulunulmuyor.")
+
+    return {
+        "verdict": d["verdict"],
+        "headline": head,
+        "financial_impact_try": financial,
+        "financial_impact_text": _money(financial) if financial else None,
+        "internal_discrepancy_try": internal,
+        "internal_discrepancy_text": _money(internal) if internal else None,
+        "problems": problems,
+        "coverage": d["coverage"],
+        "blind_spots": blind,
+        "text": "\n".join(lines).rstrip(),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Telegram Markdown rendering (kept for the bot repo; safe to ignore elsewhere)
 # ---------------------------------------------------------------------------
 def _build_telegram(v: dict, problems: list[dict], meta: dict | None = None) -> str:

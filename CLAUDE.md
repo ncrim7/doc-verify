@@ -120,6 +120,42 @@ Three qualifiers travel with the number:
   documents remain effectively unmeasured: five figures on the same four
   documents span 57.81% to 74.28%.
 
+## Sprint A — the product slice (2026-09-06)
+
+`src/decision/` and `src/analyze.py` are the first modules that answer **"should
+I pay this?"** rather than "is the JSON right?". Everything before them was
+measurement.
+
+    belge -> çıkarım -> doğrulama -> bulgular -> KARAR -> Türkçe metin
+                                        ^
+                                        + PO eşleştirme, PO varsa
+
+Three things this design settled, each learned by running it on real documents:
+
+- **PO matching is a source, not the spine.** The 15 real documents are 11
+  invoices and 4 receipts — **zero purchase orders**. Three-way matching came
+  from an enterprise SAP context; whether a bookkeeping office holds POs at all
+  is unverified. A slice that only worked with a PO would produce nothing on the
+  documents we have.
+
+- **HOLD is about whose money.** A cross-source disagreement (invoice vs PO)
+  is the supplier asking for more than was agreed → HOLD. A document-internal
+  mismatch is a discrepancy we cannot attribute — on the telecom bill that
+  exposed it, the misreading was ours → REVIEW. Calling the second "financial
+  impact" tells a bookkeeper their supplier overcharged them, which is a lie
+  dressed as a number.
+
+- **The same money is counted once.** One 3,40 TL price gap over 100 units
+  appears as a price mismatch (340), a line-total gap (340) and inside the
+  document total (1.408, with VAT). Summing gives 2.088 TL — six times the real
+  figure, and someone would act on it. `_net_impact` takes the largest figure
+  per line and sums across lines.
+
+`Decision.confidence` is **coverage, not probability** — the share of extracted
+fields any check can speak to. Inventing a 0.96 would undo the week spent
+removing invented numbers, and 58% of measured field errors sit where no check
+reaches. `unverifiable_fields` names the silence, and the output says so.
+
 ### P0 — must close before the product ships
 
 - [x] **P0-4  `arithmetic_repair` fabricated totals on real documents.**
