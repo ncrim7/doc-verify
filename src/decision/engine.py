@@ -117,6 +117,7 @@ class Finding:
     actual: Any = None
     amount_try: Optional[float] = None
     line: Optional[int] = None         # item index; None = document level
+    blocks_payment: bool = False
 
     @property
     def is_priced(self) -> bool:
@@ -132,8 +133,26 @@ class Finding:
 
     @property
     def holds_payment(self) -> bool:
-        """Only a priced, cross-source finding is a reason to stop a payment."""
-        return self.is_priced and self.is_financial and self.severity == "critical"
+        """
+        Two different reasons to stop a payment, and they are not the same
+        thing, so neither is made to look like the other.
+
+        **Priced.** Two records disagree about an amount: the supplier is
+        asking 340 TL beyond what was agreed. The gap is the money.
+
+        **Declared** (`blocks_payment`). Money would move wrongly and the
+        amount is not a gap. A near-certain duplicate is the case: 42.000 TL
+        would leave twice, but 42.000 is the whole invoice rather than a
+        discrepancy, and which of the two records is the real one is a
+        question only a person can answer. Putting it in `amount_try` would
+        add it to a total of discrepancies where it does not belong.
+
+        A finding must still be critical and cross-source either way — one
+        page disagreeing with itself never stops a payment.
+        """
+        if self.severity != "critical" or not self.is_financial:
+            return False
+        return self.blocks_payment or self.is_priced
 
     @property
     def claim(self) -> str:

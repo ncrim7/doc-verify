@@ -247,7 +247,10 @@ _DECISION_HEAD = {
     },
     "HOLD": {
         "icon": "🚫", "title": "ÖDEMEYİ BEKLETİN",
-        "subtitle": "Fatura, siparişte anlaşılandan fazlasını istiyor.",
+        # Replaced per-case below: a hold has more than one cause, and telling
+        # someone their supplier over-charged when the real finding is a
+        # duplicate sends them to the wrong phone call.
+        "subtitle": "Ödeme öncesi durdurulması gereken bir bulgu var.",
         "color": "#ef4444",
     },
     "REVIEW": {
@@ -287,6 +290,18 @@ _KIND_TEXT: dict[str, dict] = {
                               "action": "Kalemin doğru ürün olduğunu teyit edin."},
     "EXTRACTION_FAILED":     {"label": "Belge Okunamadı",
                               "action": "Belgeyi yeniden tarayın veya fotoğrafı tekrar çekin."},
+    "POSSIBLE_DUPLICATE":    {"label": "Mükerrer Olabilir",
+                              "action": "Ödemeden önce eski kaydı açın; "
+                                        "aynı belge ise bu kaydı iptal edin."},
+}
+
+# What a HOLD is actually about. The cause changes the phone call the reader
+# makes next, so the headline has to name it.
+_HOLD_SUBTITLE = {
+    "POSSIBLE_DUPLICATE": "Bu belge daha önce işlenmiş olabilir.",
+    "PRICE_MISMATCH":     "Fatura, siparişte anlaşılandan fazlasını istiyor.",
+    "QTY_MISMATCH":       "Faturalanan miktar siparişle uyuşmuyor.",
+    "NOT_IN_PO":          "Faturada siparişte olmayan kalem var.",
 }
 
 
@@ -331,6 +346,13 @@ def humanize_decision(decision, doc: dict | None = None) -> dict:
                                  -abs(p["amount_try"] or 0),
                                  rank.get(p["severity"], 3)))
 
+    # Name the cause of a hold rather than assuming it was a price difference.
+    if d["verdict"] == "HOLD":
+        for f in d["findings"]:
+            if f["severity"] == "critical" and f["kind"] in _HOLD_SUBTITLE:
+                head["subtitle"] = _HOLD_SUBTITLE[f["kind"]]
+                break
+
     financial = d["financial_impact_try"]
     internal = d["internal_discrepancy_try"]
     lines = [f"{head['icon']} {head['title']}", head["subtitle"], ""]
@@ -348,8 +370,15 @@ def humanize_decision(decision, doc: dict | None = None) -> dict:
         amount = f"  ({p['amount_text']})" if p["amount_text"] else ""
         lines.append(f"• {p['label']}{amount}")
         if p["expected"] is not None and p["actual"] is not None:
-            lines.append(f"    Beklenen: {p['expected']}    Faturada: {p['actual']}")
-        elif p["detail"]:
+            lines.append(f"    Önceki: {p['expected']}    Bu belge: {p['actual']}"
+                         if p["kind"] == "POSSIBLE_DUPLICATE"
+                         else f"    Beklenen: {p['expected']}    "
+                              f"Faturada: {p['actual']}")
+        # A duplicate's message carries what the comparison cannot: which
+        # channel the earlier one came through and when. That is the sentence
+        # a person needs to decide, so it is shown alongside, not instead.
+        if p["detail"] and (p["kind"] == "POSSIBLE_DUPLICATE"
+                            or p["expected"] is None or p["actual"] is None):
             lines.append(f"    {p['detail']}")
         if p["action"]:
             lines.append(f"    → {p['action']}")

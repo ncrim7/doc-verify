@@ -40,6 +40,7 @@ class AnalysisResult:
     decision: Decision
     extraction: PipelineResult
     po_matched: bool = False
+    duplicates: Any = None
     timings: dict = field(default_factory=dict)
 
     @property
@@ -51,6 +52,8 @@ class AnalysisResult:
             "decision": self.decision.to_dict(),
             "extraction": self.extraction.to_dict(),
             "po_matched": self.po_matched,
+            "duplicates": (self.duplicates.to_dict()
+                           if self.duplicates is not None else None),
             "timings": dict(self.timings),
         }
 
@@ -61,9 +64,15 @@ class DocumentAnalyzer:
     be tested without touching a network.
     """
 
-    def __init__(self, pipeline: Any = None, matcher: Any = None):
+    def __init__(self, pipeline: Any = None, matcher: Any = None,
+                 store: Any = None, record: bool = False):
         self._pipeline = pipeline
         self._matcher = matcher
+        self.store = store
+        # Recording is opt-in and defaults OFF. A document that was just
+        # flagged as a probable duplicate must not quietly join the history it
+        # was checked against — the caller decides after a person has looked.
+        self.record = record
 
     @property
     def pipeline(self):
@@ -83,6 +92,7 @@ class DocumentAnalyzer:
         pdf_path: str | Path,
         doc_type: str = "invoice",
         po_data: Optional[dict] = None,
+        channel: str = "email_pdf",
     ) -> AnalysisResult:
         timings: dict = {}
 
@@ -108,15 +118,36 @@ class DocumentAnalyzer:
 
         findings = from_verification(extraction.verification)
 
+        # Against the document memory, when there is one. This is the check
+        # two independent customers put first, ahead of anything the earlier
+        # design led with.
+        duplicates = None
+        canonical = None
+        if self.store is not None:
+            from src.ledger.canonical import CanonicalDocument
+            from src.ledger.duplicate import check_duplicates, to_findings
+            t1 = time.time()
+            canonical = CanonicalDocument.from_extraction(
+                extraction.data, channel=channel, source_ref=str(pdf_path),
+                doc_type=doc_type)
+            duplicates = check_duplicates(canonical, self.store)
+            findings += to_findings(duplicates, canonical)
+            timings["ledger_sec"] = round(time.time() - t1, 2)
+
         po_matched = False
         if po_data:
-            t1 = time.time()
+            t2 = time.time()
             match = self.matcher.match(po_data, extraction.data)
             findings += from_po_match(match)
             po_matched = True
-            timings["match_sec"] = round(time.time() - t1, 2)
+            timings["match_sec"] = round(time.time() - t2, 2)
 
         decision = decide(findings, extraction.data)
         timings["total_sec"] = round(sum(timings.values()), 2)
+
+        if self.record and self.store is not None and canonical is not None:
+            self.store.record(canonical)
+
         return AnalysisResult(decision=decision, extraction=extraction,
-                              po_matched=po_matched, timings=timings)
+                              po_matched=po_matched, duplicates=duplicates,
+                              timings=timings)
