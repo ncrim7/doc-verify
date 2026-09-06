@@ -175,3 +175,50 @@ def test_json_object_response_format_is_always_requested(make_extractor):
     ex, client, pdf = make_extractor([VALID])
     ex.extract(pdf, "invoice")
     assert client.calls[0]["response_format"] == {"type": "json_object"}
+
+
+class TestStrayEscapes:
+    """
+    The model over-escapes quotes: it writes `14\\\\"` in the JSON, json.loads
+    turns that into a literal backslash plus a quote, and the value comes out
+    as `Dizüstü Bilgisayar 14\\" i5` against a page that prints
+    `Dizüstü Bilgisayar 14" i5`. Two misses in one synthetic run.
+
+    This is FORMAT NORMALISATION -- it changes how a character is represented,
+    never which characters the page carries. It must never grow into deriving
+    a value; P0-4 and P0-7 are what that costs.
+    """
+
+    def _strip(self, obj):
+        from src.extraction.llm_extractor import LLMExtractor
+        return LLMExtractor._strip_stray_escapes(obj)
+
+    def test_the_two_real_cases(self):
+        assert self._strip('Dizüstü Bilgisayar 14\\" i5') == 'Dizüstü Bilgisayar 14" i5'
+        assert self._strip("Beyaz Tahta Kalemi (4\\'lü)") == "Beyaz Tahta Kalemi (4'lü)"
+
+    def test_it_recurses_into_items(self):
+        d = {"items": [{"description": 'A4 15\\" Kağıt', "total": 5}],
+             "vendor_name": "Bilir \\'İhsanoğlu\\' Şti."}
+        out = self._strip(d)
+        assert out["items"][0]["description"] == 'A4 15" Kağıt'
+        assert out["vendor_name"] == "Bilir 'İhsanoğlu' Şti."
+        assert out["items"][0]["total"] == 5
+
+    def test_a_backslash_that_is_not_before_a_quote_is_left_alone(self):
+        # only the over-escaping signature is touched, nothing else
+        assert self._strip("C:\\path\\to") == "C:\\path\\to"
+        assert self._strip("50\\50 karışım") == "50\\50 karışım"
+
+    def test_non_strings_pass_through(self):
+        assert self._strip(20.83) == 20.83
+        assert self._strip(None) is None
+        assert self._strip(True) is True
+
+    def test_it_is_applied_by_the_parser(self, make_extractor):
+        import json as _json
+        payload = _json.dumps({"invoice_number": "INV-1",
+                               "items": [{"description": 'Ekran 27\\" IPS'}]})
+        ex, _client, pdf = make_extractor([payload])
+        got = ex.extract(pdf, "invoice")
+        assert got["items"][0]["description"] == 'Ekran 27" IPS'

@@ -71,14 +71,31 @@ behind an invented number.
 
 TURKISH TEXT — TRANSCRIBE, DO NOT CORRECT. Copy every string exactly as it is
 printed on the page, character for character.
-- Preserve every Turkish letter as-is: ı ğ ş ç ö ü İ Ğ Ş Ç Ö Ü.
-- 'ı' (dotless i) and 'i' (dotted i) are DIFFERENT letters — never swap them.
-  The same holds for ğ/g, ş/s, ö/o, ü/u, ç/c.
-- Do not transliterate to ASCII, do not normalise, do not fix spelling, do not
-  translate. If the page says "Zımba Teli", output "Zımba Teli" — not "Zimba".
-- Reproduce punctuation as printed, including quote and apostrophe characters.
-- Preserve company-type suffixes exactly (A.Ş., Ltd. Şti., San. ve Tic. A.Ş.)
-  — do not truncate them."""
+
+THE i FAMILY IS WHERE THIS GOES WRONG. Turkish has FOUR distinct letters where
+English has two, and they are not interchangeable:
+
+    ı  dotless lowercase        I  dotless capital
+    i  dotted  lowercase        İ  dotted  capital
+
+Check the dot before writing each one. A capital I WITH a dot above it is İ,
+never I. A lowercase i WITHOUT a dot is ı, never i.
+
+This cuts both ways, and both directions are equally wrong:
+  - do not REMOVE dots:  "Raflı" is not "Rafli", "İhsanoğlu" is not "Ihsanoğlu"
+  - do not ADD    dots:  "Sezgin" is not "Sezgın", "Diş" is not "Dış"
+
+If a word would look more familiar spelled another way, the printed letters
+still win. You are reading, not spelling.
+
+The other Turkish letters — ğ ş ç ö ü Ğ Ş Ç Ö Ü — follow the same rule: copy
+what is printed, never the nearest plain-Latin letter.
+
+Do not transliterate to ASCII, do not normalise, do not fix spelling, do not
+translate. Reproduce punctuation as printed, including quote and apostrophe
+characters, and do not add escape characters of your own. Preserve
+company-type suffixes exactly (A.Ş., Ltd. Şti., San. ve Tic. A.Ş.) — do not
+truncate them."""
 
 INVOICE_SCHEMA = """{
   "doc_type": "invoice",

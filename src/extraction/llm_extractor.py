@@ -504,6 +504,31 @@ class LLMExtractor:
                     "pdf2image (pip install pdf2image) for PDF→image conversion"
                 )
 
+    # A backslash immediately before a quote or apostrophe, surviving into a
+    # parsed value, is an over-escaping artefact and never part of a product
+    # description. The model writes `14\\"` in the JSON, json.loads turns that
+    # into a literal backslash plus a quote, and `Dizüstü Bilgisayar 14\" i5`
+    # is scored wrong against `Dizüstü Bilgisayar 14" i5`.
+    _STRAY_ESCAPE = re.compile(r'\\(["\'])')
+
+    @classmethod
+    def _strip_stray_escapes(cls, obj):
+        """
+        Repair over-escaped quotes in parsed string values, recursively.
+
+        This is FORMAT NORMALISATION, not value repair — the same category as
+        turning '15/03/2026' into '2026-03-15'. It changes how a character is
+        represented, never which characters the page carries. Nothing here may
+        ever grow into deriving a value; see P0-4 and P0-7 for what that costs.
+        """
+        if isinstance(obj, str):
+            return cls._STRAY_ESCAPE.sub(r"\1", obj)
+        if isinstance(obj, list):
+            return [cls._strip_stray_escapes(v) for v in obj]
+        if isinstance(obj, dict):
+            return {k: cls._strip_stray_escapes(v) for k, v in obj.items()}
+        return obj
+
     def _parse_json_response(self, text: str) -> Optional[dict]:
         """Extract JSON object from LLM response text."""
         if not text:
@@ -511,7 +536,7 @@ class LLMExtractor:
 
         # Try direct parse
         try:
-            return json.loads(text)
+            return self._strip_stray_escapes(json.loads(text))
         except json.JSONDecodeError:
             pass
 
@@ -526,7 +551,7 @@ class LLMExtractor:
             if match:
                 try:
                     candidate = match.group(1) if match.lastindex else match.group(0)
-                    return json.loads(candidate)
+                    return self._strip_stray_escapes(json.loads(candidate))
                 except (json.JSONDecodeError, IndexError):
                     continue
 

@@ -98,12 +98,17 @@ Run each change as: Research -> Plan -> **GATE 1 (user approves plan)** -> TDD
 
 **P0-1, P0-2, P0-4, P0-5, P0-6, P1-4, P1-6 and P1-7 are closed.**
 
-Current figure: **97.67% ± 0.18** field-level EM over 60 documents — the mean of
-three identical runs, not a single number
-(`docs/measurements/2026-09-06-noise-floor-and-clean-corpus.md`). Corpus
-regenerated 2026-09-06; every figure before that measured a different corpus, a
-metric with a 1% relative tolerance on money, and a pipeline whose third agent
-never ran, so **do not compare across that line.**
+Current figure: **98.22%** field-level EM over 60 synthetic documents, one run,
+against a three-run baseline of **97.67% ± 0.178** measured on the same corpus
+(`docs/measurements/2026-09-06-noise-floor-and-clean-corpus.md`, then
+`2026-09-06-turkish-i-family.md`). Corpus regenerated 2026-09-06; every figure
+before that measured a different corpus, a metric with a 1% relative tolerance
+on money, and a pipeline whose third agent never ran, so **do not compare
+across that line.**
+
+**Real-world is the number that matters and it is 70.55% at n=15**, ranging
+90.5% on clean digital PDFs to 15.1% on photographed dot-matrix bills. The
+synthetic figure measures the pipeline, not the product.
 
 Three qualifiers travel with the number:
 
@@ -201,10 +206,27 @@ Three qualifiers travel with the number:
       eliminated the straight-to-curly apostrophe class outright (4 → 0).
   97.66% → **98.23%**. 34 misses remain, all genuine Turkish character
   handling. Two follow-ups fell out of it, below.
-- **P1-4b  over-correction.** The new prompt made the model invent Turkish
-  characters that are not on the page (`Grafik`→`Grafık`, `Diş`→`Dış`). The
-  next prompt iteration should be symmetric: preserve what is printed, in both
-  directions.
+- [x] **P1-4b  invented Turkish characters.** Closed
+  (`docs/measurements/2026-09-06-turkish-i-family.md`). The symmetric
+  instruction — a worked example in *each* direction — took the invention class
+  from **3 to 0**. The filing was half right: invention was 3 of 40 text misses
+  while *dropping* was 22, so it had named the smaller half.
+
+- **P1-4c  the dotless i — and prompting is finished as a tool for it.**
+  Measured per letter against corpus frequency: **18 of 22 dropped diacritics
+  are `ı` or `İ`**, the two letters with no counterpart in any other
+  Latin-script language. Every letter shared with German or French is perfect —
+  `ü` 81/81, `ç` 16/16, `Ç` 24/24, `Ş` 35/35. That rules out resolution: a
+  breve on `ğ` is a smaller mark than a missing dot on `ı`, and `ğ` fares
+  eleven times better. It is the model's Latin-script prior, not its eyes.
+
+  Two targeted prompt attempts have now failed to move it — 22 → 21, with `ı`
+  alone 19 of the remainder, spread across 11 distinct words rather than a few
+  memorised wrongly. **It is the single largest error class left in the
+  synthetic corpus.** The remaining levers are a different model, a different
+  render, or a second source — a supplier and product master that can snap
+  `Rafli` back to `Raflı`. That is the same "compare against something" answer
+  P1-5 reached for invoice numbers, and it is now wanted twice.
 - [x] **P1-6  tax-id checksum check.** `src/verification/tax_id.py`. A tax id
   carries its own check digit, which makes it the only field in the schema that
   can be verified against itself — no second source, no model call. On the real
@@ -222,9 +244,6 @@ Three qualifiers travel with the number:
   tolerance because a model that derives 94.59/472.97 instead of reading "20%"
   is not wrong. Measured on unchanged real-pilot output: 74.09% → 71.82%.
 
-- **P1-4b  over-correction.** Still open. The prompt made the model invent
-  Turkish characters that are not on the page (`Grafik`→`Grafık`). The next
-  iteration should be symmetric: preserve what is printed, in both directions.
 - [x] **P1-5  real-world validation.** Done at n=15, 202 scored fields
   (`docs/measurements/2026-09-06-real-world-n15.md`). The headline, 70.48%, is
   close to useless; **input condition explains almost everything**:
