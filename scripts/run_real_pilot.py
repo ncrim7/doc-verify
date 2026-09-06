@@ -51,9 +51,14 @@ def load_gt(doc_id: str) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def extract_all(entries: list[dict], delay: float) -> list[dict]:
+def extract_all(entries: list[dict], delay: float) -> tuple[list[dict], dict]:
     """Run the real pipeline once per document. Only page 0 is extracted —
-    the schema describes a single document, not a multi-page bundle."""
+    the schema describes a single document, not a multi-page bundle.
+
+    Returns the extractions and the run's token/cost totals. The cost is
+    recorded because this project runs against a small prepaid balance, and a
+    measurement you cannot afford to repeat is not much of a measurement.
+    """
     pipeline = DocumentPipeline()
     out = []
     for e in entries:
@@ -76,7 +81,15 @@ def extract_all(entries: list[dict], delay: float) -> list[dict]:
         })
         if delay:
             time.sleep(delay)
-    return out
+
+    log = getattr(pipeline.extractor, "call_log", [])
+    usage = {
+        "calls": len(log),
+        "tokens_in": sum(c.get("tokens_in", 0) for c in log),
+        "tokens_out": sum(c.get("tokens_out", 0) for c in log),
+        "cost_usd": round(sum(c.get("cost_usd", 0.0) for c in log), 6),
+    }
+    return out, usage
 
 
 def score(extractions: list[dict]) -> dict:
@@ -153,18 +166,26 @@ def main() -> int:
         extractions = pinned["extractions"]
         print(f"scoring pinned extractions from {args.score_only} "
               f"(run at {pinned.get('run_at', '?')})")
+        if pinned.get("usage"):
+            u = pinned["usage"]
+            print(f"  that run cost ${u['cost_usd']:.4f}; this re-score costs "
+                  f"nothing")
     else:
         entries = load_manifest()
         print(f"extracting {len(entries)} real documents")
-        extractions = extract_all(entries, args.delay)
+        extractions, usage = extract_all(entries, args.delay)
         out = Path(args.out) if args.out else (
             RESULTS_DIR / f"real_pilot_{datetime.now():%Y%m%d_%H%M%S}.results.json")
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(
             {"run_at": datetime.now().isoformat(timespec="seconds"),
+             "usage": usage,
              "extractions": extractions}, ensure_ascii=False, indent=2),
             encoding="utf-8")
         print(f"pinned -> {out}")
+        print(f"cost: ${usage['cost_usd']:.4f}  "
+              f"({usage['calls']} calls, {usage['tokens_in']:,} in / "
+              f"{usage['tokens_out']:,} out)")
 
     summary = score(extractions)
     report(summary)

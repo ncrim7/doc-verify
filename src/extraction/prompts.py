@@ -38,6 +38,20 @@ document's own total.
 IF THE PAGE PRINTS ONLY ONE TOTAL — which is the normal case — put that same
 value in BOTH fields. Never invent a difference that is not printed.
 
+LINE AMOUNTS — `total` inside `items` is the line amount AFTER any discount and
+BEFORE tax. This follows the Turkish e-invoice standard, where a line's
+LineExtensionAmount is quantity × unit price less any discount, excluding tax.
+Two consequences:
+- If the line's amount column is printed INCLUDING tax, do not copy it. Use the
+  pre-tax figure for that line if the page gives one (labels such as 'Vergiler
+  Öncesi Toplam Tutar', 'KDV Matrahı', 'Mal Hizmet Toplam Tutarı'). If the page
+  gives no pre-tax figure for the line, use null rather than a guess.
+- If a discount applies, `total` is the amount after it, so quantity × unit
+  price will NOT equal `total`. That is correct and expected — do not adjust
+  either number to make them agree.
+`subtotal` is the sum of these line amounts: the document total after discounts
+and before tax.
+
 NEVER COMPUTE A TOTAL THAT IS PRINTED. If a printed subtotal or total disagrees
 with the sum of the line items, report what is PRINTED. A real bill carries
 discounts, late fees and carried-over balances that do not appear as line items,

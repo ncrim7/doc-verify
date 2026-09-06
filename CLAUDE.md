@@ -291,9 +291,22 @@ Three qualifiers travel with the number:
   | a till receipt's fiscal ids (VD no, Z No, EKÜ No, MF serial) | real_013 |
   | a tax *kind* alongside the rate — BSMV is not KDV | real_011 |
 
-  The cheapest of these is `items[].total`: one line of prompt saying whether a
-  line amount is before or after tax. It is currently ungraded on two documents
-  because the convention is unstated.
+  `items[].total` was the cheapest and it has been **tried and failed**. The
+  prompt now states the UBL-TR rule — a line total is quantity × unit price less
+  discount, excluding tax — and the field is graded again on all nine documents
+  that have one. The model does not follow it: on `real_008` it returns
+  `69.4167` (quantity × unit price) where the page prints `20,83`, ignoring a
+  70% discount printed in its own column. **It derives instead of reading** —
+  the same fabrication just removed from `repair_arithmetic` and the correction
+  agent, still present in the model. The instruction stays because the GT grades
+  the field, and a correct instruction the model ignores is a different problem
+  from a missing one.
+
+  **The next thing to try is a `discount` field, not more prompt.** With it,
+  `real_008` needs no cross-referencing: quantity 1, unit_price 69,4167,
+  discount 48,59, total 20,83 — four numbers, all four printed on the line. It
+  also makes `qty × price − discount = total` a checkable identity, turning
+  today's unavoidable `item_total_mismatch` into a real arithmetic check.
 
 - **P0-7  item-level repair fabricated on a discounted line.** CLOSED. The one
   overwrite P0-4 deliberately kept, on the grounds that quantity and unit_price
