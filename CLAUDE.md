@@ -302,11 +302,26 @@ Three qualifiers travel with the number:
   the field, and a correct instruction the model ignores is a different problem
   from a missing one.
 
-  **The next thing to try is a `discount` field, not more prompt.** With it,
-  `real_008` needs no cross-referencing: quantity 1, unit_price 69,4167,
-  discount 48,59, total 20,83 — four numbers, all four printed on the line. It
-  also makes `qty × price − discount = total` a checkable identity, turning
-  today's unavoidable `item_total_mismatch` into a real arithmetic check.
+  **Then `items[].discount` was added, and it worked immediately.** Same GT,
+  same metric: `real_008` went 70/75% → **95%**, with the model returning all
+  four line numbers exactly and the document reconciling with zero issues.
+  Overall 69.33/68.96% → 70.55%, about 3× the n=15 spread but one run, so do
+  not quote it alone. The field is the amount (not the rate), matching UBL-TR's
+  line `AllowanceCharge`; the verifier now checks
+  `qty × price − discount = total`.
+
+  **Keep the lesson, it generalises:** a prompt sentence describing the
+  convention changed nothing on its targets; a schema field fixed them at once.
+  The model can read four numbers off a line and cannot reliably follow an
+  instruction to look elsewhere and derive one. When extraction fails on a
+  shape the schema cannot express, reach for a field before more prompt.
+
+  Two bugs fell out of it. The identity check caught an inconsistency in
+  `real_015`'s own ground truth before it ever ran against a model (that issuer
+  prints line figures tax-inclusive). And `discount` was added to the schema
+  but not to `MONEY_FIELDS`, so `0` was compared as text against `0.0` — worth
+  0.68 pp. A structural test now reads field names out of the schemas and
+  asserts every `number` is known to the metric.
 
 - **P0-7  item-level repair fabricated on a discounted line.** CLOSED. The one
   overwrite P0-4 deliberately kept, on the grounds that quantity and unit_price

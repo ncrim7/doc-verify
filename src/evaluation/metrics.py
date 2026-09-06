@@ -118,14 +118,14 @@ def absolute_accuracy(predicted: Any, ground_truth: Any, atol: float = 0.0) -> f
 
 # Fields that should use numeric comparison
 NUMERIC_FIELDS = {
-    "quantity", "unit_price", "total", "subtotal", "tax_amount",
+    "quantity", "unit_price", "total", "discount", "subtotal", "tax_amount",
     "total_amount", "amount_payable", "change_amount", "amount", "tax_rate",
 }
 
 # Currency amounts. Scored to the kuruş with an absolute tolerance, never a
 # relative one — see absolute_accuracy for why.
 MONEY_FIELDS = {
-    "unit_price", "total", "subtotal", "tax_amount", "total_amount",
+    "unit_price", "total", "discount", "subtotal", "tax_amount", "total_amount",
     "amount_payable", "change_amount", "amount",
 }
 

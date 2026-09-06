@@ -162,6 +162,23 @@ class TestNeverOverwritesEvidence:
         repair_arithmetic(d, "invoice")
         assert "amount_payable" not in d
 
+    def test_an_absent_total_is_filled_net_of_the_discount(self):
+        d = {"items": [{"quantity": 1, "unit_price": 69.4167,
+                        "discount": 48.59}]}
+        repair_arithmetic(d, "invoice")
+        assert d["items"][0]["total"] == 20.83
+
+    def test_an_absent_discount_means_none(self):
+        d = {"items": [{"quantity": 2, "unit_price": 10.0}]}
+        repair_arithmetic(d, "invoice")
+        assert d["items"][0]["total"] == 20.0
+
+    def test_a_discount_still_does_not_license_overwriting_a_printed_total(self):
+        d = {"items": [{"quantity": 1, "unit_price": 69.4167,
+                        "discount": 48.59, "total": 20.90}]}
+        repair_arithmetic(d, "invoice")
+        assert d["items"][0]["total"] == 20.90
+
     def test_the_discounted_line_that_closed_the_last_exception(self):
         """
         P0-7, from a real e-arşiv invoice (a Windows licence sold via n11):

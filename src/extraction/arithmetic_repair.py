@@ -79,13 +79,16 @@ def repair_arithmetic(data: dict, doc_type: str = None) -> dict:
     #    modelin 17320.82 yazması). Ölçülen faydası sıfırdı — run 6 ve run 7
     #    ikisi de "delta from repair + correction: +0.00 pp" bildirdi. Kanıtsız
     #    bir kazanç için kanıtlı bir uydurma riski taşınmaz.
+    #    The identity is quantity × unit_price − discount, matching UBL-TR's
+    #    LineExtensionAmount. An absent discount means none.
     for it in items:
         if not isinstance(it, dict):
             continue
         q = _num(it.get("quantity"))
         u = _num(it.get("unit_price"))
+        d = _num(it.get("discount")) or 0.0
         if q is not None and u is not None and _num(it.get("total")) is None:
-            it["total"] = round(q * u, 2)
+            it["total"] = round(q * u - d, 2)
             repairs += 1
 
     # Onarılmış kalem toplamlarının toplamı

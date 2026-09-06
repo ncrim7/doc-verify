@@ -38,17 +38,27 @@ document's own total.
 IF THE PAGE PRINTS ONLY ONE TOTAL — which is the normal case — put that same
 value in BOTH fields. Never invent a difference that is not printed.
 
-LINE AMOUNTS — `total` inside `items` is the line amount AFTER any discount and
-BEFORE tax. This follows the Turkish e-invoice standard, where a line's
-LineExtensionAmount is quantity × unit price less any discount, excluding tax.
-Two consequences:
+LINE AMOUNTS — every line follows one identity:
+
+    total = quantity × unit_price − discount        (and excludes tax)
+
+- `discount` is the discount AMOUNT on that line in currency, NOT a percentage.
+  Labels: 'İskonto', 'İskonto Tutarı', 'İndirim', 'Discount'. If the page shows
+  only a percentage, multiply it out. If the line has no discount, use 0.
+- `unit_price` and `total` are both BEFORE tax. `total` is the line amount
+  after the discount and before tax — the Turkish e-invoice
+  LineExtensionAmount.
+- Some issuers print the line's unit price and amount INCLUDING tax. If the
+  page gives no pre-tax figure for that line, use null for the field rather
+  than copying the gross number or deriving one.
+- READ these numbers, do not derive them. When a discount applies,
+  quantity × unit_price will NOT equal `total`, and that is correct — never
+  adjust either one to make them agree.
 - If the line's amount column is printed INCLUDING tax, do not copy it. Use the
-  pre-tax figure for that line if the page gives one (labels such as 'Vergiler
-  Öncesi Toplam Tutar', 'KDV Matrahı', 'Mal Hizmet Toplam Tutarı'). If the page
-  gives no pre-tax figure for the line, use null rather than a guess.
-- If a discount applies, `total` is the amount after it, so quantity × unit
-  price will NOT equal `total`. That is correct and expected — do not adjust
-  either number to make them agree.
+  pre-tax figure if the page gives one (labels such as 'Vergiler Öncesi Toplam
+  Tutar', 'KDV Matrahı', 'Mal Hizmet Toplam Tutarı'). If it gives none, use null
+  rather than a guess.
+
 `subtotal` is the sum of these line amounts: the document total after discounts
 and before tax.
 
@@ -86,6 +96,7 @@ INVOICE_SCHEMA = """{
       "description": "string",
       "quantity": number,
       "unit_price": number,
+      "discount": number,
       "total": number
     }
   ],

@@ -196,28 +196,51 @@ class RuleBasedVerifier:
         corrections = {}
         items = extracted.get("items", [])
 
-        # Item-level: qty * unit_price = total
+        # Item-level identity: quantity * unit_price - discount = total
+        #
+        # The discount term is what makes this a real check rather than a
+        # source of false alarms. Without it, every discounted line on a real
+        # invoice fires item_total_mismatch — correctly, in the sense that the
+        # numbers do not add up, but uselessly, because the schema could not
+        # express why. UBL-TR models a line discount as an AllowanceCharge with
+        # ChargeIndicator=false, and LineExtensionAmount is the amount after it.
         for i, item in enumerate(items):
             qty = self._to_float(item.get("quantity"))
             price = self._to_float(item.get("unit_price"))
             total = self._to_float(item.get("total"))
             if qty is not None and price is not None and total is not None:
-                expected = round(qty * price, 2)
+                # An absent discount means "none", which is the common case and
+                # is how every document without a discount column reads.
+                disc = self._to_float(item.get("discount")) or 0.0
+                expected = round(qty * price - disc, 2)
                 if abs(expected - total) > 0.02:
+                    shown = f"{qty}×{price}" + (f"−{disc}" if disc else "")
                     issues.append({
                         "rule": "item_total_mismatch",
                         "field": f"items[{i}].total",
                         "severity": "critical",
-                        "message": f"Item {i}: {qty}×{price}={expected}, got {total}",
+                        "message": f"Item {i}: {shown}={expected}, got {total}",
                         "expected": expected,
                         "actual": total,
                     })
-                    # No auto-correction. quantity x unit_price is inference;
-                    # the printed line total is evidence. On a real e-arsiv
-                    # invoice a 70% discount sits between them, and writing the
-                    # product back replaced 20,83 with 69,42. The mismatch is
-                    # already critical, so the document reaches a human --
-                    # which is the whole point. P0-7.
+                    # No auto-correction. The computed figure is inference; the
+                    # printed line total is evidence. On a real e-arşiv invoice
+                    # a 70% discount sat between them and writing the product
+                    # back replaced 20,83 with 69,42. The mismatch is already
+                    # critical, so the document reaches a human — which is the
+                    # whole point. P0-7.
+
+                # A negative discount is a sign reading error, not a surcharge:
+                # UBL-TR carries increases as a separate ChargeIndicator=true,
+                # and our schema has no field for one.
+                if disc < 0:
+                    issues.append({
+                        "rule": "negative_discount",
+                        "field": f"items[{i}].discount",
+                        "severity": "warning",
+                        "message": f"Item {i}: discount {disc} is negative",
+                        "value": disc,
+                    })
 
         # Subtotal = sum of item totals
         subtotal = self._to_float(extracted.get("subtotal"))

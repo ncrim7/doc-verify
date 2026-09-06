@@ -58,6 +58,70 @@ def test_implausible_year_is_warning():
     assert any(i["rule"] == "date_implausible" for i in r["issues"])
 
 
+class TestLineDiscount:
+    """
+    UBL-TR carries a line discount as an AllowanceCharge with
+    ChargeIndicator=false, and LineExtensionAmount is the amount after it. The
+    identity is quantity × unit_price − discount = total.
+
+    Without the discount term the check was a false-alarm generator on real
+    invoices: every discounted line failed it, correctly in arithmetic and
+    uselessly in practice, because the schema could not say why. real_008 is
+    the case — 1 × 69,4167 with a 70% discount of 48,59, giving 20,83.
+    """
+
+    def _inv(self, item):
+        return {"invoice_number": "INV-1", "date": "2026-03-15",
+                "vendor_name": "V", "items": [item],
+                "subtotal": item.get("total"), "tax_amount": 0.0,
+                "total_amount": item.get("total")}
+
+    def test_the_real_discounted_line_now_reconciles(self):
+        r = V.verify(self._inv({"quantity": 1, "unit_price": 69.4167,
+                                "discount": 48.59, "total": 20.83}), "invoice")
+        assert not any(i["rule"] == "item_total_mismatch" for i in r["issues"])
+        assert r["valid"] is True
+
+    def test_without_the_discount_field_the_same_line_still_flags(self):
+        # the pre-discount behaviour, kept as a check that the term is what
+        # changed rather than the tolerance
+        r = V.verify(self._inv({"quantity": 1, "unit_price": 69.4167,
+                                "total": 20.83}), "invoice")
+        assert any(i["rule"] == "item_total_mismatch" for i in r["issues"])
+
+    def test_a_wrong_total_still_flags_even_with_a_discount(self):
+        r = V.verify(self._inv({"quantity": 1, "unit_price": 69.4167,
+                                "discount": 48.59, "total": 30.00}), "invoice")
+        issue = next(i for i in r["issues"] if i["rule"] == "item_total_mismatch")
+        assert issue["expected"] == 20.83
+        assert "−48.59" in issue["message"]
+
+    def test_zero_discount_behaves_like_none(self):
+        a = V.verify(self._inv({"quantity": 2, "unit_price": 10.0,
+                                "discount": 0, "total": 20.0}), "invoice")
+        b = V.verify(self._inv({"quantity": 2, "unit_price": 10.0,
+                                "total": 20.0}), "invoice")
+        assert a["issues"] == b["issues"] == []
+
+    def test_a_negative_discount_is_a_warning(self):
+        # UBL-TR carries an increase as a separate ChargeIndicator=true and our
+        # schema has no field for one, so a negative here is a sign error
+        r = V.verify(self._inv({"quantity": 1, "unit_price": 10.0,
+                                "discount": -5.0, "total": 15.0}), "invoice")
+        assert any(i["rule"] == "negative_discount" and i["severity"] == "warning"
+                   for i in r["issues"])
+
+    def test_a_non_numeric_discount_is_ignored_not_crashed(self):
+        r = V.verify(self._inv({"quantity": 2, "unit_price": 10.0,
+                                "discount": "yok", "total": 20.0}), "invoice")
+        assert not any(i["rule"] == "item_total_mismatch" for i in r["issues"])
+
+    def test_no_auto_correction_is_offered_for_a_discounted_line(self):
+        r = V.verify(self._inv({"quantity": 1, "unit_price": 69.4167,
+                                "discount": 48.59, "total": 30.00}), "invoice")
+        assert r["auto_corrections"] == {}
+
+
 def test_wrong_item_total_is_critical_but_not_autocorrected():
     # P0-7: quantity x unit_price is inference, the printed line total is
     # evidence. On a real invoice a 70% discount sat between them and writing

@@ -99,6 +99,48 @@ class TestMoneyIsScoredToTheKurus:
         assert f["items[0].unit_price"]["exact_match"] == 0.0
         assert f["items[0].total"]["exact_match"] == 0.0
 
+    def test_a_new_money_field_must_reach_the_money_list(self):
+        """
+        `discount` was added to the invoice schema and NOT to MONEY_FIELDS, so
+        a model returning 0 was scored against a ground truth of 0.0 by string
+        comparison and marked wrong. Two real documents lost a field to it.
+
+        The lesson generalises: every numeric field in a schema needs an entry
+        here, or it is silently graded as text.
+        """
+        gt = {"doc_type": "invoice",
+              "items": [{"quantity": 1, "unit_price": 10.0,
+                         "discount": 0.0, "total": 10.0}]}
+        pred = {"doc_type": "invoice",
+                "items": [{"quantity": 1, "unit_price": 10.0,
+                           "discount": 0, "total": 10.0}]}
+        f = M.evaluate_document(pred, gt, "invoice")["fields"]
+        assert f["items[0].discount"]["exact_match"] == 1.0
+
+    def test_a_discount_is_still_money_and_scored_to_the_kurus(self):
+        gt = {"doc_type": "invoice",
+              "items": [{"quantity": 1, "unit_price": 69.4167,
+                         "discount": 48.59, "total": 20.83}]}
+        pred = {"doc_type": "invoice",
+                "items": [{"quantity": 1, "unit_price": 69.4167,
+                           "discount": 48.60, "total": 20.83}]}
+        f = M.evaluate_document(pred, gt, "invoice")["fields"]
+        assert f["items[0].discount"]["exact_match"] == 0.0
+
+    def test_every_schema_number_field_is_declared_numeric(self):
+        # a structural guard rather than a list to maintain by hand: pull the
+        # field names the extractor is actually asked for and check the numeric
+        # ones are known to the metric
+        import json as _json
+        import re as _re
+        from src.extraction.prompts import SCHEMAS
+        for doc_type, schema in SCHEMAS.items():
+            # the schemas are JSON-shaped text with `number` as a bare token
+            for name in _re.findall(r'"(\w+)":\s*number', schema):
+                assert name in M.NUMERIC_FIELDS, (
+                    f"{doc_type} schema asks for numeric '{name}' but the "
+                    f"metric would grade it as text")
+
     def test_quantity_keeps_the_relative_rule(self):
         # counts are integers, so the tolerance never bites — left alone rather
         # than changed for the sake of symmetry
